@@ -1,0 +1,24 @@
+{
+    "files.associations": {
+        "cmath": "cpp"
+    },
+    "actionButtons": {
+        "defaultColor": "light-grey",
+        "reloadButton": " ",
+        "commands": [
+            {
+                "name": "Build $(checklist)",
+                "singleInstance": true,
+                "command": "cd Windows && make all",
+            }, {
+                "name": "Run  $(arrow-right)",
+                "singleInstance": true,
+                "command": "cd Windows && main.exe",
+            }, {
+                "name": "Build - Run $(checklist) $(arrow-right)",
+                "singleInstance": true,
+                "command": "cd Debug/Builds && make all && main.exe",
+            }
+        ]
+    },
+}
