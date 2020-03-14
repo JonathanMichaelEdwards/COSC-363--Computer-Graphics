@@ -4,23 +4,38 @@
             "label": "New Window",
             "type": "shell",
 
-            "linux": {
-                "command": "cd Linux && make",
-            },
-
-            "windows": {
-                "command": "cd Windows && make"
-                },
+            "linux"  : { "command": "cd Linux && make"   },
+            "windows": { "command": "cd Windows && make" },
 
             "presentation": {
-                "showReuseMessage": false,
+                "showReuseMessage": true,
                 "clear": true
             },
-            "group": {
+
+            "group": {  
                 "kind": "build",
                 "isDefault": true,
             }
-        }
+        },
+        
+        {
+            "label": "Run",
+            "type": "shell",
+            "presentation": {
+                "showReuseMessage": true,
+                "clear": true,
+            },
+
+            "windows": { "command": "cd Windows && main.exe"   },
+            "linux"  : { "command": "cd Linux/Builds && ./main"}
+        },
     ],
     "version": "2.0.0"
 }
+
+
+// {
+//     "key": "f4",
+//     "command": "workbench.action.tasks.runTask",
+//     "args": "Run"
+// }

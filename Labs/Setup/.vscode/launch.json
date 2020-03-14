@@ -22,7 +22,7 @@
             },
 
             "linux": {
-                "program": "${workspaceFolder}/Linux/main.exe",
+                "program": "${workspaceFolder}/Linux/main",
                 "miDebuggerPath": "/usr/bin/gdb"
             },
 

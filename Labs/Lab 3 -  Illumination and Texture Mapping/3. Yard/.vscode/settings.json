@@ -1,0 +1,12 @@
+{
+    "files.associations": {
+        "cmath": "cpp",
+        "iostream": "cpp",
+        "climits": "cpp"
+    },
+
+    // Windows: g++ $fileName -o $fileNameWithoutExt -lOpenGL32 -lGLU32 -lfreeGLUT && $fileNameWithoutExt
+    "code-runner.executorMap": {
+        "cpp": "g++ $fileName -o $fileNameWithoutExt -lOpenGL32 -lGLU32 -lfreeGLUT && $fileNameWithoutExt"
+    },
+}

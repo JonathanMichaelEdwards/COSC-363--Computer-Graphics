@@ -1,13 +1,19 @@
-/** ============================================================================
- *	Author:       Jonathan Edwards
- *	Date:         01/31/2020 (V1)
- *	Description:  peripherals.cpp contains button events to kill the window.
- *  ==========================================================================*/
+// ============================================================================
+// 	Author:       Jonathan Edwards
+//
+// 	Description:  ....
+// ============================================================================
 
 
+// Standard libaries
 #include <stdio.h>
+
+// OpenGL libaries
 #include <GL/glut.h>
+
+// Personal libaries
 #include "peripherals.h"
+#include "display.h"
 
 
 // ASCII Keys
@@ -16,23 +22,34 @@
 
 
 
-
-/** ============================================================================
- * 							Special key event callback 
- *  ===========================================================================*/
-void special(int key, int x, int y)
+/** ------------------------------------------------------------------------------
+// 						Perform background processing tasks
+//  @param delay - Delay in milli seconds
+//  --------------------------------------------------------------------------- */
+static void idle(int delay)
 {
-    if (key == GLUT_KEY_END) exit(EXIT_SUCCESS);
-    glutPostRedisplay();
+	glutTimerFunc(delay, idle, delay);
 }
 
 
-/** ============================================================================
- * 							ASCII key event callback 
- *  ===========================================================================*/
+// ----------------------------------------------------------------------------
+//							Special key event callback 
+// ----------------------------------------------------------------------------
+void special(int key, int x, int y)
+{
+    if (key == GLUT_KEY_END) exit(EXIT_SUCCESS);
+
+    glutTimerFunc(TIMER_DELAY, idle, TIMER_DELAY);
+}
+
+
+// ----------------------------------------------------------------------------
+//							ASCII key event callback 
+// ----------------------------------------------------------------------------
 void keyEvents(unsigned char key, int x, int y)
 {
     if (key == QUIT) exit(EXIT_SUCCESS);
 	else if (key == ESC) exit(EXIT_SUCCESS);
-    glutPostRedisplay();
+
+    glutTimerFunc(TIMER_DELAY, idle, TIMER_DELAY);  
 }

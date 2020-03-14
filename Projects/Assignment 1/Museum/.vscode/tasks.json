@@ -1,0 +1,34 @@
+{
+    "tasks": [
+        {
+            "label": "New Window",
+            "type": "shell",
+
+            "linux"  : { "command": "cd Linux && make"   },
+            "windows": { "command": "cd Windows && make" },
+
+            "presentation": {
+                "showReuseMessage": true,
+                "clear": true
+            },
+
+            "group": {  
+                "kind": "build",
+                "isDefault": true,
+            }
+        },
+        
+        {
+            "label": "Run",
+            "type": "shell",
+            "presentation": {
+                "showReuseMessage": true,
+                "clear": true,
+            },
+
+            "windows": { "command": "cd Windows && main.exe"   },
+            "linux"  : { "command": "cd Linux && ./main"}
+        },
+    ],
+    "version": "2.0.0"
+}
