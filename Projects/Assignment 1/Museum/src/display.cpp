@@ -53,7 +53,7 @@ void showFPS(void)
 
 	// Display FPS every 1/4 a second
 	if (elapsedTime > QUATER_SEC) {
-		sprintf(title, "Template    FPS: %.2f", (frameCount / elapsedTime) * FPS_SEC);
+		sprintf(title, "Museum    FPS: %.2f", (frameCount / elapsedTime) * FPS_SEC);
 		glutSetWindowTitle(title);
 
 		endTime = startTime;
@@ -84,24 +84,41 @@ static void idle(int delay)
 float look_x, look_z=-1, eye_x, eye_z;  //Camera parameters
 
 
+// void moveBack(float angle)
+// {
+// 	eye_x -= 0.1*sin(angle);
+// 	eye_z += 0.1*cos(angle);
+// }
+
+// void moveForward(float angle)
+// {
+// 	eye_x += 0.1*sin(angle);
+// 	eye_z -= 0.1*cos(angle);
+// }
+
+// void lookRotation(float angle)
+// {
+// 	look_x = eye_x + 100*sin(angle);  // angle the person is looking
+// 	look_z = eye_z - 100*cos(angle);
+// }
+
 void moveBack(float angle)
 {
-	eye_x -= 0.1*sin(angle);
-	eye_z += 0.1*cos(angle);
+	eye_x -= 0.5*sin(angle);
+	eye_z += 0.5*cos(angle);
 }
 
 void moveForward(float angle)
 {
-	eye_x += 0.1*sin(angle);
-	eye_z -= 0.1*cos(angle);
+	eye_x += 0.5*sin(angle);
+	eye_z -= 0.5*cos(angle);
 }
 
 void lookRotation(float angle)
 {
-	look_x = eye_x + 100*sin(angle);  // angle the person is looking
-	look_z = eye_z - 100*cos(angle);
+	look_x = eye_x + 200*sin(angle);  // angle the person is looking
+	look_z = eye_z - 200*cos(angle);
 }
-
 
 
 GLuint txId[2];   //Texture ids
@@ -130,7 +147,7 @@ void loadTexture()
 
 //--------------------------------------------------------------------------------
 
-void walls()
+void boxScene()
 {
 	glColor3f(0.8, 0.7, 0.3);   //replace with a texture
 
@@ -201,6 +218,67 @@ void floor()
 
 //--------------------------------------------------------------------------------
 
+// create the wall (scale the wall)
+void wall()
+{
+	GLfloat xT=0, yT=0, zT=-5;
+
+	glPushMatrix();
+		glColor3f(1, 0.8, 0);
+		glTranslatef(xT, yT, zT); 
+		glScalef(0.3, 2, 5);
+		glutSolidCube(1);
+	glPopMatrix();
+}
+
+
+// construct the outside of the meusem...
+void walls()
+{	
+	glColor3f(1, 0.8, 0);  // wall color
+
+	// front left
+	glPushMatrix();
+		glTranslatef(-2, 0, 1); 
+		glRotatef(22, 0, 1, 0);
+		glTranslatef(2, 0, -1); 
+		wall();
+	glPopMatrix();
+
+	// front right
+	glPushMatrix();
+		glTranslatef(2, 0, 1); 
+		glRotatef(-22, 0, 1, 0);
+		glTranslatef(-2, 0, -1); 
+		wall();
+	glPopMatrix();
+
+	// back left
+	glPushMatrix();
+		glTranslatef(12, 0, -14); 
+		glRotatef(-22, 0, 1, 0);
+		glTranslatef(-12, 0, 14); 
+		wall();
+	glPopMatrix();
+
+	// back right
+	glPushMatrix();
+		glTranslatef(-12, 0, -14); 
+		glRotatef(22, 0, 1, 0);
+		glTranslatef(12, 0, 14); 
+		wall();
+	glPopMatrix();
+}
+
+// displays the Muesums External structure 
+void displayMuesum()
+{
+	// move museum walls
+	glPushMatrix();
+		glTranslatef(0, 0, 5); 
+		walls();
+	glPopMatrix();
+}
 
 
 // change later
@@ -209,19 +287,24 @@ void floor()
 // ----------------------------------------------------------------------------
 void display(void)  
 {
+	// glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);    //GL_LINE = Wireframe;   GL_FILL = Solid
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 	glMatrixMode(GL_PROJECTION);						
 	glLoadIdentity();
-	gluPerspective(45., 1., 1., 100.);
+	gluPerspective(45., 1., 1., 200.);
 
 	glMatrixMode(GL_MODELVIEW);								
 	glLoadIdentity();
 	gluLookAt(eye_x, 0, eye_z,  look_x, 0, look_z,   0, 1, 0);	
+	// eye = pos in surroundings
 
-
-	walls();
+	boxScene();
 	floor();
 
+	displayMuesum();
+
+
+	
 	glutSwapBuffers();	
 
 	showFPS();

@@ -17,8 +17,8 @@
 
 
 // Window options
-#define WIDTH 600
-#define HEIGHT 600
+#define WIDTH 800
+#define HEIGHT 800
 #define WINDOW_POS 10
 
 
@@ -35,6 +35,16 @@ void initialize(char *pjtPath)
 	glEnable(GL_TEXTURE_2D);
 
     glClearColor(0.23f, 0.38f, 0.47f, 1.0f);  // Background colour
+	
+	glEnable(GL_LIGHTING);					//Enable OpenGL states
+	glEnable(GL_LIGHT0);
+ 	glEnable(GL_COLOR_MATERIAL);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_NORMALIZE);
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(60, 1, 50, 2000);  //The camera view volume  
 	
 	getPath(pjtPath);
 }
