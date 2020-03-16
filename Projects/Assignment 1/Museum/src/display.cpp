@@ -221,12 +221,12 @@ void floor()
 // create the wall (scale the wall)
 void wall()
 {
-	GLfloat xT=0, yT=0, zT=-5;
+	GLfloat xT=0, yT=-0.25, zT=-5;
 
 	glPushMatrix();
 		glColor3f(1, 0.8, 0);
 		glTranslatef(xT, yT, zT); 
-		glScalef(0.3, 2, 5);
+		glScalef(0.3, 1.5, 5);
 		glutSolidCube(1);
 	glPopMatrix();
 }
@@ -239,35 +239,90 @@ void walls(void)
 
 	// front left
 	glPushMatrix();
-		glTranslatef(-2, 0, 1); 
 		glRotatef(22, 0, 1, 0);
-		glTranslatef(2, 0, -1); 
+		
 		wall();
 	glPopMatrix();
 
 	// front right
 	glPushMatrix();
-		glTranslatef(2, 0, 1); 
 		glRotatef(-22, 0, 1, 0);
-		glTranslatef(-2, 0, -1);
+
 		wall();
 	glPopMatrix();
+
 
 	// back left
 	glPushMatrix();
-		glTranslatef(12, 0, -14); 
-		glRotatef(-22, 0, 1, 0);
-		glTranslatef(-12, 0, 14); 
+		glTranslatef(0, 0, -14.2);
+		glRotatef(158, 0, 1, 0);
+		
 		wall();
 	glPopMatrix();
 
+
 	// back right
 	glPushMatrix();
-		glTranslatef(-12, 0, -14); 
-		glRotatef(22, 0, 1, 0);
-		glTranslatef(12, 0, 14); 
+		glTranslatef(0, 0, -14.2);
+		glRotatef(-158, 0, 1, 0);
+
 		wall();
 	glPopMatrix();
+
+
+	// front left
+	// glPushMatrix();
+	// 	glTranslatef(-2, 0, 1); 
+	// 	glRotatef(22, 0, 1, 0);
+	// 	glTranslatef(2, 0, -1);
+		
+	// 	wall();
+	// glPopMatrix();
+
+	// glPushMatrix();
+	// 	glTranslatef(-2-1.873, 0, 1-5); 
+	// 	glRotatef(22, 0, 1, 0);
+	// 	glTranslatef(2+1.873, 0, -1+5); 
+	// 	// // glTranslatef(2-1.873, 0, -1-4636); 
+	// 	// glTranslatef(2, 0, -10);
+	// 	// glTranslatef(2+2, 0, -1+5); 
+	// 	wall();
+	// glPopMatrix();
+
+	// front right
+	// glPushMatrix();
+	// 	glTranslatef(2, 0, 1); 
+	// 	glRotatef(-22, 0, 1, 0);
+	// 	glTranslatef(-2, 0, -1);
+	// 	wall();
+	// glPopMatrix();
+
+	// back left
+	// glPushMatrix();
+	// 	glTranslatef(-2-1.873, 0, 1-5); 
+	// 	glRotatef(22, 0, 1, 0);
+	// 	glTranslatef(2+1.873, 0, -1+5); 
+	// 	// // glTranslatef(2-1.873, 0, -1-4636); 
+	// 	// glTranslatef(2, 0, -10);
+	// 	// glTranslatef(2+2, 0, -1+5); 
+	// 	wall();
+	// glPopMatrix();
+
+
+	// glPushMatrix();
+	// 	glTranslatef(12, 0, -14); 
+	// 	glRotatef(-22, 0, 1, 0);
+	// 	glTranslatef(-12, 0, 14); 
+	// 	wall();
+	// glPopMatrix();
+
+	// // back right
+	// glPushMatrix();
+	// 	glTranslatef(-12, 0, -14); 
+	// 	glRotatef(22, 0, 1, 0);
+	// 	glTranslatef(12, 0, 14); 
+	// 	wall();
+	// glPopMatrix();
 }
 
 
@@ -332,7 +387,7 @@ void displayMuesum()
 		walls();
 	// glPopMatrix();
 
-	roof();
+	// roof();
 
 }
 
