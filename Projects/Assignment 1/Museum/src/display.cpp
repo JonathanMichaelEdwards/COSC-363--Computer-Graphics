@@ -233,7 +233,7 @@ void wall()
 
 
 // construct the outside of the meusem...
-void walls()
+void walls(void)
 {	
 	glColor3f(1, 0.8, 0);  // wall color
 
@@ -249,7 +249,7 @@ void walls()
 	glPushMatrix();
 		glTranslatef(2, 0, 1); 
 		glRotatef(-22, 0, 1, 0);
-		glTranslatef(-2, 0, -1); 
+		glTranslatef(-2, 0, -1);
 		wall();
 	glPopMatrix();
 
@@ -270,14 +270,70 @@ void walls()
 	glPopMatrix();
 }
 
+
+void roofTile(void)
+{
+	GLfloat xT=0, yT=0, zT=0;
+
+	glPushMatrix();
+		glColor3f(1, 0.8, 0);
+		glTranslatef(xT, yT, zT); 
+		glScalef(0.3, 2, 5);
+		glutSolidCube(1);
+	glPopMatrix();
+}
+
+
+void roof(void)
+{
+	glColor3f(1, 0, 1);  // wall color
+
+	// front left
+	glPushMatrix();
+		glTranslatef(-2, 0, 1); 
+		glRotatef(110, 0, 0, 1);
+		glTranslatef(-2, 0, 1); 
+		roofTile();
+	glPopMatrix();
+
+	// // front right
+	// glPushMatrix();
+	// 	glTranslatef(2, 0, 1); 
+	// 	glRotatef(-22, 0, 1, 0);
+	// 	glTranslatef(-2, 0, -1); 
+	// 	roofTile();
+	// glPopMatrix();
+
+	// // back left
+	// glPushMatrix();
+	// 	glTranslatef(12, 0, -14); 
+	// 	glRotatef(-22, 0, 1, 0);
+	// 	glTranslatef(-12, 0, 14); 
+	// 	roofTile();
+	// glPopMatrix();
+
+	// // back right
+	// glPushMatrix();
+	// 	glTranslatef(-12, 0, -14); 
+	// 	glRotatef(22, 0, 1, 0);
+	// 	glTranslatef(12, 0, 14); 
+	// 	roofTile();
+	// glPopMatrix();
+}
+
+
 // displays the Muesums External structure 
 void displayMuesum()
 {
+
 	// move museum walls
-	glPushMatrix();
-		glTranslatef(0, 0, 5); 
+	// glPushMatrix();
+	// 	glTranslatef(0, 0, 5); 
 		walls();
-	glPopMatrix();
+	// glPopMatrix();
+
+	roof();
+
 }
 
 
@@ -298,12 +354,55 @@ void display(void)
 	gluLookAt(eye_x, 0, eye_z,  look_x, 0, look_z,   0, 1, 0);	
 	// eye = pos in surroundings
 
-	boxScene();
+	// boxScene();
 	floor();
 
 	displayMuesum();
 
+	//  glColor3f(1.0,0.0,0.0); // red x
+    // glBegin(GL_LINES);
+	// 	// x aix
+	
+	// 	glVertex3f(-4.0, 0.0f, 0.0f);
+	// 	glVertex3f(4.0, 0.0f, 0.0f);
+	
+	// 	// arrow
+	// 	glVertex3f(4.0, 0.0f, 0.0f);
+	// 	glVertex3f(3.0, 1.0f, 0.0f);
+	
+	// 	glVertex3f(4.0, 0.0f, 0.0f);
+	// 	glVertex3f(3.0, -1.0f, 0.0f);
+    // glEnd();
+ 
+ 
 
+    // // y 
+    // glColor3f(0.0,1.0,0.0); // green y
+    // glBegin(GL_LINES);
+	// 	glVertex3f(0.0, -4.0f, 0.0f);
+	// 	glVertex3f(0.0, 4.0f, 0.0f);
+	
+	// 	// arrow
+	// 	glVertex3f(0.0, 4.0f, 0.0f);
+	// 	glVertex3f(1.0, 3.0f, 0.0f);
+	
+	// 	glVertex3f(0.0, 4.0f, 0.0f);
+	// 	glVertex3f(-1.0, 3.0f, 0.0f);
+    // glEnd();
+ 
+    // // z 
+    // glColor3f(0.0,0.0,1.0); // blue z
+	// 	glBegin(GL_LINES);
+	// 	glVertex3f(0.0, 0.0f ,-4.0f );
+	// 	glVertex3f(0.0, 0.0f ,4.0f );
+	
+	// 	// arrow
+	// 	glVertex3f(0.0, 0.0f ,4.0f );
+	// 	glVertex3f(0.0, 1.0f ,3.0f );
+	
+	// 	glVertex3f(0.0, 0.0f ,4.0f );
+	// 	glVertex3f(0.0, -1.0f ,3.0f );
+    // glEnd();
 	
 	glutSwapBuffers();	
 

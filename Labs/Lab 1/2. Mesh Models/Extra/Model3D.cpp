@@ -98,6 +98,21 @@ void normal(int indx)
 	glNormal3f(nx, ny, nz);
 }
 
+
+void drawObject()
+{
+	for(int indx = 0; indx < nface; indx++) {
+		normal(indx);
+		if (nv[indx] == 3)	glBegin(GL_TRIANGLES);
+		else				glBegin(GL_QUADS);
+			glVertex3d(x[t1[indx]], y[t1[indx]], z[t1[indx]]);
+			glVertex3d(x[t2[indx]], y[t2[indx]], z[t2[indx]]);
+			glVertex3d(x[t3[indx]], y[t3[indx]], z[t3[indx]]);
+			if(nv[indx]==4)
+			glVertex3d(x[t4[indx]], y[t4[indx]], z[t4[indx]]);
+		glEnd();
+	}
+}
 //--Display: ----------------------------------------------------------------------
 //--This is the main display module containing function calls for generating
 //--the scene.
@@ -118,19 +133,35 @@ void display()
 
 	glColor3f(0., 1., 1.);
 
+
+		// glRotatef(22, 0, 1, 0);
+		// glTranslatef(2, 0, -1); 
+	
 	//draw each face
-	for(int indx = 0; indx < nface; indx++)
-	{
-		normal(indx);
-		if (nv[indx] == 3)	glBegin(GL_TRIANGLES);
-		else				glBegin(GL_QUADS);
-			glVertex3d(x[t1[indx]], y[t1[indx]], z[t1[indx]]);
-			glVertex3d(x[t2[indx]], y[t2[indx]], z[t2[indx]]);
-			glVertex3d(x[t3[indx]], y[t3[indx]], z[t3[indx]]);
-			if(nv[indx]==4)
-			  glVertex3d(x[t4[indx]], y[t4[indx]], z[t4[indx]]);
-		glEnd();
-	}
+		// for(int indx = 0; indx < nface; indx++)
+		// {
+		// 	normal(indx);
+		// 	if (nv[indx] == 3)	glBegin(GL_TRIANGLES);
+		// 	else				glBegin(GL_QUADS);
+		// 		glVertex3d(x[t1[indx]], y[t1[indx]], z[t1[indx]]);
+		// 		glVertex3d(x[t2[indx]], y[t2[indx]], z[t2[indx]]);
+		// 		glVertex3d(x[t3[indx]], y[t3[indx]], z[t3[indx]]);
+		// 		if(nv[indx]==4)
+		// 		glVertex3d(x[t4[indx]], y[t4[indx]], z[t4[indx]]);
+		// 	glEnd();
+		// }
+
+	glPushMatrix();
+		glTranslatef(-2, 0, 1); 
+		drawObject();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(-2, 0, 1); 
+		glRotatef(-90, 1, 0, 0);
+		glTranslatef(-2, 0, 1); 
+		drawObject();
+	glPopMatrix();
 
 	glFlush();
 }
@@ -139,7 +170,14 @@ void display()
 void initialize()
 {
 	float model_wid, model_hgt;
-    loadMeshFile("Octahedron.off");			//Specify mesh file name here
+
+
+    // loadMeshFile("Octahedron.off");			//Specify mesh file name here
+
+		loadMeshFile("Octahedron.off");	
+
+
+
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);	//Background colour
 
 	glEnable(GL_LIGHTING);					//Enable OpenGL states
