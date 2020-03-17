@@ -218,7 +218,36 @@ void floor()
 
 //--------------------------------------------------------------------------------
 
-// create the wall (scale the wall)
+
+
+// void GL_DrawCircle()
+// {
+// glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+// glLoadIdentity();
+
+// float r;
+// static float angle;
+
+// glPushMatrix();
+// glRotatef(angle, 0.0f, 1.0f, 0.0f);
+// glTranslatef(0.0f, 0.0f, -2.0f);
+
+// float fxMin, fxMax, fyMin, fyMax;
+// GL_GetViewRange(-2.0f, fxMin, fxMax, fyMin, fyMax);
+// r = min((fxMax-fxMin)/2, (fyMax-fyMin)/2) - 0.5;
+// glBegin(GL_POLYGON);
+// for (float f=0.0f; f&lt;2*PI; f+=0.01f)
+// {
+// 	glVertex3f(r*cos(f), r*sin(f), -0.0f);
+// }
+// glEnd();
+// glPopMatrix();
+
+// angle -= 0.05f;
+// }
+
+
+
 void wall()
 {
 	GLfloat xT=0, yT=-0.25, zT=-5;
@@ -254,7 +283,7 @@ void walls(void)
 
 	// back left
 	glPushMatrix();
-		glTranslatef(0, 0, -14.2);
+		glTranslatef(0, 0, -13.815);
 		glRotatef(158, 0, 1, 0);
 		
 		wall();
@@ -263,11 +292,189 @@ void walls(void)
 
 	// back right
 	glPushMatrix();
-		glTranslatef(0, 0, -14.2);
+		glTranslatef(0, 0, -13.815);
 		glRotatef(-158, 0, 1, 0);
 
 		wall();
 	glPopMatrix();
+}
+
+
+// // construct the outside of the meusem...
+// void walls(void)
+// {	
+
+
+	// glPushMatrix();
+    // // glEnable(GL_TEXTURE_2D);
+    // // glBindTexture(GL_TEXTURE_2D, txId[0]);
+	// glBegin(GL_QUADS);
+    //     // glTexCoord2f(0.0,0.0);
+    //     glVertex3f(0.0, 0.0, 0.0);      //front
+    //     // glTexCoord2f(0.0,1.0);
+    //     glVertex3f(0, 5.0, 0.0);
+    //     // glTexCoord2f(1.0,1.0);
+    //     glVertex3f(2.0, 5.0, 0.0);
+    //     // glTexCoord2f(1.0,0.0);
+    //     glVertex3f(2.0, 0.0, 0.0);
+            
+    //     // glTexCoord2f(0.0,0.0);
+    //     glVertex3f(0.0, 0.0, 8.0);      //back
+    //     // glTexCoord2f(0.0,1.0);
+    //     glVertex3f(0.0, 5.0, 8.0);
+    //     // glTexCoord2f(1.0,1.0);
+    //     glVertex3f(2.0, 5.0, 8.0);
+    //     // glTexCoord2f(1.0,0.0);
+    //     glVertex3f(2.0, 0.0, 8.0);
+             
+    //     // glTexCoord2f(0.0,0.0);
+    //     glVertex3f(0.0, 0.0, 0.0);      //left side
+    //     // glTexCoord2f(1.0,0.0);
+    //     glVertex3f(0.0, 0.0, 8.0);
+    //     // glTexCoord2f(1.0,1.0);
+    //     glVertex3f(0.0,5.0, 8.0);
+    //     // glTexCoord2f(0.0,1.0);
+    //     glVertex3f(0.0,5.0, 0.0);
+        
+    //     // glTexCoord2f(0.0,0.0);
+    //     glVertex3f(2.0, 0.0, 0.0);     //right side
+    //     // glTexCoord2f(1.0,0.0);
+    //     glVertex3f(2.0, 0.0, 8.0);
+    //     // glTexCoord2f(1.0,1.0);
+    //     glVertex3f(2.0,5.0, 8.0);
+    //     // glTexCoord2f(0.0,1.0);
+    //     glVertex3f(2.0,5.0, 0.0);
+    // glEnd();
+    // // glDisable(GL_TEXTURE_2D);
+    // glPopMatrix();
+    
+    // glPushMatrix();
+    // // glEnable(GL_TEXTURE_2D);
+    // // glBindTexture(GL_TEXTURE_2D, txId[2]);
+	// glBegin(GL_QUADS);
+    //     glTexCoord2f(0.0,0.0);
+    //     glVertex3i(0.0, 50.0, 0.0);      //Top
+    //     glTexCoord2f(0.0,1.0);
+    //     glVertex3i(0.0, 50.0, 80.0);
+    //     glTexCoord2f(1.0,1.0);
+    //     glVertex3f(20.0, 50.0, 80.0);
+    //     glTexCoord2f(1.0,0.0);
+    //     glVertex3f(20.0, 50.0, 0.0);
+    // glEnd();
+    // // glDisable(GL_TEXTURE_2D);
+    // glPopMatrix();
+    
+    // glPushMatrix();
+    //     glTranslatef(17,48,25);
+    //     cave();
+    //     glTranslatef(-14.3,0,0);
+    //     cave();
+    //     glTranslatef(0,0,20);
+    //     cave();
+    //     glTranslatef(14.3,0,0);
+    //     cave();
+    //     glTranslatef(0,0,20);
+    //     cave();
+    //     glTranslatef(-14.3,0,0);
+    //     cave();
+    // glPopMatrix();
+
+	// glColor3f(1, 0.8, 0);  // wall color
+
+	// glPushMatrix();
+	// 	glColor3f(1, 0.8, 0);
+	// 	glRotatef(22, 0, 1, 0);
+	// 	wall();
+	// glPopMatrix();
+
+	// // front left
+	// glPushMatrix();
+	// 	glColor3f(1, 0, 0);
+	// 	glTranslatef(1.873f, 0, -4.64f - 2.5);
+	// 	// glRotatef(-22, 0, 1, 0);
+	// 	// glTranslatef(-1.873f, 0, -2.5+4.64f);
+		
+	// 	wall();
+	// glPopMatrix();
+
+	// glPushMatrix();
+	// rotateAroundPt(200, 200, 100, 100);
+	// glPopMatrix();
+	// GL_DrawCircle();
+
+	
+// 		glPushMatrix();
+// 		glTranslatef(2.15, 0, 4.524);
+// 		glRotatef(22, 0, 1, 0);
+// 		glTranslatef(-2.15, 0, -4.524);
+		
+// 		wall();
+// glPopMatrix();
+
+	// front left
+	// glPushMatrix();
+	// 	glRotatef(22, 0, 1, 0);
+
+	// 	wall();
+	// glPopMatrix();
+
+
+	// // front right
+	// glPushMatrix();
+	// 	glRotatef(-22, 0, 1, 0);
+
+	// 	wall();
+	// glPopMatrix();
+
+
+	// // back left
+	// glPushMatrix();
+	// 	glTranslatef(0, 0, -14.2);
+	// 	glRotatef(158, 0, 1, 0);
+		
+	// 	wall();
+	// glPopMatrix();
+
+
+	// // back right
+	// glPushMatrix();
+	// 	glTranslatef(0, 0, -14.2);
+	// 	glRotatef(-158, 0, 1, 0);
+	// 	wall();
+	// glPopMatrix();
+
+
+	// // front left
+	// glPushMatrix();
+	// 	glRotatef(22, 0, 1, 0);
+		
+	// 	wall();
+	// glPopMatrix();
+
+	// // front right
+	// glPushMatrix();
+	// 	glRotatef(-22, 0, 1, 0);
+
+	// 	wall();
+	// glPopMatrix();
+
+
+	// // back left
+	// glPushMatrix();
+	// 	glTranslatef(0, 0, -14.2);
+	// 	glRotatef(158, 0, 1, 0);
+		
+	// 	wall();
+	// glPopMatrix();
+
+
+	// // back right
+	// glPushMatrix();
+	// 	glTranslatef(0, 0, -14.2);
+	// 	glRotatef(-158, 0, 1, 0);
+
+	// 	wall();
+	// glPopMatrix();
 
 
 	// front left
@@ -323,7 +530,7 @@ void walls(void)
 	// 	glTranslatef(12, 0, 14); 
 	// 	wall();
 	// glPopMatrix();
-}
+// }
 
 
 void roofTile(void)
