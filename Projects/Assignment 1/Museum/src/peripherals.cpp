@@ -44,25 +44,20 @@ static void idle(int delay)
 
 static int viewState = 0;
 float angle=0;
-GLdouble angle_top=0;   //x=0,z=0;
-
-
-static bool left_top = 0,right_top = 0;
+GLdouble angle_top=0; 
 
 
 void special(int key, int x, int y)
 {
 	if (viewState) {
-		// angle_top++;
-		if(key == GLUT_KEY_LEFT) topBottomLeft(1);       //angle_top -= 0.1;  //Change direction
-		else if(key == GLUT_KEY_RIGHT) topBottomRight(1); //angle_top += 0.1;
+		if(key == GLUT_KEY_LEFT) topBottomLeft();       //angle_top -= 0.1;  //Change direction
+		else if(key == GLUT_KEY_RIGHT) topBottomRight(); //angle_top += 0.1;
 		if(key == GLUT_KEY_DOWN)
-			topBottomBack(angle_top);
+			topBottomBack();
 		else if(key == GLUT_KEY_UP)
-			topBottomForward(angle_top);
+			topBottomForward();
 		
-
-		lookRotationSide(angle_top, viewState);
+		getView(viewState);  // get view info
 	} 
 	else if (!viewState) {
 		if(key == GLUT_KEY_LEFT) angle -= 0.1;  //Change direction
@@ -99,7 +94,7 @@ void keyEvents(unsigned char key, int x, int y)
 		lookRotation(angle, viewState);  // 3d person view
 		if (viewState == 2) {
 			viewState = 0;
-			lookRotationSide(angle_top, viewState);  // top down view
+			getView(viewState);  // top down view
 		}
 	} 
 	else if (key == '+') zoom(1);

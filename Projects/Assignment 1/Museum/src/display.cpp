@@ -85,11 +85,13 @@ float look_x, look_z=-1, eye_x, eye_z;  //Camera parameters
 GLdouble x_view=0,z_view=0, x_view_2=0,z_view_2=0, top_x=0, top_z=-1, top_x_2=0, top_z_2=-1, _zoom_=0;
 
 
+// 3d person camera
 void moveBack(float angle)
 {
 	eye_x -= 0.5*sin(angle);
 	eye_z += 0.5*cos(angle);
 }
+
 
 void moveForward(float angle)
 {
@@ -97,30 +99,19 @@ void moveForward(float angle)
 	eye_z -= 0.5*cos(angle);
 }
 
+
 void lookRotation(float angle, bool _view)
 {
 	look_x = eye_x + 200*sin(angle);  // angle the person is looking
 	look_z = eye_z - 200*cos(angle);
 	viewState = _view;
 }
+/// --------------------------------------
 
 
 
-// top down camera
-void topBottomForward(GLdouble _f)
-{
-	// x_view += sin(_f);
-	// z_view -= cos(_f);
-	z_view_2 -= 1;
-}
 
-void topBottomBack(GLdouble _f)
-{
-	// x_view -= sin(_f);
-	// z_view += cos(_f);
-	z_view_2 += 1;
-}
-
+// top down camera  ----------------------------------------
 
 void zoom(GLdouble _zoom)
 {
@@ -128,40 +119,38 @@ void zoom(GLdouble _zoom)
 }
 
 
-
-
-void lookRotationSide(float angle, bool _view)
+void topBottomForward(void)
 {
-	// top_x = x_view + sin(angle);  // angle the person is looking
-	// top_z = z_view - cos(angle);
-
-	// // top_x_2 = x_view_2 + sin(angle);  // angle the person is looking
-	// // top_z_2 = z_view_2 - cos(angle);
-	// viewState = _view;
+	z_view_2 -= 1;
 }
 
 
-bool left_top = 0;
-bool right_top = 0;
-
-void topBottomLeft(bool lT)
+void topBottomBack(void)
 {
-	// x_view_2 += 1;//sin(_f);
-	// z_view_2 += 1;//cos(_f);
-	// left_top = lT;
+	z_view_2 += 1;
+}
+
+
+void getView(bool _view)
+{
+	viewState = _view;
+}
+
+
+void topBottomLeft(void)
+{
 	x_view_2 += 1;
 }
 
-void topBottomRight(bool rT)
+
+void topBottomRight(void)
 {
-	// x_view_2 -= sin(_f);
-	// z_view_2 += cos(_f);
-	// right_top = 1;
-	// gluLookAt(0, 30, 0,  0, 0, -1, 0, 1, 0);
-	// glTranslatef(z_view, 0, x_view);
-	right_top = rT;
 	x_view_2 -= 1;
 }
+
+/// --------------------------------------
+
+
 
 
 // void topBottomView(GLdouble _x, GLdouble _z, bool _view)
@@ -434,20 +423,14 @@ void display(void)
 	// 	glTranslatef(10, 0, 0);
 	// 	// gluLookAt(0, 30, 0,  0, 0, -1, 0, 1, 0);
 	// } 
-	glTranslatef(x_view_2, z_view_2, _zoom_);  // since transformed y has become z
-	gluLookAt(0, 30, 0,  0, 0, -1, 0, 1, 0);
 
-	// if (viewState) {   // top down view
-	// 	if (left_top) {
-	// 		left_top = 0;  // disable button
-	// 		gluLookAt(0, 30, 0,  0, 0, -1, 0, 1, 0);
-	// 		glTranslatef(z_view_2, 0, x_view_2);
-	// 	} 
-	// 	else 
-	// 		gluLookAt(x_view, 30, z_view,  top_x, 1, top_z, 0, 1, 0);	
-	// } else {
-	// 	gluLookAt(eye_x, 0, eye_z,  look_x, 0, look_z,   0, 1, 0);	
-	// }
+
+	if (viewState) {   // top down view
+		glTranslatef(x_view_2, z_view_2, _zoom_);  // since transformed y has become z
+		gluLookAt(0, 30, 0,  0, 0, -1, 0, 1, 0);
+	} else 
+		gluLookAt(eye_x, 0, eye_z,  look_x, 0, look_z,   0, 1, 0);	
+	
 	// eye = pos in surroundings
 	// look is the rotation
 

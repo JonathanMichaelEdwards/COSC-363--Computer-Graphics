@@ -16,11 +16,11 @@ void moveForward(float angle);
 void lookRotation(float angle, bool _view);
 
 // top camera
-void topBottomForward(GLdouble _f);
-void topBottomBack(GLdouble _f);
-void topBottomLeft(bool lT);
-void topBottomRight(bool rT);
-void lookRotationSide(float angle, bool _view);
+void topBottomForward(void);
+void topBottomBack(void);
+void topBottomLeft(void);
+void topBottomRight(void);
+void getView(bool _view);
 void zoom(GLdouble _zoom);
 
 char *getPath(char *path);
