@@ -32,7 +32,7 @@ void initialize(char *pjtPath)
 {
 	// Load and enable Textures
 	loadTexture();
-	glEnable(GL_TEXTURE_2D);
+	// glEnable(GL_TEXTURE_2D);
 
     // glClearColor(0.23f, 0.38f, 0.47f, 1.0f);  // Background colour
 	glClearColor(0, 0, 0, 1.0f);
@@ -42,6 +42,10 @@ void initialize(char *pjtPath)
  	glEnable(GL_COLOR_MATERIAL);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_NORMALIZE);
+
+	  // Enable Ambiant and difuse lighting
+	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);  
+	glEnable(GL_COLOR_MATERIAL);
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
