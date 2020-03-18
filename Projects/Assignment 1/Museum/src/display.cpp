@@ -80,27 +80,10 @@ static void idle(int delay)
 //     glutTimerFunc(TIMER_DELAY, idle, TIMER_DELAY);
 // }
 
-
+static bool viewState = 0;
 float look_x, look_z=-1, eye_x, eye_z;  //Camera parameters
+GLdouble x_view=0,z_view=0, x_view_2=0,z_view_2=0, top_x=0, top_z=-1, top_x_2=0, top_z_2=-1, _zoom_=0;
 
-
-// void moveBack(float angle)
-// {
-// 	eye_x -= 0.1*sin(angle);
-// 	eye_z += 0.1*cos(angle);
-// }
-
-// void moveForward(float angle)
-// {
-// 	eye_x += 0.1*sin(angle);
-// 	eye_z -= 0.1*cos(angle);
-// }
-
-// void lookRotation(float angle)
-// {
-// 	look_x = eye_x + 100*sin(angle);  // angle the person is looking
-// 	look_z = eye_z - 100*cos(angle);
-// }
 
 void moveBack(float angle)
 {
@@ -114,12 +97,103 @@ void moveForward(float angle)
 	eye_z -= 0.5*cos(angle);
 }
 
-void lookRotation(float angle)
+void lookRotation(float angle, bool _view)
 {
 	look_x = eye_x + 200*sin(angle);  // angle the person is looking
 	look_z = eye_z - 200*cos(angle);
+	viewState = _view;
 }
 
+
+
+// top down camera
+void topBottomForward(GLdouble _f)
+{
+	// x_view += sin(_f);
+	// z_view -= cos(_f);
+	z_view_2 -= 1;
+}
+
+void topBottomBack(GLdouble _f)
+{
+	// x_view -= sin(_f);
+	// z_view += cos(_f);
+	z_view_2 += 1;
+}
+
+
+void zoom(GLdouble _zoom)
+{
+	_zoom_ += _zoom;
+}
+
+
+
+
+void lookRotationSide(float angle, bool _view)
+{
+	// top_x = x_view + sin(angle);  // angle the person is looking
+	// top_z = z_view - cos(angle);
+
+	// // top_x_2 = x_view_2 + sin(angle);  // angle the person is looking
+	// // top_z_2 = z_view_2 - cos(angle);
+	// viewState = _view;
+}
+
+
+bool left_top = 0;
+bool right_top = 0;
+
+void topBottomLeft(bool lT)
+{
+	// x_view_2 += 1;//sin(_f);
+	// z_view_2 += 1;//cos(_f);
+	// left_top = lT;
+	x_view_2 += 1;
+}
+
+void topBottomRight(bool rT)
+{
+	// x_view_2 -= sin(_f);
+	// z_view_2 += cos(_f);
+	// right_top = 1;
+	// gluLookAt(0, 30, 0,  0, 0, -1, 0, 1, 0);
+	// glTranslatef(z_view, 0, x_view);
+	right_top = rT;
+	x_view_2 -= 1;
+}
+
+
+// void topBottomView(GLdouble _x, GLdouble _z, bool _view)
+// {
+// 	x_view += 0.5*sin(_x);
+// 	printf("%d\n", _x);
+// 	z_view += 0.5*cos(_z);
+// 	viewState = _view;
+// }
+
+
+// static bool viewState = 0;
+
+
+// void moveBack_top(float angle)
+// {
+// 	x_view -= 0.5*sin(angle);
+// 	z_view += 0.5*cos(angle);
+// }
+
+// void moveForward_top(float angle)
+// {
+// 	z_view += 0.5*sin(angle);
+// 	z_view -= 0.5*cos(angle);
+// }
+
+// void topBottomView(GLdouble _x, GLdouble _z, bool _view)
+// {
+// 	x_view += 0.5*sin(_x);
+// 	z_view -= _z;
+// 	viewState = _view;
+// }
 
 GLuint txId[2];   //Texture ids
 // float angle=0, look_x, look_z=-1., eye_x, eye_z;  //Camera parameters
@@ -217,10 +291,10 @@ void floor()
 }
 
 
-
-void wall()
+// Create a single wall
+void wall(void)
 {
-	GLfloat xT=0, yT=-0.25, zT=-5;
+	GLfloat xT=0, yT=-0.25, zT=0;
 
 	glPushMatrix();
 		glTranslatef(xT, yT, zT); 
@@ -238,83 +312,30 @@ void walls(void)
 	// front left
 	glPushMatrix();
 		glRotatef(22, 0, 1, 0);
-		
 		wall();
 	glPopMatrix();
 
 	// front right
 	glPushMatrix();
 		glRotatef(-22, 0, 1, 0);
-
 		wall();
 	glPopMatrix();
 
 
-	// back left
-	glPushMatrix();
-		glTranslatef(0, 0, -13.815);
-		glRotatef(158, 0, 1, 0);
-		
-		wall();
-	glPopMatrix();
+	// // back left
+	// glPushMatrix();
+	// 	glTranslatef(0, 0, -13.815);
+	// 	glRotatef(158, 0, 1, 0);
+	// 	wall();
+	// glPopMatrix();
 
 	
-	// back right
-	glPushMatrix();
-		glTranslatef(0, 0, -13.815);
-		glRotatef(-158, 0, 1, 0);
-
-		wall();
-	glPopMatrix();
-
-
-// glPushMatrix();
-// 		// glRotatef(22, 0, 1, 0);
-		
-// 		wall();
-// 	glPopMatrix();
-
-	//scale (    glScalef(0.3, 1.5, 5);   )
-
+	// // back right
 	// glPushMatrix();
-	// 	glColor3f(1, 0.8, 0); 
-	// 	// wall();
-	// glPopMatrix();
-
-	// glPushMatrix();
-
-	// 	// glColor3f(1, 0, 0);  
-	// 	// glTranslatef(0.15, 0, -2.5);             
-	// 	// glRotatef(90, 0, 1, 0);   
-	// 	// glTranslatef(-0.15, 0, 2.5);    
-	// 	glTranslatef(-1, 0, 0);
-	// 	// glRotatef(30, 0, 1, 0);  
-	// 	wall();
-
-
-	// glPopMatrix();
-
-	// 1
-	// glPushMatrix();
-	// 	glColor3f(0, 1, 0);  
-	// 	glTranslatef(0.15, 0, -5.5);             
-	// 	glRotatef(-10, 0, 0, 0);   
-	// 	glTranslatef(-0.15, 0, 5.5);    
-		
+	// 	glTranslatef(0, 0, -13.815);
+	// 	glRotatef(-158, 0, 1, 0);
 	// 	wall();
 	// glPopMatrix();
-
-
-	// glEnable(GL_NORMALIZE);
-
-	// glPushMatrix();
-	// glBegin(GL_LINE_STRIP);
-	// 	glColor3f(1, 0, 0);
-	// 	glVertex3f(-1, 0, -5);
-	// 	glVertex3f(-1, 4, -5);
-	// glEnd();
-	// glPopMatrix();
-
 }
 
 
@@ -394,12 +415,41 @@ void display(void)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 	glMatrixMode(GL_PROJECTION);						
 	glLoadIdentity();
-	gluPerspective(45., 1., 1., 200.);
+	gluPerspective(45., 1., 0.5, 200.);
 
 	glMatrixMode(GL_MODELVIEW);								
 	glLoadIdentity();
-	gluLookAt(eye_x, 0, eye_z,  look_x, 0, look_z,   0, 1, 0);	
+	// gluLookAt(eye_x, 20, eye_z,  look_x, 0, look_z,   0, 1, 0);	
+
+	// gluLookAt(0, 30, 0,  0, 0, -1, 0, 1, 0);
+	// glTranslatef(z_view, 0, x_view);
+	// if (left_top)
+	// 	gluLookAt(x_view, 30, z_view,  top_x, 1, top_z, 0, 1, 0);
+	// else
+	// 	gluLookAt(x_view, 30, z_view,  top_x, 1, top_z, 0, 1, 0);
+
+
+	// if (left_top) {
+	// 	left_top = 0;  // disable button
+	// 	glTranslatef(10, 0, 0);
+	// 	// gluLookAt(0, 30, 0,  0, 0, -1, 0, 1, 0);
+	// } 
+	glTranslatef(x_view_2, z_view_2, _zoom_);  // since transformed y has become z
+	gluLookAt(0, 30, 0,  0, 0, -1, 0, 1, 0);
+
+	// if (viewState) {   // top down view
+	// 	if (left_top) {
+	// 		left_top = 0;  // disable button
+	// 		gluLookAt(0, 30, 0,  0, 0, -1, 0, 1, 0);
+	// 		glTranslatef(z_view_2, 0, x_view_2);
+	// 	} 
+	// 	else 
+	// 		gluLookAt(x_view, 30, z_view,  top_x, 1, top_z, 0, 1, 0);	
+	// } else {
+	// 	gluLookAt(eye_x, 0, eye_z,  look_x, 0, look_z,   0, 1, 0);	
+	// }
 	// eye = pos in surroundings
+	// look is the rotation
 
 	// boxScene();
 	floor();
