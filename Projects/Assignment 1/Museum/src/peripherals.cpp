@@ -21,7 +21,7 @@
 #define ESC     0x1B
 
 
-
+// For the fps counter
 /** ------------------------------------------------------------------------------
 // 						Perform background processing tasks
 //  @param delay - Delay in milli seconds
@@ -32,23 +32,17 @@ static void idle(int delay)
 }
 
 
-// ----------------------------------------------------------------------------
-//							Special key event callback 
-// ----------------------------------------------------------------------------
-// void special(int key, int x, int y)
-// {
-//     if (key == GLUT_KEY_END) exit(EXIT_SUCCESS);
-
-//     glutTimerFunc(TIMER_DELAY, idle, TIMER_DELAY);
-// }
-
 static int viewState = 0;
 float angle=0;
 GLdouble angle_top=0; 
 
-
+// ----------------------------------------------------------------------------
+//							Special key event callback 
+// ----------------------------------------------------------------------------
 void special(int key, int x, int y)
 {
+	if (key == GLUT_KEY_END) exit(EXIT_SUCCESS);
+
 	if (viewState) {
 		if(key == GLUT_KEY_LEFT) topBottomLeft();       //angle_top -= 0.1;  //Change direction
 		else if(key == GLUT_KEY_RIGHT) topBottomRight(); //angle_top += 0.1;
@@ -100,7 +94,7 @@ void keyEvents(unsigned char key, int x, int y)
 	else if (key == '+') zoom(1);
 	else if (key == '-') zoom(-1);
 
-	glFlush();
+	// glFlush();
 
     glutTimerFunc(TIMER_DELAY, idle, TIMER_DELAY);  
 }

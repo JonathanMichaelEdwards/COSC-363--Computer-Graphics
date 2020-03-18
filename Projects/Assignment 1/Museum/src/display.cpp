@@ -64,28 +64,13 @@ void showFPS(void)
 
 
 
-static void idle(int delay)
-{
-	glutTimerFunc(delay, idle, delay);
-}
-
-
-// ----------------------------------------------------------------------------
-//							Special key event callback 
-// ----------------------------------------------------------------------------
-// void special(int key, int x, int y)
-// {
-//     if (key == GLUT_KEY_END) exit(EXIT_SUCCESS);
-
-//     glutTimerFunc(TIMER_DELAY, idle, TIMER_DELAY);
-// }
 
 static bool viewState = 0;
 float look_x, look_z=-1, eye_x, eye_z;  //Camera parameters
 GLdouble x_view=0,z_view=0, x_view_2=0,z_view_2=0, top_x=0, top_z=-1, top_x_2=0, top_z_2=-1, _zoom_=0;
+  
 
-
-// 3d person camera
+// 3d person camera  ----------------------------------------
 void moveBack(float angle)
 {
 	eye_x -= 0.5*sin(angle);
@@ -152,37 +137,6 @@ void topBottomRight(void)
 
 
 
-
-// void topBottomView(GLdouble _x, GLdouble _z, bool _view)
-// {
-// 	x_view += 0.5*sin(_x);
-// 	printf("%d\n", _x);
-// 	z_view += 0.5*cos(_z);
-// 	viewState = _view;
-// }
-
-
-// static bool viewState = 0;
-
-
-// void moveBack_top(float angle)
-// {
-// 	x_view -= 0.5*sin(angle);
-// 	z_view += 0.5*cos(angle);
-// }
-
-// void moveForward_top(float angle)
-// {
-// 	z_view += 0.5*sin(angle);
-// 	z_view -= 0.5*cos(angle);
-// }
-
-// void topBottomView(GLdouble _x, GLdouble _z, bool _view)
-// {
-// 	x_view += 0.5*sin(_x);
-// 	z_view -= _z;
-// 	viewState = _view;
-// }
 
 GLuint txId[2];   //Texture ids
 // float angle=0, look_x, look_z=-1., eye_x, eye_z;  //Camera parameters
@@ -280,14 +234,29 @@ void floor()
 }
 
 
+
+
+
+/// create wall structure -------------------------------------------------------
+#define WALL_ROT_THETA      22
+#define WALL_ROT_RAD        (WALL_ROT_THETA*M_PI) / 180
+#define WALL_SCALE_WIDTH    0.3
+#define WALL_SCALE_HEIGHT   1.5
+#define WALL_SCALE_LENGTH   5
+#define FLOOR_BED           -1
+
+// move wall in place respect to angles
+#define WALL_X     WALL_SCALE_LENGTH*sin(WALL_ROT_RAD)
+#define WALL_Z     WALL_SCALE_LENGTH*cos(WALL_ROT_RAD)
+
+
 // Create a single wall
 void wall(void)
 {
-	GLfloat xT=0, yT=-0.25, zT=0;
-
 	glPushMatrix();
-		glTranslatef(xT, yT, zT); 
-		glScalef(0.3, 1.5, 5);
+		// move the wall to the ground level
+		glTranslatef(0, (WALL_SCALE_HEIGHT/2)-1, 0);        // y = -0.25  
+		glScalef(WALL_SCALE_WIDTH, WALL_SCALE_HEIGHT, WALL_SCALE_LENGTH);
 		glutSolidCube(1);
 	glPopMatrix();
 }
@@ -296,46 +265,65 @@ void wall(void)
 // construct the outside of the meusem...
 void walls(void)
 {	
-	glColor3f(1, 0.8, 0);  // wall color
-
 	// front left
 	glPushMatrix();
-		glRotatef(22, 0, 1, 0);
+		glColor3f(1, 0.8, 0);
+		glTranslatef(-WALL_X-1, 0, 0);        // move left
+		glRotatef(WALL_ROT_THETA, 0, 1, 0);
 		wall();
 	glPopMatrix();
 
 	// front right
 	glPushMatrix();
-		glRotatef(-22, 0, 1, 0);
+		glColor3f(1, 0.8, 0);
+		glTranslatef(WALL_X+1, 0, 0);    // move right
+		glRotatef(-WALL_ROT_THETA, 0, 1, 0);
 		wall();
 	glPopMatrix();
 
 
-	// // back left
-	// glPushMatrix();
-	// 	glTranslatef(0, 0, -13.815);
-	// 	glRotatef(158, 0, 1, 0);
-	// 	wall();
-	// glPopMatrix();
+	// back left
+	glPushMatrix();
+		glColor3f(1, 0, 0);
+		glTranslatef(-WALL_X-1, 0, -WALL_Z);
+		glRotatef(-WALL_ROT_THETA, 0, 1, 0);
+		wall();
+	glPopMatrix();
 
 	
-	// // back right
-	// glPushMatrix();
-	// 	glTranslatef(0, 0, -13.815);
-	// 	glRotatef(-158, 0, 1, 0);
-	// 	wall();
-	// glPopMatrix();
+	// back right
+	glPushMatrix();
+		glColor3f(1, 0, 0);
+		glTranslatef(WALL_X+1, 0, -WALL_Z);
+		glRotatef(WALL_ROT_THETA, 0, 1, 0);
+		wall();
+	glPopMatrix();
 }
+
+// -------------------------------------------------------
+
+
+
+
+
+
+/// create roof structure -------------------------------------------------------
+// #define WALL_ROT_THETA      22
+// #define WALL_ROT_RAD        (WALL_ROT_THETA*M_PI) / 180
+// #define WALL_SCALE_WIDTH    0.3
+// #define WALL_SCALE_HEIGHT   1.5
+// #define WALL_SCALE_LENGTH   5
+// #define FLOOR_BED           -1
+
+// // move wall in place respect to angles
+// #define WALL_X     WALL_SCALE_LENGTH*sin(WALL_ROT_RAD)
+// #define WALL_Z     WALL_SCALE_LENGTH*cos(WALL_ROT_RAD)
 
 
 void roofTile(void)
 {
-	GLfloat xT=0, yT=0, zT=0;
-
 	glPushMatrix();
-		glColor3f(1, 0.8, 0);
-		glTranslatef(xT, yT, zT); 
-		glScalef(0.3, 2, 5);
+		glScalef(0.2, 2, 5);
 		glutSolidCube(1);
 	glPopMatrix();
 }
@@ -343,13 +331,35 @@ void roofTile(void)
 
 void roof(void)
 {
-	glColor3f(1, 0, 1);  // wall color
+	// glPushMatrix();
+	// 	glColor3f(1, 0.8, 0);
+	// 	glTranslatef(-WALL_X-1, 0, 0);        // move left
+	// 	glRotatef(WALL_ROT_THETA, 0, 1, 0);
+	// 	wall();
+	// glPopMatrix();
+
+
+	glColor3f(0, 1, 0); // wall color
 
 	// front left
 	glPushMatrix();
-		glTranslatef(-2, 0, 1); 
-		glRotatef(110, 0, 0, 1);
-		glTranslatef(-2, 0, 1); 
+		glTranslatef(-WALL_X-1, WALL_SCALE_HEIGHT, 0); 
+		glRotatef(WALL_ROT_THETA, 0, 1, 0);
+		// // glTranslatef(WALL_X+1, -WALL_SCALE_HEIGHT, 0);
+
+		// how do I do this using pivots
+		// glTranslatef(WALL_X+1, WALL_SCALE_HEIGHT/2, 0); 
+		// glTranslatef(0.707+WALL_SCALE_WIDTH/2/2, -0.2, 0); 
+		// glRotatef(-45, 0, 0, 1);
+
+
+		// glRotatef(-45, 0, 0, 1);
+		// glTranslatef(WALL_X+1, -WALL_SCALE_HEIGHT, 0);
+		
+		// glTranslatef(-2, 0, 1); 
+		// glRotatef(110, 0, 0, 1);
+		// glTranslatef(-2, 0, 1); 
+
 		roofTile();
 	glPopMatrix();
 
@@ -386,10 +396,18 @@ void displayMuesum()
 	// move museum walls
 	// glPushMatrix();
 	// 	glTranslatef(0, 0, 5); 
-		walls();
+	walls();
 	// glPopMatrix();
-
-	// roof();
+	// glPushMatrix();
+		// glTranslatef(-WALL_X-1, WALL_SCALE_HEIGHT, 0); 
+		// glTranslatef(0.05, 0, 0);
+		// glTranslatef(-1.87+1, WALL_SCALE_HEIGHT/2, 0); 
+		// glRotatef(-45, 0, 0, 1);
+		// glTranslatef(-0.05, 0, 0); 
+		
+		// glTranslatef(WALL_X+1, -WALL_SCALE_HEIGHT, 0);
+	roof();
+	// glPopMatrix();
 
 }
 
@@ -408,29 +426,14 @@ void display(void)
 
 	glMatrixMode(GL_MODELVIEW);								
 	glLoadIdentity();
-	// gluLookAt(eye_x, 20, eye_z,  look_x, 0, look_z,   0, 1, 0);	
 
-	// gluLookAt(0, 30, 0,  0, 0, -1, 0, 1, 0);
-	// glTranslatef(z_view, 0, x_view);
-	// if (left_top)
-	// 	gluLookAt(x_view, 30, z_view,  top_x, 1, top_z, 0, 1, 0);
-	// else
-	// 	gluLookAt(x_view, 30, z_view,  top_x, 1, top_z, 0, 1, 0);
-
-
-	// if (left_top) {
-	// 	left_top = 0;  // disable button
-	// 	glTranslatef(10, 0, 0);
-	// 	// gluLookAt(0, 30, 0,  0, 0, -1, 0, 1, 0);
-	// } 
-
-
+	// change camera
 	if (viewState) {   // top down view
 		glTranslatef(x_view_2, z_view_2, _zoom_);  // since transformed y has become z
 		gluLookAt(0, 30, 0,  0, 0, -1, 0, 1, 0);
 	} else 
 		gluLookAt(eye_x, 0, eye_z,  look_x, 0, look_z,   0, 1, 0);	
-	
+		
 	// eye = pos in surroundings
 	// look is the rotation
 
