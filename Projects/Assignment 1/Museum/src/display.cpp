@@ -310,7 +310,7 @@ void walls(void)
 /// create roof structure -------------------------------------------------------
 #define ROOF_ROT_THETA      45
 #define ROOF_ROT_RAD        (ROOF_ROT_THETA*M_PI) / 180
-#define ROOF_SCALE_WIDTH    0.2
+#define ROOF_SCALE_WIDTH    0.3
 #define ROOF_SCALE_HEIGHT   2
 #define ROOF_SCALE_LENGTH   5
 // #define FLOOR_BED           -1
@@ -332,83 +332,166 @@ void roofTile(void)
 void roof(void)
 {
 	// glPushMatrix();
-	// 	glColor3f(1, 0.8, 0);
-	// 	glTranslatef(-WALL_X-1, 0, 0);        // move left
-	// 	glRotatef(WALL_ROT_THETA, 0, 1, 0);
-	// 	wall();
+	// // glTranslatef(-WALL_X+0.4, WALL_SCALE_HEIGHT-0.44, -0.6); 
+	// // 	glRotatef(22, 0, 1, 0);  // rotation about y-axis
+	// // printf("%f\n", -WALL_Z-1);
+	// 	glTranslatef(-WALL_X-1, WALL_SCALE_HEIGHT, 0.3); 
+	// 	glTranslatef(-0.8, WALL_SCALE_HEIGHT/2, 0); 
+	// 	// glTranslatef(-1.2, WALL_SCALE_HEIGHT, 0); 
+	// 	glRotatef(22, 0, 1, 0);  // rotation about y-axis
+		
+	// 	// // // pivot offset to scaleing
+	// 	// // glTranslatef(-0.1, 1, 2.5);
+	// 	// // glRotatef(-45, 0, 0, 1);
+	// 	// // glTranslatef(0.1, -1, -2.5);
+
+	// 	// // glTranslatef(-1, -0.2, 0);  // pivot position
+
+	// 	// pivot offset to scaleing
+	// 	glTranslatef(-0.15, -2, 2.5);
+	// 	glRotatef(-60, 0, 0, 1);
+	// 	glTranslatef(0.15, 2, -2.5);
+		
+	// 	// glScalef(2, 0.2, 0.4);
+	// 	// glutSolidCube(1);
+	// 	glScalef(ROOF_SCALE_WIDTH, ROOF_SCALE_HEIGHT, ROOF_SCALE_LENGTH);
+	// 	glutSolidCube(1);
+	// 	// glTranslatef(sin(ROOF_ROT_RAD), -ROOF_SCALE_WIDTH, 0);//WALL_SCALE_WIDTH/2, -0.2, 0); 
+	// 	//glRotatef(-ROOF_ROT_THETA, 0, 0, 1);
+
+	// 	// how do I do this using pivots
+	// 	// glTranslatef(-WALL_X-1, WALL_SCALE_HEIGHT, 0); 
+	// 	// glRotatef(-45, 0, 0, 1);
+	// 	// glTranslatef(WALL_X+1, -WALL_SCALE_HEIGHT, 0);
+
+	// 	// glRotatef(WALL_ROT_THETA, 0, 1, 0);  // rotation about y-axis
+	// 	// glTranslatef(0, 10, 0);
+	// 	// glRotatef(30, 0, 0, 1);
+	// 	// glTranslatef(0, -10, 0);
+
+	// 	// roofTile();
 	// glPopMatrix();
 
-	float point[] = {1.5, -0.4, 0.15};
-	int theta = 70.0;
 	// glPushMatrix();
-	// glTranslatef(point[0], point[1], point[2]);
-	// glRotatef(theta, 0, 0, 1);
-	// glTranslatef(-point[0], -point[1], -point[2]);
-	// glScalef(3, 0.8, 0.3);
-	// glutSolidCube(1);
+	// glColor3f(0, 0, 1);
+	// glTranslatef(-1.2, WALL_SCALE_HEIGHT, 0); 
+	// glRotatef(22, 0, 1, 0);
+	// 	glTranslatef(-1, -0.1, 0.2);
+		
+	// 	glRotatef(90, 0, 0, 1);
+	// 	glTranslatef(1, 0.1, -0.2);
+		
+	// 	glScalef(2, 0.2, 0.4);
+	// 	glutSolidCube(1);
 	// glPopMatrix();
+	// 	glTranslatef(-1, -0.2, 0);  // pivot position
 
+		// // pivot offset to scaleing
+		// glTranslatef(-1, -0.1, 0.2);
+		// glRotatef(100, 0, 0, 1);
+		// glTranslatef(1, 0.1, -0.2);
+		
+		// glScalef(2, 0.2, 0.4);
+		// glutSolidCube(1);
+	
 	// glPushMatrix();
-	// glTranslatef(point[0], point[1], point[2]);
-	// glRotatef(90, 0, 0, 1);
-	// glTranslatef(-point[0], -point[1], -point[2]);
-	// glPushMatrix();
-	// glScalef(3, 0.8, 0.3);
-	// glutSolidCube(1);
+	// 	glColor3f(0, 1, 1);
+		
+	// 	glTranslatef(-2.9, 0, 0); 
+	// 	glRotatef(22, 0, 1, 0);  // rotation about y-axis
+
+
+	// 	roofTile();
 	// glPopMatrix();
-	// glPopMatrix();
+
+	
 
 
-	glColor3f(0, 1, 0); // wall color
 
-	// front left
-	// find the 'point' you want to rotate from
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	// glColor3f(0, 1, 0); // wall color
+	glColor3f(1, 0.8, 0);
+
 	glPushMatrix();
 		glTranslatef(-WALL_X-1, WALL_SCALE_HEIGHT, 0); 
 		glRotatef(WALL_ROT_THETA, 0, 1, 0);  // rotation about y-axis
-		// glTranslatef(sin(ROOF_ROT_RAD), -ROOF_SCALE_WIDTH, 0);//WALL_SCALE_WIDTH/2, -0.2, 0); 
-		//glRotatef(-ROOF_ROT_THETA, 0, 0, 1);
 
-		// how do I do this using pivots
-		// glTranslatef(-WALL_X-1, WALL_SCALE_HEIGHT, 0); 
-		// glRotatef(-45, 0, 0, 1);
-		// glTranslatef(WALL_X+1, -WALL_SCALE_HEIGHT, 0);
-
-		// glRotatef(WALL_ROT_THETA, 0, 1, 0);  // rotation about y-axis
-		// glTranslatef(0, 10, 0);
-		// glRotatef(30, 0, 0, 1);
-		// glTranslatef(0, -10, 0);
+		glTranslatef(sin(ROOF_ROT_RAD), -ROOF_SCALE_WIDTH, 0);//WALL_SCALE_WIDTH/2, -0.2, 0); 
+		glRotatef(-ROOF_ROT_THETA, 0, 0, 1);
 
 		roofTile();
 	glPopMatrix();
 
 
-	// // front right
-	// glPushMatrix();
-	// 	glTranslatef(WALL_X+1, WALL_SCALE_HEIGHT, 0);    // move right
-	// 	glRotatef(-WALL_ROT_THETA, 0, 1, 0);
+	// front right
+	glPushMatrix();
+		glTranslatef(WALL_X+1, WALL_SCALE_HEIGHT, 0);    // move right
+		glRotatef(-WALL_ROT_THETA, 0, 1, 0);
 
-	// 	glTranslatef(-sin(ROOF_ROT_RAD), -ROOF_SCALE_WIDTH, 0);//WALL_SCALE_WIDTH/2, -0.2, 0); 
-	// 	glRotatef(ROOF_ROT_THETA, 0, 0, 1);
+		glTranslatef(-sin(ROOF_ROT_RAD), -ROOF_SCALE_WIDTH, 0);//WALL_SCALE_WIDTH/2, -0.2, 0); 
+		glRotatef(ROOF_ROT_THETA, 0, 0, 1);
 
-	// 	roofTile();
-	// glPopMatrix();
+		roofTile();
+	glPopMatrix();
 
-	// // back left
-	// glPushMatrix();
-	// 	glTranslatef(12, 0, -14); 
-	// 	glRotatef(-22, 0, 1, 0);
-	// 	glTranslatef(-12, 0, 14); 
-	// 	roofTile();
-	// glPopMatrix();
+	// back left
+	glPushMatrix();
+		glTranslatef(-WALL_X-1-0.4, WALL_SCALE_HEIGHT, 0.2);    // move right
+		glRotatef(-WALL_ROT_THETA, 0, 1, 0);
 
-	// // back right
-	// glPushMatrix();
-	// 	glTranslatef(-12, 0, -14); 
-	// 	glRotatef(22, 0, 1, 0);
-	// 	glTranslatef(12, 0, 14); 
-	// 	roofTile();
-	// glPopMatrix();
+		glTranslatef(-sin(ROOF_ROT_RAD), -ROOF_SCALE_WIDTH, -WALL_Z);//WALL_SCALE_WIDTH/2, -0.2, 0); 
+		glRotatef(-ROOF_ROT_THETA, 0, 0, 1);
+
+		roofTile();
+	glPopMatrix();
+
+	// back right
+	glPushMatrix();
+		glTranslatef(WALL_X+1+0.4, WALL_SCALE_HEIGHT, 0.2);    // move right
+		glRotatef(WALL_ROT_THETA, 0, 1, 0);
+
+		glTranslatef(sin(ROOF_ROT_RAD), -ROOF_SCALE_WIDTH, -WALL_Z);//WALL_SCALE_WIDTH/2, -0.2, 0); 
+		glRotatef(ROOF_ROT_THETA, 0, 0, 1);
+
+		roofTile();
+	glPopMatrix();
 }
 
 
@@ -416,24 +499,57 @@ void roof(void)
 void displayMuesum()
 {
 
-	// move museum walls
-	// glPushMatrix();
-	// 	glTranslatef(0, 0, 5); 
-	// walls();
-	// glPopMatrix();
-	// glPushMatrix();
-		// glTranslatef(-WALL_X-1, WALL_SCALE_HEIGHT, 0); 
-		// glTranslatef(0.05, 0, 0);
-		// glTranslatef(-1.87+1, WALL_SCALE_HEIGHT/2, 0); 
-		// glRotatef(-45, 0, 0, 1);
-		// glTranslatef(-0.05, 0, 0); 
-		
-		// glTranslatef(WALL_X+1, -WALL_SCALE_HEIGHT, 0);
+	walls();
 	roof();
-	// glPopMatrix();
-
 }
 
+
+void test(void)
+{
+// test 1 - passed; P = (-2, -0.3, 0)
+	glPushMatrix();
+		glColor3f(0, 1, 0);
+		glTranslatef(-1, -0.2, 0);  // pivot position
+
+		// pivot offset to scaleing
+		glTranslatef(-1, -0.1, 0.2);
+		glRotatef(180, 0, 0, 1);
+		glTranslatef(1, 0.1, -0.2);
+		
+		glScalef(2, 0.2, 0.4);
+		glutSolidCube(1);
+	glPopMatrix();
+
+// test object to be rotated around
+	glPushMatrix();
+		glColor3f(1, 0, 0);
+		glScalef(4, 0.6, 0.2);  // test 1
+		glutSolidCube(1);
+	glPopMatrix();
+
+
+// // test 2 - passed; P = (-4, -0.3, 0)
+// 	glPushMatrix();
+// 		glColor3f(0, 1, 0);
+
+// 		glTranslatef(-3, -0.2, 0);    // pivot to actual position
+
+// 		// pivot offset to scaleing
+// 		glTranslatef(-1, -0.1, 0.2);
+// 		glRotatef(100, 0, 0, 1);
+// 		glTranslatef(1, 0.1, -0.2);
+		
+// 		glScalef(2, 0.2, 0.4);
+// 		glutSolidCube(1);
+// 	glPopMatrix();
+
+// // test object to be rotated around
+// 	glPushMatrix();
+// 		glColor3f(1, 0, 0);
+// 		glScalef(8, 0.6, 0.4);  // test 2
+// 		glutSolidCube(1);
+// 	glPopMatrix();
+}
 
 // change later
 // ----------------------------------------------------------------------------
@@ -452,12 +568,12 @@ void display(void)
 	
 
 	// change camera
-	// if (viewState) {   // top down view
-	// 	glTranslatef(x_view_2, z_view_2, _zoom_);  // since transformed y has become z
-	// 	gluLookAt(0, 30, 0,  0, 0, -1, 0, 1, 0);
-	// } else 
+	if (viewState) {   // top down view
+		glTranslatef(x_view_2, z_view_2, _zoom_);  // since transformed y has become z
+		gluLookAt(0, 30, 0,  0, 0, -1, 0, 1, 0);
+	} else 
 		gluLookAt(eye_x, 0, eye_z,  look_x, 0, look_z,   0, 1, 0);	
-	//glutSolidTeapot(1);	
+
 	displayMuesum();
 	// eye = pos in surroundings
 	// look is the rotation
@@ -465,7 +581,7 @@ void display(void)
 	// boxScene();
 	floor();
 
-	
+	// test();  // rotating around a point test
 
 	
 	glutSwapBuffers();	
