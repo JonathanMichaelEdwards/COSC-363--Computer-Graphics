@@ -73,7 +73,7 @@ void idle(int delay)
 int main(int argc, char *argv[])
 {
 	glutInit(&argc, argv);
-   	glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB| GLUT_DEPTH);
+   	glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowSize(WIDTH, HEIGHT); 
 	glutInitWindowPosition(WINDOW_POS, WINDOW_POS);
 	glutCreateWindow("Museum    FPS: ...");
@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 	glutDisplayFunc(display);
 	glutKeyboardFunc(keyEvents);
 	glutSpecialFunc(special);
-	glutTimerFunc(TIMER_DELAY, idle, TIMER_DELAY);
+	glutTimerFunc(TIMER_DELAY, idle_2, TIMER_DELAY);
 
 	glutMainLoop();
 

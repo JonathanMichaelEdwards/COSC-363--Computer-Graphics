@@ -308,11 +308,11 @@ void walls(void)
 
 
 /// create roof structure -------------------------------------------------------
-// #define WALL_ROT_THETA      22
-// #define WALL_ROT_RAD        (WALL_ROT_THETA*M_PI) / 180
-// #define WALL_SCALE_WIDTH    0.3
-// #define WALL_SCALE_HEIGHT   1.5
-// #define WALL_SCALE_LENGTH   5
+#define ROOF_ROT_THETA      45
+#define ROOF_ROT_RAD        (ROOF_ROT_THETA*M_PI) / 180
+#define ROOF_SCALE_WIDTH    0.2
+#define ROOF_SCALE_HEIGHT   2
+#define ROOF_SCALE_LENGTH   5
 // #define FLOOR_BED           -1
 
 // // move wall in place respect to angles
@@ -323,7 +323,7 @@ void walls(void)
 void roofTile(void)
 {
 	glPushMatrix();
-		glScalef(0.2, 2, 5);
+		glScalef(ROOF_SCALE_WIDTH, ROOF_SCALE_HEIGHT, ROOF_SCALE_LENGTH);
 		glutSolidCube(1);
 	glPopMatrix();
 }
@@ -344,32 +344,29 @@ void roof(void)
 	// front left
 	glPushMatrix();
 		glTranslatef(-WALL_X-1, WALL_SCALE_HEIGHT, 0); 
-		glRotatef(WALL_ROT_THETA, 0, 1, 0);
-		// // glTranslatef(WALL_X+1, -WALL_SCALE_HEIGHT, 0);
+		glRotatef(WALL_ROT_THETA, 0, 1, 0);  // rotation about y-axis
+
+		glTranslatef(sin(ROOF_ROT_RAD), -ROOF_SCALE_WIDTH, 0);//WALL_SCALE_WIDTH/2, -0.2, 0); 
+		glRotatef(-ROOF_ROT_THETA, 0, 0, 1);
 
 		// how do I do this using pivots
-		// glTranslatef(WALL_X+1, WALL_SCALE_HEIGHT/2, 0); 
-		// glTranslatef(0.707+WALL_SCALE_WIDTH/2/2, -0.2, 0); 
-		// glRotatef(-45, 0, 0, 1);
-
-
 		// glRotatef(-45, 0, 0, 1);
 		// glTranslatef(WALL_X+1, -WALL_SCALE_HEIGHT, 0);
-		
-		// glTranslatef(-2, 0, 1); 
-		// glRotatef(110, 0, 0, 1);
-		// glTranslatef(-2, 0, 1); 
 
 		roofTile();
 	glPopMatrix();
 
-	// // front right
-	// glPushMatrix();
-	// 	glTranslatef(2, 0, 1); 
-	// 	glRotatef(-22, 0, 1, 0);
-	// 	glTranslatef(-2, 0, -1); 
-	// 	roofTile();
-	// glPopMatrix();
+
+	// front right
+	glPushMatrix();
+		glTranslatef(WALL_X+1, WALL_SCALE_HEIGHT, 0);    // move right
+		glRotatef(-WALL_ROT_THETA, 0, 1, 0);
+
+		glTranslatef(-sin(ROOF_ROT_RAD), -ROOF_SCALE_WIDTH, 0);//WALL_SCALE_WIDTH/2, -0.2, 0); 
+		glRotatef(ROOF_ROT_THETA, 0, 0, 1);
+
+		roofTile();
+	glPopMatrix();
 
 	// // back left
 	// glPushMatrix();
