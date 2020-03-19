@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 	glutDisplayFunc(display);
 	glutKeyboardFunc(keyEvents);
 	glutSpecialFunc(special);
-	glutTimerFunc(TIMER_DELAY, idle_2, TIMER_DELAY);
+	glutTimerFunc(TIMER_DELAY, idle, TIMER_DELAY);
 
 	glutMainLoop();
 
