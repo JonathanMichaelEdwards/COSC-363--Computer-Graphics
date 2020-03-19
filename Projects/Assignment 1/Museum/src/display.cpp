@@ -362,7 +362,7 @@ void roof(void)
 	glColor3f(0, 1, 0); // wall color
 
 	// front left
-	// find the point you want to rotate from
+	// find the 'point' you want to rotate from
 	glPushMatrix();
 		glTranslatef(-WALL_X-1, WALL_SCALE_HEIGHT, 0); 
 		glRotatef(WALL_ROT_THETA, 0, 1, 0);  // rotation about y-axis
