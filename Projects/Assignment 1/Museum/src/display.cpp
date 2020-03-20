@@ -331,187 +331,115 @@ void roofTile(void)
 
 void roof(void)
 {
-	// glPushMatrix();
-	// // glTranslatef(-WALL_X+0.4, WALL_SCALE_HEIGHT-0.44, -0.6); 
-	// // 	glRotatef(22, 0, 1, 0);  // rotation about y-axis
-	// // printf("%f\n", -WALL_Z-1);
-	// 	glTranslatef(-WALL_X-1, WALL_SCALE_HEIGHT, 0.3); 
-	// 	glTranslatef(-0.8, WALL_SCALE_HEIGHT/2, 0); 
-	// 	// glTranslatef(-1.2, WALL_SCALE_HEIGHT, 0); 
-	// 	glRotatef(22, 0, 1, 0);  // rotation about y-axis
+	int height = ROOF_SCALE_HEIGHT;
+	float pointLocal[3] = { 0, -1, 0 };       // pivot point
+	float pointGlobal[3] = { -ROOF_SCALE_WIDTH/2, 0, 0 };   // diff of point
+
+	// front left
+	glPushMatrix();
+		glColor3f(0, 1, 0);
 		
-	// 	// // // pivot offset to scaleing
-	// 	// // glTranslatef(-0.1, 1, 2.5);
-	// 	// // glRotatef(-45, 0, 0, 1);
-	// 	// // glTranslatef(0.1, -1, -2.5);
+		// rotate and translate into correct pos
+		glTranslatef(-WALL_X-1, -height/4.f, 0);
+		glRotatef(-WALL_ROT_THETA, 0, -1, 0);
 
-	// 	// // glTranslatef(-1, -0.2, 0);  // pivot position
-
-	// 	// pivot offset to scaleing
-	// 	glTranslatef(-0.15, -2, 2.5);
-	// 	glRotatef(-60, 0, 0, 1);
-	// 	glTranslatef(0.15, 2, -2.5);
-		
-	// 	// glScalef(2, 0.2, 0.4);
-	// 	// glutSolidCube(1);
-	// 	glScalef(ROOF_SCALE_WIDTH, ROOF_SCALE_HEIGHT, ROOF_SCALE_LENGTH);
-	// 	glutSolidCube(1);
-	// 	// glTranslatef(sin(ROOF_ROT_RAD), -ROOF_SCALE_WIDTH, 0);//WALL_SCALE_WIDTH/2, -0.2, 0); 
-	// 	//glRotatef(-ROOF_ROT_THETA, 0, 0, 1);
-
-	// 	// how do I do this using pivots
-	// 	// glTranslatef(-WALL_X-1, WALL_SCALE_HEIGHT, 0); 
-	// 	// glRotatef(-45, 0, 0, 1);
-	// 	// glTranslatef(WALL_X+1, -WALL_SCALE_HEIGHT, 0);
-
-	// 	// glRotatef(WALL_ROT_THETA, 0, 1, 0);  // rotation about y-axis
-	// 	// glTranslatef(0, 10, 0);
-	// 	// glRotatef(30, 0, 0, 1);
-	// 	// glTranslatef(0, -10, 0);
-
-	// 	// roofTile();
-	// glPopMatrix();
-
-	// glPushMatrix();
-	// glColor3f(0, 0, 1);
-	// glTranslatef(-1.2, WALL_SCALE_HEIGHT, 0); 
-	// glRotatef(22, 0, 1, 0);
-	// 	glTranslatef(-1, -0.1, 0.2);
-		
-	// 	glRotatef(90, 0, 0, 1);
-	// 	glTranslatef(1, 0.1, -0.2);
-		
-	// 	glScalef(2, 0.2, 0.4);
-	// 	glutSolidCube(1);
-	// glPopMatrix();
-	// 	glTranslatef(-1, -0.2, 0);  // pivot position
-
-		// // pivot offset to scaleing
-		// glTranslatef(-1, -0.1, 0.2);
-		// glRotatef(100, 0, 0, 1);
-		// glTranslatef(1, 0.1, -0.2);
-		
-		// glScalef(2, 0.2, 0.4);
-		// glutSolidCube(1);
+		// traslate to the pivot point of the shape
+		glTranslatef(pointLocal[0], pointLocal[1] + height, pointLocal[2]); 
+		glRotatef(-ROOF_ROT_THETA, 0, 0, 1);
+		glTranslatef(-pointLocal[0], -pointLocal[1] - height, -pointLocal[2]); 
 	
-	// glPushMatrix();
-	// 	glColor3f(0, 1, 1);
+		glTranslatef(pointGlobal[0], height, 0);  
+	
+		roofTile();
+	glPopMatrix();
+
+
+	// front right
+	glPushMatrix();
+		glColor3f(1, 0, 0);
 		
-	// 	glTranslatef(-2.9, 0, 0); 
-	// 	glRotatef(22, 0, 1, 0);  // rotation about y-axis
+		// rotate and translate into correct pos
+		glTranslatef(WALL_X+1, -height/4.f, 0);
+		glRotatef(WALL_ROT_THETA, 0, -1, 0);
+
+		// traslate to the pivot point of the shape
+		glTranslatef(pointLocal[0], pointLocal[1] + height, pointLocal[2]); 
+		glRotatef(ROOF_ROT_THETA, 0, 0, 1);
+		glTranslatef(-pointLocal[0], -pointLocal[1] - height, -pointLocal[2]); 
+	
+		glTranslatef(-pointGlobal[0], height, 0);  
+	
+		roofTile();
+	glPopMatrix();
 
 
+	// back left
+	glPushMatrix();
+		glColor3f(0, 1, 0);
+		
+		// rotate and translate into correct pos
+		glTranslatef(-WALL_X-1, -height/4.f, -WALL_Z);
+		glRotatef(WALL_ROT_THETA, 0, -1, 0);
+
+		// traslate to the pivot point of the shape
+		glTranslatef(pointLocal[0], pointLocal[1] + height, pointLocal[2]); 
+		glRotatef(-ROOF_ROT_THETA, 0, 0, 1);
+		glTranslatef(-pointLocal[0], -pointLocal[1] - height, -pointLocal[2]); 
+	
+		glTranslatef(pointGlobal[0], height, 0);  
+	
+		roofTile();
+	glPopMatrix();
+
+
+	// back right
+	glPushMatrix();
+		glColor3f(0, 1, 0);
+		
+		// rotate and translate into correct pos
+		glTranslatef(WALL_X+1, -height/4.f, -WALL_Z);
+		glRotatef(-WALL_ROT_THETA, 0, -1, 0);
+
+		// traslate to the pivot point of the shape
+		glTranslatef(pointLocal[0], pointLocal[1] + height, pointLocal[2]); 
+		glRotatef(ROOF_ROT_THETA, 0, 0, 1);
+		glTranslatef(-pointLocal[0], -pointLocal[1] - height, -pointLocal[2]); 
+	
+		glTranslatef(-pointGlobal[0], height, 0);  
+	
+		roofTile();
+	glPopMatrix();
+
+
+
+	// glPushMatrix();
+	// 	glColor3f(0, 1, 0);
+		
+	// 	// glRotatef(10, 0, 1, 0);
+	// 	// glRotatef(-WALL_ROT_THETA, 0, -1, 0);
+
+	// 	// traslate to the pivot point of the shape
+	// 	glTranslatef(pointLocal[0], pointLocal[1] + height, pointLocal[2]); 
+	// 	glRotatef(40, 0, 0, 1);
+	// 	glTranslatef(-pointLocal[0], -pointLocal[1] - height, -pointLocal[2]); 
+		
+	// 	// glTranslatef(pointGlobal[0], pointGlobal[1] + height, pointGlobal[2]);  // y - increased    // move object to correct pos
+
+	// 	// glTranslatef(-WALL_X-1, WALL_SCALE_HEIGHT, 0);    // move right
+	// 	glTranslatef(-0.15, height, 0);  
+	// 	// glRotatef(-WALL_ROT_THETA, 0, 1, 0);
+	// // 	
+	
 	// 	roofTile();
 	// glPopMatrix();
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	// glColor3f(0, 1, 0); // wall color
-	
-
-	// P = -0.9365, y1, -2.318
-	glPushMatrix();
-	glColor3f(1, 0, 0);
-		// glTranslatef(-WALL_X-1, WALL_SCALE_HEIGHT, 0); 
-		// glRotatef(WALL_ROT_THETA, 0, 1, 0);  // rotation about y-axis
-
-		// // glTranslatef(sin(ROOF_ROT_RAD), -ROOF_SCALE_WIDTH, 0); //WALL_SCALE_WIDTH/2, -0.2, 0); 
-		// glRotatef(-70, 0, 0, 1);
-		// glTranslatef(WALL_X+1, -WALL_SCALE_HEIGHT, 0); 
-
-		// 		glTranslatef(-WALL_X-1, WALL_SCALE_HEIGHT, 0); 
-		// glRotatef(-70, 0, 0, 1);
-		// glTranslatef(WALL_X+1, -WALL_SCALE_HEIGHT, 0);
-
-		// glTranslatef(-WALL_X, WALL_SCALE_HEIGHT, WALL_Z/2); 
-		// glRotatef(-ROOF_ROT_THETA, 1, 0, 0);
-		// glTranslatef(WALL_X, -WALL_SCALE_HEIGHT, -WALL_Z/2);
-
-		// glRotatef(WALL_ROT_THETA, 0, 1, 0);
-
-
-		// glTranslatef(-WALL_X-1, WALL_SCALE_HEIGHT, WALL_SCALE_WIDTH); 
-		// glRotatef(0, 0, 0, 1);
-		// glTranslatef(WALL_X+1, -WALL_SCALE_HEIGHT, -WALL_SCALE_WIDTH); 
-
-		// glRotatef	(WALL_ROT_THETA, 0, 1, 0);
-
-	// P = (-10.3, 2, 0)
-		// pivot point
-		// glTranslatef(-0, 1, 0);
-
-		// glTranslatef(-0.15, -1, 0); 
-		// glRotatef(10, 0, 0, 1);
-		// glTranslatef(0.15, 1, 0); 
-
-		// when y is increased
-		glTranslatef(-0.15, -1 + 3, 0); 
-		glRotatef(10, 0, 0, 1);
-		glTranslatef(0.15, 1 - 3, 0); 
-
-		// glRotatef(90, 0, 1, 0);//-ROOF_ROT_THETA+50, 0, 1, 0);
-		
-		// glTranslatef(-0.3, 0, 0);  // the difference and to the original point
-		glTranslatef(-0.3, 3, 0);  // y - increased
-		// glRotatef	(WALL_ROT_THETA, 0, 1, 0);  // rotation about y-axis
-
-		// glTranslatef(-WALL_X-1, WALL_SCALE_HEIGHT, 0); 
-		// glRotatef	(WALL_ROT_THETA, 0, 1, 0);
-		// glRotatef(-ROOF_ROT_THETA, 0, 0, 1);
-
-		roofTile();
-	glPopMatrix();
-
-	glPushMatrix();
-	glColor3f(0, 1, 0);
-		// glTranslatef(-10,  WALL_SCALE_HEIGHT/2, 0); 
-		// glRotatef(40, 0, 0, 1);
-		// glTranslatef(10, -WALL_SCALE_HEIGHT/2, 0); 
-
-		// glTranslatef(-10, ROOF_SCALE_HEIGHT, ROOF_SCALE_WIDTH); 
-		// glTranslatef(0, 0, 0);
-		glTranslatef(0, 3, 0);  // y - increased
-		roofTile();
-	glPopMatrix();
+	// glPushMatrix();
+	// glColor3f(1, 0, 0);
+	// 	// glRotatef(10, 0, 1, 0);
+	// 	glTranslatef(0, height, 0);  // y - increased
+	// 	glRotatef(10, 0, 1, 0);
+	// 	roofTile();
+	// glPopMatrix();
 
 
 
@@ -557,6 +485,33 @@ void displayMuesum()
 
 	walls();
 	roof();
+}
+
+
+void pivotShape()
+{
+	float pointLocal[3] = { -0.15, -1, 0 };
+	float pointGlobal[3] = { -0.3, 0, 0 };  // diff between shapes or point
+	int height = 0;
+
+	glPushMatrix();
+		glColor3f(0, 1, 0);
+		// when y is increased
+		glTranslatef(pointLocal[0], pointLocal[1] + height, pointLocal[2]); 
+		glRotatef(10, 0, 0, 1);
+		glTranslatef(-pointLocal[0], -pointLocal[1] - height, -pointLocal[2]); 
+
+		glTranslatef(pointGlobal[0], pointGlobal[1] + height, pointGlobal[2]);  // y - increased
+
+		roofTile();
+	glPopMatrix();
+
+
+	glPushMatrix();
+	glColor3f(1, 0, 0);
+		glTranslatef(0, height, 0);  // y - increased
+		roofTile();
+	glPopMatrix();
 }
 
 
@@ -665,6 +620,7 @@ void display(void)
 
 	// boxScene();
 	// floor();
+	// pivotShape();
 
 	// test();  // rotating around a point test
 
