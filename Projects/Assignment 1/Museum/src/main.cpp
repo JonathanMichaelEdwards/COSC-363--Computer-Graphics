@@ -34,8 +34,8 @@ void initialize(char *pjtPath)
 	loadTexture();
 	// glEnable(GL_TEXTURE_2D);
 
-    // glClearColor(0.23f, 0.38f, 0.47f, 1.0f);  // Background colour
-	glClearColor(0, 0, 0, 1.0f);
+    glClearColor(0.23f, 0.38f, 0.47f, 1.0f);  // Background colour
+	// glClearColor(0, 0, 0, 1.0f);
 	
 	glEnable(GL_LIGHTING);					//Enable OpenGL states
 	glEnable(GL_LIGHT0);

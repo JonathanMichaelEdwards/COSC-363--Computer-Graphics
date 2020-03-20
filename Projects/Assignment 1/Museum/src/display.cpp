@@ -244,10 +244,17 @@ void floor()
 #define WALL_SCALE_HEIGHT   1.5
 #define WALL_SCALE_LENGTH   5
 #define FLOOR_BED           -1
+#define WIDTH_SPACE         4
 
 // move wall in place respect to angles
 #define WALL_X     WALL_SCALE_LENGTH*sin(WALL_ROT_RAD)
 #define WALL_Z     WALL_SCALE_LENGTH*cos(WALL_ROT_RAD)
+
+
+const int doorHeight = WALL_SCALE_HEIGHT;
+const float doorPointLocal[3] = {0.15, 0, 0};                     // pivot point
+const float doorPointGlobal[3] = { };   // diff of point
+
 
 
 // Create a single wall
@@ -262,13 +269,106 @@ void wall(void)
 }
 
 
+void openDoor(void)
+{
+	glTranslatef(0, (WALL_SCALE_HEIGHT/2)-1, 0);        // y = -0.25  
+	glScalef(WALL_SCALE_WIDTH, WALL_SCALE_HEIGHT, WALL_SCALE_LENGTH/2.5f);
+	glutSolidCube(1);
+}
+
+
+void sideWall(void)
+{
+	glTranslatef(0, (WALL_SCALE_HEIGHT/2)-1, 0);        // y = -0.25  
+	glScalef(WALL_SCALE_WIDTH, WALL_SCALE_HEIGHT, 3.7);
+	glutSolidCube(1);
+}
+
+
+void sideWalls()
+{
+	// front left
+	glPushMatrix();
+		glColor3f(0, 0, 1);
+		glTranslatef(-WALL_X-WIDTH_SPACE+3, 0, WALL_Z/2);   
+		glRotatef(90, 0, 1, 0);
+		sideWall();
+	glPopMatrix();
+	
+	// front left top
+	glPushMatrix();
+		glColor3f(0, 0, 1);
+		glTranslatef(-WALL_X-WIDTH_SPACE+3, WALL_SCALE_HEIGHT, WALL_Z/2);   
+		glRotatef(90, 0, 1, 0);
+		sideWall();
+	glPopMatrix();
+
+	// front right
+	glPushMatrix();
+		glColor3f(0, 0, 1);
+		glTranslatef(WALL_X+WIDTH_SPACE-3, 0, WALL_Z/2);   
+		glRotatef(90, 0, 1, 0);
+		sideWall();
+	glPopMatrix();
+
+	// front right top
+	glPushMatrix();
+		glColor3f(0, 0, 1);
+		glTranslatef(WALL_X+WIDTH_SPACE-3, WALL_SCALE_HEIGHT, WALL_Z/2);   
+		glRotatef(90, 0, 1, 0);
+		sideWall();
+	glPopMatrix();
+
+
+	// front door - opens anti-clockwise
+	glPushMatrix();
+		glColor3f(0, 1, 0);
+
+		// glTranslatef(WALL_X+WIDTH_SPACE-5.85, 0, WALL_Z/2);  
+		// glRotatef(90, 0, 1, 0);
+
+		// traslate to the pivot point of the shape
+		// glTranslatef(doorPointLocal[0], doorPointLocal[1] + height, doorPointLocal[2]); 
+		// glRotatef(-45, 0, 0, 1);
+		// glTranslatef(-doorPointLocal[0], -doorPointLocal[1] - height, -doorPointLocal[2]); 
+
+		glTranslatef(1.27, 0, 1.25 + 1.1); 
+		glRotatef(150, 0, 1, 0);
+		glTranslatef(-1.27, 0, -1.25 - 1.1); 
+ 
+		glTranslatef(1.27, 0, 1.1); 
+
+		openDoor();
+	glPopMatrix(); 
+
+	// front door top -- air con
+	glPushMatrix();
+		glColor3f(1, 1, 0);
+
+		// glTranslatef(WALL_X+WIDTH_SPACE-5.85, 0, WALL_Z/2);  
+		
+		glTranslatef(1.27, WALL_SCALE_HEIGHT, 1.25 + 1.1); 
+		glRotatef(90, 0, 1, 0);
+		glTranslatef(-1.27, -WALL_SCALE_HEIGHT, -1.25 - 1.1); 
+ 
+		glTranslatef(1.27, WALL_SCALE_HEIGHT, 1.1); 
+
+		openDoor();
+	glPopMatrix(); 
+}
+
+
+
+		
+
+
 // construct the outside of the meusem...
 void walls(void)
 {	
 	// front left
 	glPushMatrix();
 		glColor3f(1, 0.8, 0);
-		glTranslatef(-WALL_X-1, 0, 0);        // move left
+		glTranslatef(-WALL_X-WIDTH_SPACE, 0, 0);        // move left
 		glRotatef(WALL_ROT_THETA, 0, 1, 0);
 		wall();
 	glPopMatrix();
@@ -276,7 +376,7 @@ void walls(void)
 	// front right
 	glPushMatrix();
 		glColor3f(1, 0.8, 0);
-		glTranslatef(WALL_X+1, 0, 0);    // move right
+		glTranslatef(WALL_X+WIDTH_SPACE, 0, 0);    // move right
 		glRotatef(-WALL_ROT_THETA, 0, 1, 0);
 		wall();
 	glPopMatrix();
@@ -285,7 +385,7 @@ void walls(void)
 	// back left
 	glPushMatrix();
 		glColor3f(1, 0, 0);
-		glTranslatef(-WALL_X-1, 0, -WALL_Z);
+		glTranslatef(-WALL_X-WIDTH_SPACE, 0, -WALL_Z);
 		glRotatef(-WALL_ROT_THETA, 0, 1, 0);
 		wall();
 	glPopMatrix();
@@ -294,10 +394,12 @@ void walls(void)
 	// back right
 	glPushMatrix();
 		glColor3f(1, 0, 0);
-		glTranslatef(WALL_X+1, 0, -WALL_Z);
+		glTranslatef(WALL_X+WIDTH_SPACE, 0, -WALL_Z);
 		glRotatef(WALL_ROT_THETA, 0, 1, 0);
 		wall();
 	glPopMatrix();
+
+	sideWalls();
 }
 
 // -------------------------------------------------------
@@ -313,11 +415,11 @@ void walls(void)
 #define ROOF_SCALE_WIDTH    0.3
 #define ROOF_SCALE_HEIGHT   2
 #define ROOF_SCALE_LENGTH   5
-// #define FLOOR_BED           -1
 
-// // move wall in place respect to angles
-// #define WALL_X     WALL_SCALE_LENGTH*sin(WALL_ROT_RAD)
-// #define WALL_Z     WALL_SCALE_LENGTH*cos(WALL_ROT_RAD)
+const int height = ROOF_SCALE_HEIGHT;
+const float pointLocal[3] = { 0, -1, 0 };                     // pivot point
+const float pointGlobal[3] = { -ROOF_SCALE_WIDTH/2, 0, 0 };   // diff of point
+
 
 
 void roofTile(void)
@@ -329,18 +431,15 @@ void roofTile(void)
 }
 
 
+
 void roof(void)
 {
-	int height = ROOF_SCALE_HEIGHT;
-	float pointLocal[3] = { 0, -1, 0 };       // pivot point
-	float pointGlobal[3] = { -ROOF_SCALE_WIDTH/2, 0, 0 };   // diff of point
-
 	// front left
 	glPushMatrix();
 		glColor3f(0, 1, 0);
 		
 		// rotate and translate into correct pos
-		glTranslatef(-WALL_X-1, -height/4.f, 0);
+		glTranslatef(-WALL_X-WIDTH_SPACE, -height/4.f, 0);
 		glRotatef(-WALL_ROT_THETA, 0, -1, 0);
 
 		// traslate to the pivot point of the shape
@@ -352,14 +451,13 @@ void roof(void)
 	
 		roofTile();
 	glPopMatrix();
-
 
 	// front right
 	glPushMatrix();
 		glColor3f(1, 0, 0);
 		
 		// rotate and translate into correct pos
-		glTranslatef(WALL_X+1, -height/4.f, 0);
+		glTranslatef(WALL_X+WIDTH_SPACE, -height/4.f, 0);
 		glRotatef(WALL_ROT_THETA, 0, -1, 0);
 
 		// traslate to the pivot point of the shape
@@ -372,13 +470,12 @@ void roof(void)
 		roofTile();
 	glPopMatrix();
 
-
 	// back left
 	glPushMatrix();
 		glColor3f(0, 1, 0);
 		
 		// rotate and translate into correct pos
-		glTranslatef(-WALL_X-1, -height/4.f, -WALL_Z);
+		glTranslatef(-WALL_X-WIDTH_SPACE, -height/4.f, -WALL_Z);
 		glRotatef(WALL_ROT_THETA, 0, -1, 0);
 
 		// traslate to the pivot point of the shape
@@ -391,13 +488,12 @@ void roof(void)
 		roofTile();
 	glPopMatrix();
 
-
 	// back right
 	glPushMatrix();
 		glColor3f(0, 1, 0);
 		
 		// rotate and translate into correct pos
-		glTranslatef(WALL_X+1, -height/4.f, -WALL_Z);
+		glTranslatef(WALL_X+WIDTH_SPACE, -height/4.f, -WALL_Z);
 		glRotatef(-WALL_ROT_THETA, 0, -1, 0);
 
 		// traslate to the pivot point of the shape
@@ -409,73 +505,6 @@ void roof(void)
 	
 		roofTile();
 	glPopMatrix();
-
-
-
-	// glPushMatrix();
-	// 	glColor3f(0, 1, 0);
-		
-	// 	// glRotatef(10, 0, 1, 0);
-	// 	// glRotatef(-WALL_ROT_THETA, 0, -1, 0);
-
-	// 	// traslate to the pivot point of the shape
-	// 	glTranslatef(pointLocal[0], pointLocal[1] + height, pointLocal[2]); 
-	// 	glRotatef(40, 0, 0, 1);
-	// 	glTranslatef(-pointLocal[0], -pointLocal[1] - height, -pointLocal[2]); 
-		
-	// 	// glTranslatef(pointGlobal[0], pointGlobal[1] + height, pointGlobal[2]);  // y - increased    // move object to correct pos
-
-	// 	// glTranslatef(-WALL_X-1, WALL_SCALE_HEIGHT, 0);    // move right
-	// 	glTranslatef(-0.15, height, 0);  
-	// 	// glRotatef(-WALL_ROT_THETA, 0, 1, 0);
-	// // 	
-	
-	// 	roofTile();
-	// glPopMatrix();
-
-	// glPushMatrix();
-	// glColor3f(1, 0, 0);
-	// 	// glRotatef(10, 0, 1, 0);
-	// 	glTranslatef(0, height, 0);  // y - increased
-	// 	glRotatef(10, 0, 1, 0);
-	// 	roofTile();
-	// glPopMatrix();
-
-
-
-
-	// // front right
-	// glPushMatrix();
-	// 	glTranslatef(WALL_X+1, WALL_SCALE_HEIGHT, 0);    // move right
-	// 	glRotatef(-WALL_ROT_THETA, 0, 1, 0);
-
-	// 	glTranslatef(-sin(ROOF_ROT_RAD), -ROOF_SCALE_WIDTH, 0);//WALL_SCALE_WIDTH/2, -0.2, 0); 
-	// 	glRotatef(ROOF_ROT_THETA, 0, 0, 1);
-
-	// 	roofTile();
-	// glPopMatrix();
-
-	// // back left
-	// glPushMatrix();
-	// 	glTranslatef(-WALL_X-1-0.4, WALL_SCALE_HEIGHT, 0.2);    // move right
-	// 	glRotatef(-WALL_ROT_THETA, 0, 1, 0);
-
-	// 	glTranslatef(-sin(ROOF_ROT_RAD), -ROOF_SCALE_WIDTH, -WALL_Z);//WALL_SCALE_WIDTH/2, -0.2, 0); 
-	// 	glRotatef(-ROOF_ROT_THETA, 0, 0, 1);
-
-	// 	roofTile();
-	// glPopMatrix();
-
-	// // back right
-	// glPushMatrix();
-	// 	glTranslatef(WALL_X+1+0.4, WALL_SCALE_HEIGHT, 0.2);    // move right
-	// 	glRotatef(WALL_ROT_THETA, 0, 1, 0);
-
-	// 	glTranslatef(sin(ROOF_ROT_RAD), -ROOF_SCALE_WIDTH, -WALL_Z);//WALL_SCALE_WIDTH/2, -0.2, 0); 
-	// 	glRotatef(ROOF_ROT_THETA, 0, 0, 1);
-
-	// 	roofTile();
-	// glPopMatrix();
 }
 
 
@@ -591,7 +620,7 @@ void test(void)
 // 	glPopMatrix();
 }
 
-// change later
+
 // ----------------------------------------------------------------------------
 //  				  		Display OpenGL graphics				
 // ----------------------------------------------------------------------------
@@ -619,7 +648,7 @@ void display(void)
 	// look is the rotation
 
 	// boxScene();
-	// floor();
+	floor();
 	// pivotShape();
 
 	// test();  // rotating around a point test
