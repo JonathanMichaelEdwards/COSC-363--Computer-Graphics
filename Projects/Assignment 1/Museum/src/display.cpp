@@ -21,7 +21,7 @@
 
 
 
-
+#define M_PI		3.14159265358979323846
 /// create wall structure -------------------------------------------------------
 #define WALL_ROT_THETA      22
 #define WALL_ROT_RAD        (WALL_ROT_THETA*M_PI) / 180
@@ -40,11 +40,11 @@ const int doorHeight = WALL_SCALE_HEIGHT;
 const float doorPointLocal[3] = {0.15, 0, 0};                     // pivot point
 const float doorPointGlobal[3] = { };   // diff of point
 
-#define DIST_Z     256
-#define DIST_X     256
-#define HEIGHT_Y   30
+#define DIST_Z     40
+#define DIST_X     40
+#define HEIGHT_Y   20
 
-
+#define GL_CLAMP_TO_EDGE                        0x812F4
 
 
 
@@ -184,6 +184,8 @@ void _loadTGA(char *_fileLoc, int index)
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
 }
 
 
@@ -193,88 +195,38 @@ void loadTexture()
 {
 	glGenTextures(TEX, txId); 	// Create xxx texture ids
 
-	// _loadTGA("front", 0);
-	// _loadTGA("back", 1);
-	// _loadTGA("left", 2);
-	// _loadTGA("right", 3);
-	// _loadTGA("bottom", 4);
+	_loadTGA("front", 0);
+	_loadTGA("back", 1);
+	_loadTGA("left", 2);
+	_loadTGA("right", 3);
+	_loadTGA("bottom", 4);
+	_loadTGA("top", 5);
 
-
-	glBindTexture(GL_TEXTURE_2D, txId[0]);
-
-	// sprintf(loc, "../Models/skybox1/%s.tga", _fileLoc);
-	loadTGA("../Models/skybox1/front.tga");
-
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_LINEAR);	//Set texture parameters
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	
-	glBindTexture(GL_TEXTURE_2D, txId[1]);
-	loadTGA("../Models/skybox1/back.tga");
-
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_LINEAR);	//Set texture parameters
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-
-		glBindTexture(GL_TEXTURE_2D, txId[2]);
-	loadTGA("../Models/skybox1/right.tga");
-
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_LINEAR);	//Set texture parameters
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-
-			glBindTexture(GL_TEXTURE_2D, txId[3]);
-	loadTGA("../Models/skybox1/left.tga");
-
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_LINEAR);	//Set texture parameters
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-
-			glBindTexture(GL_TEXTURE_2D, txId[4]);
-	loadTGA("../Models/skybox1/bottom.tga");
-
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_LINEAR);	//Set texture parameters
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-	glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
 }
 
 
 //--------------------------  sky box ------------------------------------------------------
-void front(void)
+void back(void)
 {
 	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, txId[0]); // use floor ID 
+	glBindTexture(GL_TEXTURE_2D, txId[1]); // use floor ID 
 
 	glBegin(GL_QUADS);
-	glTexCoord2f(0,  1);       glVertex3f(-DIST_X, HEIGHT_Y, DIST_Z);
-	glTexCoord2f(0,  0);       glVertex3f(-DIST_X, FLOOR_BED, DIST_Z);
-	glTexCoord2f(1, 0);        glVertex3f(DIST_X, FLOOR_BED, DIST_Z);
-	glTexCoord2f(1, 1);        glVertex3f(DIST_X, HEIGHT_Y, DIST_Z); 
+	glTexCoord2f(0,  1);       glVertex3f(DIST_X, HEIGHT_Y, DIST_Z);
+	glTexCoord2f(0,  0);       glVertex3f(DIST_X, FLOOR_BED, DIST_Z);
+	glTexCoord2f(1, 0);        glVertex3f(-DIST_X, FLOOR_BED, DIST_Z);
+	glTexCoord2f(1, 1);        glVertex3f(-DIST_X, HEIGHT_Y, DIST_Z); 
+	
 	glEnd();
 
 	glDisable(GL_TEXTURE_2D);  // disable textures
 }
 
 
-void back(void)
+void front(void)
 {
 	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, txId[1]); // use floor ID 
+	glBindTexture(GL_TEXTURE_2D, txId[0]); // use floor ID 
 
 	glBegin(GL_QUADS);
 		glTexCoord2f(0,  1);       glVertex3f(-DIST_X, HEIGHT_Y, -DIST_Z);  
@@ -293,10 +245,10 @@ void left(void)
 	glBindTexture(GL_TEXTURE_2D, txId[2]); // use floor ID 
 
 	glBegin(GL_QUADS);
-		glTexCoord2f(0,  1);      glVertex3f(-DIST_X, HEIGHT_Y, -DIST_Z);
-		glTexCoord2f(0,  0);      glVertex3f(-DIST_X, FLOOR_BED, -DIST_Z);
-		glTexCoord2f(1, 0);       glVertex3f(-DIST_X, FLOOR_BED, DIST_Z);
-		glTexCoord2f(1, 1);       glVertex3f(-DIST_X, HEIGHT_Y, DIST_Z);
+		glTexCoord2f(0,  1);      glVertex3f(DIST_X, HEIGHT_Y, -DIST_Z);
+		glTexCoord2f(0,  0);      glVertex3f(DIST_X, FLOOR_BED, -DIST_Z);
+		glTexCoord2f(1, 0);       glVertex3f(DIST_X, FLOOR_BED, DIST_Z);
+		glTexCoord2f(1, 1);       glVertex3f(DIST_X, HEIGHT_Y, DIST_Z);
 	glEnd();
 
 	glDisable(GL_TEXTURE_2D);  // disable textures
@@ -306,13 +258,13 @@ void left(void)
 void right(void)
 {
 	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, txId[2]); // use floor ID 
+	glBindTexture(GL_TEXTURE_2D, txId[3]); // use floor ID 
 
 	glBegin(GL_QUADS);
-		glTexCoord2f(0,  1);      glVertex3f(DIST_X, HEIGHT_Y, -DIST_Z);
-		glTexCoord2f(0,  0);      glVertex3f(DIST_X, FLOOR_BED, -DIST_Z);
-		glTexCoord2f(1, 0);       glVertex3f(DIST_X, FLOOR_BED, DIST_Z);
-		glTexCoord2f(1, 1);       glVertex3f(DIST_X, HEIGHT_Y, DIST_Z);
+		glTexCoord2f(0,  1);      glVertex3f(-DIST_X, HEIGHT_Y, DIST_Z);
+		glTexCoord2f(0,  0);      glVertex3f(-DIST_X, FLOOR_BED, DIST_Z);
+		glTexCoord2f(1, 0);       glVertex3f(-DIST_X, FLOOR_BED, -DIST_Z);
+		glTexCoord2f(1, 1);       glVertex3f(-DIST_X, HEIGHT_Y, -DIST_Z);
 	glEnd();
 
 	glDisable(GL_TEXTURE_2D);  // disable textures
@@ -335,15 +287,30 @@ void floorBed(void)
 }
 
 
+void top(void)
+{
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, txId[5]); // use floor ID 
+
+	glBegin(GL_QUADS);
+		glTexCoord2f(0,  1);       glVertex3f(-DIST_X, HEIGHT_Y, DIST_Z);
+		glTexCoord2f(0,  0);       glVertex3f(-DIST_X, HEIGHT_Y, -DIST_Z);
+		glTexCoord2f(1, 0);        glVertex3f(DIST_X, HEIGHT_Y, -DIST_Z);
+		glTexCoord2f(1, 1);        glVertex3f(DIST_X, HEIGHT_Y, DIST_Z);
+	glEnd();
+
+	glDisable(GL_TEXTURE_2D);  // disable textures
+}
+
+
 void skyBox(void)
 {	
-	glPushMatrix();
-		front();
-		back();
-		left();
-		right();
-		floorBed();
-	glPopMatrix();
+	front();
+	back();
+	left();
+	right();
+	floorBed();
+	top();
 }
 //--------------------------------------------------------------------------------
 

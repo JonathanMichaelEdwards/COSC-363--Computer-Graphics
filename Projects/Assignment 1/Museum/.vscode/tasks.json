@@ -3,32 +3,38 @@
         {
             "label": "New Window",
             "type": "shell",
-
-            "linux"  : { "command": "cd Linux && make"   },
-            "windows": { "command": "cd Windows && make" },
-
+            "linux": {
+                "command": "cd Linux && make"
+            },
+            "windows": {
+                "command": "cd Windows && make"
+            },
             "presentation": {
                 "showReuseMessage": true,
                 "clear": true
             },
-
-            "group": {  
+            "group": {
                 "kind": "build",
-                "isDefault": true,
+                "isDefault": true
             }
         },
-        
         {
             "label": "Run",
             "type": "shell",
             "presentation": {
                 "showReuseMessage": true,
-                "clear": true,
+                "clear": true
             },
-
-            "windows": { "command": "cd Windows && main.exe"   },
-            "linux"  : { "command": "cd Linux && ./main"}
-        },
+            "windows": {
+                "command": "cd Windows && main.exe"
+            },
+            "linux": {
+                "command": "cd Linux && ./main"
+            },
+            "problemMatcher": [
+                "$lessc"
+            ]
+        }
     ],
     "version": "2.0.0"
 }
