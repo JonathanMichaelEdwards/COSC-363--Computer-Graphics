@@ -31,9 +31,6 @@
             "linux": {
                 "command": "cd Linux && ./main"
             },
-            "problemMatcher": [
-                "$lessc"
-            ]
         }
     ],
     "version": "2.0.0"

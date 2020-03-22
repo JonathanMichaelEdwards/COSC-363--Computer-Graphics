@@ -49,7 +49,7 @@ void initialize(char *pjtPath)
 
 	glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-	gluPerspective(60., 1., 1., 10000.); 
+	gluPerspective(60., 1., 1., 1000.); 
 		
 	getPath(pjtPath);
 }

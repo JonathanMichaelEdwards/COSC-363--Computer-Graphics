@@ -43,9 +43,9 @@ const float doorPointGlobal[3] = { };   // diff of point
 
 #define DIST_Z     80
 #define DIST_X     50
-#define HEIGHT_Y   20
+#define HEIGHT_Y   30
 
-// #define GL_CLAMP_TO_EDGE                        0x812F4
+#define GL_CLAMP_TO_EDGE                        0x812F4
 
 
 
@@ -392,7 +392,6 @@ void ballBounce(int value)
 			
 		}
 	}
-	printf("%f  %f\n", previous, speedY);
 
 	speedX = speedY / 15;
 	
