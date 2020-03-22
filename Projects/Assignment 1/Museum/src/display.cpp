@@ -316,6 +316,90 @@ void skyBox(void)
 
 
 
+//// -------------- ball and ground collision -------------------------------
+double da = 0.1;
+double decr = 0.5;
+bool resetBall = false;
+
+
+
+#define PI		3.14159265358979323846
+#define GRAVITY 9.81
+
+#define velTheta      9
+#define _velTheta     (velTheta * PI) / 180
+#define airFric       1
+#define t             1.2
+
+double initSpeedX = 0;//20; 
+double initSpeedY = 12;//16.1264;            // tan(theta) * Vx
+double speedX = 0;
+double speedY = 0;
+
+bool _spacePressed = false;
+
+
+bool spacePressed(bool _state)
+{
+	if (_state == _spacePressed) return false;  // button is ocupied
+	_spacePressed = _state;
+	return false;
+}
+
+
+void rstBall() 
+{
+	speedY = 0; 
+	initSpeedY = 12; 
+	da = 0.1;
+	decr = 0.5;
+	_spacePressed = false;
+	resetBall = false;
+}
+
+double previous = 0;
+
+void ball(void)
+{
+	glPushMatrix();
+		glColor3f(0, 0, 1);
+		glTranslatef(0, -0.8+speedX, 0);
+		glutSolidSphere(0.1, 36, 18);
+	glPopMatrix();
+}
+
+
+// collision between wall and ball - bad way
+void ballBounce(int value) 
+{  
+	if (_spacePressed) {  
+		previous = speedY;
+		if (speedY > 1) { 
+			speedY += (initSpeedY-=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t) - da;  // decrease fall height
+		} else if (speedY < 1) {
+			while (speedY < 1 - da) {  // makes sure it doesnt go past the origin
+				resetBall = 0;
+				da -= 0.1;
+				speedY += (initSpeedY+=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);  // rise back to top from ground
+			}
+			da = (decr+=0.001);
+	
+			if (resetBall) {
+				speedY += (initSpeedY+=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t); 
+			 	if (abs((speedY-previous))  < 0.5) rstBall();
+			}
+			resetBall = true;
+			
+		}
+	}
+	printf("%f  %f\n", previous, speedY);
+
+	speedX = speedY / 15;
+	
+	// glutPostRedisplay(); 
+	glutTimerFunc(30, ballBounce, 0); 
+}
+
 
 
 
@@ -605,6 +689,7 @@ void display(void)
 	skyBox();
 	glEnable(GL_LIGHTING);
 
+	ball();
 	
 	glutSwapBuffers();	
 

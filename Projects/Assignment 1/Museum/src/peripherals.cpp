@@ -18,6 +18,7 @@
 
 // ASCII Keys
 #define QUIT    'q'
+#define SPACE   0x20
 #define ESC     0x1B
 
 
@@ -94,7 +95,10 @@ void keyEvents(unsigned char key, int x, int y)
 	else if (key == '+') zoom(1);
 	else if (key == '-') zoom(-1);
 
-	// glFlush();
+	
+	if (!spacePressed(false))
+		if (key == SPACE) spacePressed(true);
+
 
     glutTimerFunc(TIMER_DELAY, idle, TIMER_DELAY);  
 }

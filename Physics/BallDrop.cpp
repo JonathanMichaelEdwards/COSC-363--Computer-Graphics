@@ -49,6 +49,7 @@ double speedY = 0;
 bool spacePressed = false;
 
 
+void myTimer(int value);
 
 
 // void floorCollision()
@@ -112,7 +113,7 @@ void display()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	gluLookAt(0, cam_hgt, 300, 0, 0, 0, 0, 1, 0);
+	gluLookAt(0, cam_hgt, 100, 0, 0, 0, 0, 1, 0);
 	glLightfv(GL_LIGHT0, GL_POSITION, lpos);   //set light position
 
     glRotatef(angle, 0.0, 1.0, 0.0);		//rotate the whole scene
@@ -124,8 +125,8 @@ void display()
 	// draw ball
 	ball();
 
-
-
+	
+	
 	glFlush();
 }
 
@@ -235,7 +236,7 @@ void keyEvents(unsigned char key, int x, int y)
 {
     if (key == QUIT) exit(EXIT_SUCCESS);
 	else if (key == ESC) exit(EXIT_SUCCESS);
-
+	printf("%d\n", key);
 	if (!spacePressed)
 		if (key == SPACE) spacePressed = true;
 

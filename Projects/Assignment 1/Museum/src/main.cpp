@@ -82,8 +82,8 @@ int main(int argc, char *argv[])
 	glutDisplayFunc(display);
 	glutKeyboardFunc(keyEvents);
 	glutSpecialFunc(special);
-	glutTimerFunc(TIMER_DELAY, idle, TIMER_DELAY);
-
+	glutTimerFunc(TIMER_DELAY, idle, TIMER_DELAY);  // fps counter
+	glutTimerFunc(30, ballBounce, 0);  // ball physics
 	glutMainLoop();
 
 	return EXIT_SUCCESS;
