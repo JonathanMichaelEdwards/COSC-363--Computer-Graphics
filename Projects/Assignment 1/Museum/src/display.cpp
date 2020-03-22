@@ -41,6 +41,25 @@ const int doorHeight = WALL_SCALE_HEIGHT;
 const float doorPointLocal[3] = {0.15, 0, 0};                     // pivot point
 const float doorPointGlobal[3] = { };   // diff of point
 
+
+#define PI		3.14159265358979323846
+#define GRAVITY 9.81
+
+#define velTheta      9
+#define _velTheta     (velTheta * PI) / 180
+#define airFric       1
+#define t             1.2
+
+double initSpeedX = 0;//20; 
+double initSpeedY = 12;//16.1264;            // tan(theta) * Vx
+double speedX = 0;
+double speedY = 0;
+
+bool _spacePressed = false;
+double previous = 0;
+
+
+
 #define DIST_Z     80
 #define DIST_X     50
 #define HEIGHT_Y   30
@@ -166,8 +185,8 @@ void topBottomRight(void)
 /// --------------------------------------
 
 
-#define TEX 5
-GLuint txId[TEX];   //Texture ids
+#define TEX 6
+GLuint txId[TEX] = {0};   //Texture ids
 
 
 // load textures - skybox
@@ -193,7 +212,6 @@ void _loadTGA(const char *_fileLoc, int index)
 void loadTexture()				
 {
 	glGenTextures(TEX, txId); 	// Create xxx texture ids
-
 	_loadTGA("ft", 0);
 	_loadTGA("bk", 1);
 	_loadTGA("lt", 2);
@@ -323,27 +341,9 @@ bool resetBall = false;
 
 
 
-#define PI		3.14159265358979323846
-#define GRAVITY 9.81
-
-#define velTheta      9
-#define _velTheta     (velTheta * PI) / 180
-#define airFric       1
-#define t             1.2
-
-double initSpeedX = 0;//20; 
-double initSpeedY = 12;//16.1264;            // tan(theta) * Vx
-double speedX = 0;
-double speedY = 0;
-
-bool _spacePressed = false;
-
-
 bool spacePressed(bool _state)
 {
-	if (_state == _spacePressed) return false;  // button is ocupied
-	_spacePressed = _state;
-	return false;
+	if (_state == _spacePressed) return !(_spacePressed=true);  // button is ocupied
 }
 
 
@@ -357,7 +357,7 @@ void rstBall()
 	resetBall = false;
 }
 
-double previous = 0;
+
 
 void ball(void)
 {
@@ -684,11 +684,12 @@ void display(void)
 	// eye = pos in surroundings
 	// look is the rotation
 
-	glDisable(GL_LIGHTING);	
-	skyBox();
-	glEnable(GL_LIGHTING);
-
 	ball();
+	// glDisable(GL_LIGHTING);	
+	skyBox();
+	// glEnable(GL_LIGHTING);
+
+	
 	
 	glutSwapBuffers();	
 
