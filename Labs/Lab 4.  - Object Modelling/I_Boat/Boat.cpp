@@ -98,7 +98,10 @@ void drawBase()
 
 	//Draw the above polygon here
 
-	
+	glBegin(GL_POLYGON);
+		for (int i = 0; i < n; i++)
+			glVertex3f(vx[i], vy[i], vz[i]);
+	glEnd();
 
 }
 
@@ -116,7 +119,22 @@ void drawSide()
 	float wz[] = { 0, 3, 5, 6, 6.5, 6.8, 7.2, 7.5, 7.8, 8, 8, 8, 7.8, 7.5, 7.2, 6.8, 6.5, 6, 5, 3, 0 };
 
 	//Draw a quad strip using the above two polygonal lines
+	
+	glBegin(GL_QUAD_STRIP);
 
+		for (int i = 0; i < n; i++) {
+			glTexCoord2f( (float)i/(float)(n-1), 0);          glVertex3f(vx[i], vy[i], vz[i]);
+			if(i > 0) normal(wx[i-1], wy[i-1], wz[i-1],
+				vx[i],
+				vy[i],
+				vz[i],
+				wx[i],
+				wy[i],
+				wz[i]);
+			glTexCoord2f( (float)i/(float)(n-1), 1);          glVertex3f(wx[i], wy[i], wz[i]);
+		}
+		
+	glEnd();
 
 
 }
@@ -127,7 +145,7 @@ void display(void)
 	float lgt_pos[]={5.0f, 50.0f, 100.0f, 1.0f};  //light0 position (above the origin) 
 
 	glClear (GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -140,13 +158,23 @@ void display(void)
 	floor();
 
 	glColor3f (0.0, 0.0, 1.0);    //Used for wireframe mode only
-	glDisable(GL_LIGHTING);
-	glDisable(GL_TEXTURE_2D);
+	// glDisable(GL_LIGHTING);
+	// glDisable(GL_TEXTURE_2D);
 
-
+	glEnable(GL_LIGHTING);
+	glEnable(GL_TEXTURE_2D);
+	
 	drawBase();			  //Bottom panel of the boat
 
+
+
 	drawSide();           //Front side of the boat
+
+	// reflected side of the boat
+	glScalef(1, 1, -1);
+	drawSide();
+
+
 
 	glFlush();
 }

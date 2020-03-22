@@ -11,6 +11,7 @@
 #include <math.h>
 
 // OpenGL libaries
+#include <GL/freeglut.h>
 #include <GL/glut.h>
 
 // Personal libaries
@@ -40,11 +41,11 @@ const int doorHeight = WALL_SCALE_HEIGHT;
 const float doorPointLocal[3] = {0.15, 0, 0};                     // pivot point
 const float doorPointGlobal[3] = { };   // diff of point
 
-#define DIST_Z     40
-#define DIST_X     40
+#define DIST_Z     80
+#define DIST_X     50
 #define HEIGHT_Y   20
 
-#define GL_CLAMP_TO_EDGE                        0x812F4
+// #define GL_CLAMP_TO_EDGE                        0x812F4
 
 
 
@@ -167,25 +168,23 @@ void topBottomRight(void)
 
 #define TEX 5
 GLuint txId[TEX];   //Texture ids
-// float angle=0, look_x, look_z=-1., eye_x, eye_z;  //Camera parameters
 
-// load textures
-void _loadTGA(char *_fileLoc, int index)
+
+// load textures - skybox
+void _loadTGA(const char *_fileLoc, int index)
 {
 	char loc[100] = {0};
 
 	glBindTexture(GL_TEXTURE_2D, txId[index]);
 
-	sprintf(loc, "../Models/skybox1/%s.tga", _fileLoc);
+	sprintf(loc, "../Models/skybox4/%s.tga", _fileLoc);
 	loadTGA(loc);
-
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_LINEAR);	//Set texture parameters
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_LINEAR);	//Set texture parameters
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
 
 
@@ -195,13 +194,14 @@ void loadTexture()
 {
 	glGenTextures(TEX, txId); 	// Create xxx texture ids
 
-	_loadTGA("front", 0);
-	_loadTGA("back", 1);
-	_loadTGA("left", 2);
-	_loadTGA("right", 3);
-	_loadTGA("bottom", 4);
-	_loadTGA("top", 5);
+	_loadTGA("ft", 0);
+	_loadTGA("bk", 1);
+	_loadTGA("lt", 2);
+	_loadTGA("rt", 3);
+	_loadTGA("dn", 4);
+	_loadTGA("up", 5);
 
+	glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
 }
 
 
@@ -580,7 +580,6 @@ void displayMuesum()
 }
 
 
-
 // ----------------------------------------------------------------------------
 //  				  		Display OpenGL graphics				
 // ----------------------------------------------------------------------------
@@ -588,13 +587,8 @@ void display(void)
 {
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);    //GL_LINE = Wireframe;   GL_FILL = Solid
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
-	glMatrixMode(GL_PROJECTION);						
+	glMatrixMode(GL_MODELVIEW);						
 	glLoadIdentity();
-	gluPerspective(45., 1., 0.5, 200.);
-
-	glMatrixMode(GL_MODELVIEW);								
-	glLoadIdentity();
-	
 
 	// change camera
 	if (viewState) {   // top down view
@@ -607,7 +601,9 @@ void display(void)
 	// eye = pos in surroundings
 	// look is the rotation
 
+	glDisable(GL_LIGHTING);	
 	skyBox();
+	glEnable(GL_LIGHTING);
 
 	
 	glutSwapBuffers();	

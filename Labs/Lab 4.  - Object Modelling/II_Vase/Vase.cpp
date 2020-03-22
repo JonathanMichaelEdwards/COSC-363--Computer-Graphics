@@ -25,6 +25,7 @@ float vz_init[N] = { 0 };
 
 float angle = 25, cam_hgt = 50.0;  //Rotation angle, camera height
 
+
 //--------------------------------------------------------------------------------
 void loadTexture()				
 {
@@ -117,7 +118,7 @@ void display(void)
 	glLoadIdentity();
 	gluLookAt(0., cam_hgt, 100.0, 0., 20., 0., 0., 1., 0.);
 
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	glRotatef(angle, 0, 1, 0);		//Rotate the entire scene
 
@@ -126,13 +127,43 @@ void display(void)
 	floor();
 
 	glColor3f (0.0, 0.0, 1.0);    //Used for wireframe display
-	glDisable(GL_LIGHTING);
-	glDisable(GL_TEXTURE_2D);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, txId);
 
 	//  Include code for drawing the surface of revolution here.
 	// ---- Start here ----
+	for(int j = 0; j < 36; j++) {   //36 slices in 10 deg steps
+	
+		for (int i = 0; i < N; i++) { 
+			wx[i] = vx[i] * cos((-10*M_PI)/180.) + vz[i] * sin((-10*M_PI)/180.);  // transformed points w
+			wy[i] = vy[i];
+			wz[i] = -vx[i] * sin((-10*M_PI)/180.) + vz[i] * cos((-10*M_PI)/180.);
+		}
 
+		glBegin(GL_TRIANGLE_STRIP);
+			
+			for (int i = 0; i < N; i++) {
+				glTexCoord2f((float)(j)/36.f,(float)i/N);          glVertex3f(vx[i], vy[i], vz[i]);
+				if(i > 0) normal(wx[i-1], wy[i-1], wz[i-1],
+					vx[i],
+					vy[i],
+					vz[i],
+					wx[i],
+					wy[i],
+					wz[i]);
+				glTexCoord2f((float)(j+1)/36.f, (float)i/N);          glVertex3f(wx[i], wy[i], wz[i]);
+			}
+		
+		glEnd();
+
+		//Copy W array to V for next iteration
+		for (int i = 0; i<N; i++){
+			vx[i] = wx[i];
+			vy[i] = wy[i];
+			vz[i] = wz[i];
+		}
+	}
 
 	glFlush();
 }

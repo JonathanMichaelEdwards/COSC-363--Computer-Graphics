@@ -21,6 +21,7 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
+                "/usr/invlude/IL/**",
                 "/usr/include/**"
             ],
             "defines": [],

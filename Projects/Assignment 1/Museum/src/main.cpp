@@ -32,12 +32,10 @@ void initialize(char *pjtPath)
 {
 	// Load and enable Textures
 	loadTexture();
-	glEnable(GL_TEXTURE_2D);
-	glEnable(GL_DEPTH_TEST);
 
     glClearColor(0.23f, 0.38f, 0.47f, 1.0f);  // Background colour
-	// glClearColor(0, 0, 0, 1.0f);
 	
+	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_LIGHTING);					//Enable OpenGL states
 	glEnable(GL_LIGHT0);
  	glEnable(GL_COLOR_MATERIAL);
@@ -48,11 +46,11 @@ void initialize(char *pjtPath)
 	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);  
 	glEnable(GL_COLOR_MATERIAL);
 
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	// gluPerspective(60, 1, 50, 2000000000);  //The camera view volume  
-	glFrustum(-5.0, 5.0, -5.0, 5.0, 5.0, 1000000.0); 
 
+	glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+	gluPerspective(60., 1., 1., 10000.); 
+		
 	getPath(pjtPath);
 }
 

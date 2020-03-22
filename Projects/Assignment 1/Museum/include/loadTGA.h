@@ -16,7 +16,7 @@
 #include <GL/freeglut.h>
 using namespace std;
 
-void loadTGA(const char* filename)
+void loadTGA(const char *filename)
 {
     char id, cmap, imgtype, bpp, c_garb;
     char* imageData, temp;
