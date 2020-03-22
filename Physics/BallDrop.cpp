@@ -169,22 +169,14 @@ void myTimer(int value)
 			// speedX += initSpeedX * t * cos(_velTheta);   
 		if (speedY > 2) { 
 			                          // Speed X stays constant
-			speedY += (initSpeedY-=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t) - da;           // fall down
+			speedY += (initSpeedY-=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t) - da;  // decrease fall height
 		} else if (speedY < 2) {
 			while (speedY < 2 - da) {  // makes sure it doesnt go past the origin
 				da -= 0.1;
-				puts("yes");
-				speedY += (initSpeedY+=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);
+				speedY += (initSpeedY+=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);  // rise back to top from ground
 			}
 			da = (decr+=0.001);
-			// speedY = 20;
-		// da += 1;
 		}
-		printf("%f\n", speedY);
-		// else if (speedY < 3) {
-		// 	speedY += (initSpeedY+=da); //* t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);
-		// 	da--;  
-		// }
 	}
 
 	glutPostRedisplay(); 
