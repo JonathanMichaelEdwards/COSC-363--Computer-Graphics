@@ -38,11 +38,11 @@ float cam_hgt = 100;
 
 #define velTheta      90
 #define _velTheta     (velTheta * PI) / 180
-#define airFric       0.35
+#define airFric       0.3
 #define t             1
 
 double initSpeedX = 0;//20; 
-double initSpeedY = 15;//16.1264;            // tan(theta) * Vx
+double initSpeedY = 12;//16.1264;            // tan(theta) * Vx
 double speedX = 0;
 double speedY = 0;
 
@@ -89,7 +89,7 @@ void ball(void)
 {
 	glPushMatrix();
 		glColor3f(0, 0, 1);
-		glTranslatef(speedX, speedY+2, 0);
+		glTranslatef(speedX, 4+ speedY, 0);
 		glutSolidSphere(5, 36, 18);
 	glPopMatrix();
 }
@@ -146,36 +146,38 @@ void initialize()
 }
 
 
+double da = 0.1;
+double decr = 0.5;
+bool resetBall = false;
+
 
 void rstBall() 
 {
-	speedX = speedY = 0; 
-	initSpeedY = 16.1264; 
+	speedY = 0; 
+	initSpeedY = 12; 
+	da = 0.1;
+	decr = 0.5;
 	spacePressed = false;
+	resetBall = false;
 }
 
-float da = 1;
-float decr = 1;
 
-// Adding walk animation
+// collision between wall and ball - bad way
 void myTimer(int value) 
 {  
-	// theta += (theta <= -20 ? dir*=-1 : 20 <= theta ? dir*=-1 : dir); 
-	if (spacePressed) {
-		// if (speedY < -60) {
-		// 	speedX += initSpeedX * t * cos(_velTheta);                                  // Speed X stays constant
-		// 	speedY += (initSpeedY-=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);   // Speed Y changes due to gravity and air friction
-		// } else {
-			// speedX += initSpeedX * t * cos(_velTheta);   
-		if (speedY > 2) { 
-			                          // Speed X stays constant
+	if (spacePressed) {  
+		if (speedY > 1) { 
 			speedY += (initSpeedY-=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t) - da;  // decrease fall height
-		} else if (speedY < 2) {
-			while (speedY < 2 - da) {  // makes sure it doesnt go past the origin
+		} else if (speedY < 1) {
+			while (speedY < 1 - da) {  // makes sure it doesnt go past the origin
+				resetBall = 0;
 				da -= 0.1;
 				speedY += (initSpeedY+=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);  // rise back to top from ground
 			}
 			da = (decr+=0.001);
+	
+			if (resetBall) rstBall();
+			resetBall = true;
 		}
 	}
 
