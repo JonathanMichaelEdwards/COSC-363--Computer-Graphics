@@ -22,6 +22,8 @@
 #define WINDOW_POS 10
 
 
+const float grey[4] = {0.2, 0.2, 0.2, 1.0};
+const float white[4]  = {1.0, 1.0, 1.0, 1.0};
 
 /** ------------------------------------------------------------------------------
 //  								Initialize OpenGL
@@ -30,26 +32,37 @@
 //  --------------------------------------------------------------------------- */
 void initialize(char *pjtPath)
 {
-	// Load and enable Textures
-	loadTexture();
-
     glClearColor(0.23f, 0.38f, 0.47f, 1.0f);  // Background colour
 	
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_LIGHTING);					//Enable OpenGL states
+	glEnable(GL_LIGHTING);	// Enable lighting
+
+	// Enable light sources
 	glEnable(GL_LIGHT0);
- 	glEnable(GL_COLOR_MATERIAL);
+	// glEnable(GL_LIGHT1);
+
+	//	Define light's ambient, diffuse, specular properties
+	glLightfv(GL_LIGHT0, GL_AMBIENT, grey);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, white);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, white);
+
+	glEnable(GL_COLOR_MATERIAL);
+	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);  
+  
+	glMaterialfv(GL_FRONT, GL_SPECULAR, white);    
+  	glMaterialf(GL_FRONT, GL_SHININESS, 50);
+
+ 	
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_NORMALIZE);
 
-	  // Enable Ambiant and difuse lighting
-	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);  
-	glEnable(GL_COLOR_MATERIAL);
 
+
+	// Load and enable Textures
+	loadTexture(); 
 
 	glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-	gluPerspective(60., 1., 1., 1000.); 
+	gluPerspective(60., 1., 1., 500.); 
 		
 	getPath(pjtPath);
 }

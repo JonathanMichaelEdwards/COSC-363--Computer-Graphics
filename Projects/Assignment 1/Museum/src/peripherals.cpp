@@ -96,8 +96,7 @@ void keyEvents(unsigned char key, int x, int y)
 	else if (key == '-') zoom(-1);
 
 	
-	if (!spacePressed(false))
-		if (key == SPACE) spacePressed(true);
+	if (key == SPACE) spacePressed(true);
 
 
     glutTimerFunc(TIMER_DELAY, idle, TIMER_DELAY);  

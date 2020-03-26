@@ -23,7 +23,7 @@ void topBottomRight(void);
 void getView(bool _view);
 void zoom(GLdouble _zoom);
 
-bool spacePressed(bool _state);
+void spacePressed(bool _state);
 void ballBounce(int value);
 
 char *getPath(char *path);
