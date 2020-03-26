@@ -52,8 +52,10 @@ const float doorPointGlobal[3] = { };   // diff of point
 
 double initSpeedX = 0; //20; 
 double initSpeedY = 0; //16.1264;            // tan(theta) * Vx
-double speedX = 0;
-double speedY = 5;  // pos height
+double speedY = 0.1;
+double ballPosY = 5;  // pos height
+
+// double u = ballPosY * sin(_velTheta);  // initial speed
 
 bool _spacePressed = false;
 double previous = 0;
@@ -379,7 +381,7 @@ void spacePressed(bool _state)
 
 void rstBall(void) 
 {
-	speedY = 0; 
+	ballPosY = 0; 
 	initSpeedY = 12; 
 	da = 0.1;
 	decr = 0.5;
@@ -388,73 +390,98 @@ void rstBall(void)
 }
 
 
+#define BALL_RADIUS 0.1
 
 void ball(void)
 {
 	glPushMatrix();
 		glColor3f(0, 0, 1);
-		glTranslatef(0, -0.8+speedY, 0);
-		glutSolidSphere(0.1, 36, 18);
+		glTranslatef(0, ballPosY, 0);
+		glutSolidSphere(BALL_RADIUS, 36, 18);
 	glPopMatrix();
 }
 
-double time_d = 0;
+
+// happens once
+void bounceUpAndDown(int value) 
+{  
+	if (_spacePressed) {  
+		if (ballPosY >= FLOOR_BED+BALL_RADIUS+speedY) { 
+			ballPosY -= speedY;
+			// ballPosY = _ballPosY;
+		} else {
+			speedY *= -1;
+			ballPosY -= speedY;
+		}
+	}
+
+	glutTimerFunc(30, ballBounce, 0); 
+}
+
+
 // collision between wall and ball - bad way
 void ballBounce(int value) 
 {  
 	// if (_spacePressed) {  
-	// 	previous = speedY;
-	// 	if (speedY > 1) { 
-	// 		speedY += (initSpeedY-=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t) - da;  // decrease fall height
-	// 	} else if (speedY < 1) {
-	// 		while (speedY < 1 - da) {  // makes sure it doesnt go past the origin
+	// 	previous = ballPosY;
+	// 	if (ballPosY > 1) { 
+	// 		ballPosY += (initSpeedY-=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t) - da;  // decrease fall height
+	// 	} else if (ballPosY < 1) {
+	// 		while (ballPosY < 1 - da) {  // makes sure it doesnt go past the origin
 	// 			resetBall = 0;
 	// 			da -= 0.1;
-	// 			speedY += (initSpeedY+=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);  // rise back to top from ground
+	// 			ballPosY += (initSpeedY+=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);  // rise back to top from ground
 	// 		}
 	// 		da = (decr+=0.001);
 	
 	// 		if (resetBall) {
-	// 			speedY += (initSpeedY+=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t); 
-	// 		 	if (abs((speedY-previous))  < 0.5) rstBall();
+	// 			ballPosY += (initSpeedY+=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t); 
+	// 		 	if (abs((ballPosY-previous))  < 0.5) rstBall();
 	// 		}
 	// 		resetBall = true;
 	// 	}
 	// }
 	// printf("%f\n", speedX);
-	// speedX = speedY / 15;
-	double u = 10 * sin(_velTheta);  // initial speed
+	// speedX = ballPosY / 15;
+	
 	double mass = 5; // kg
 	double force = GRAVITY * mass;
 	double gravity = force / mass;
+
+	
 	
 
 
 	if (_spacePressed) {  
-		// previous = speedY;
-		if (speedY > 0) { 
-			// speedY += (u * t * sin(_velTheta) - 0.5 * gravity * (t*t));
-			speedY += ((initSpeedY-=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t));
-			// speedY += ((initSpeedY-=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t));  // decrease fall height
-		} 
-		printf("%f\n", speedY);
-		// else if (speedY < 1) {
-		// 	while (speedY < 1 - da) {  // makes sure it doesnt go past the origin
-		// 		resetBall = 0;
-		// 		da -= 0.1;
-		// 		speedY += (initSpeedY+=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);  // rise back to top from ground
-		// 	}
-		// 	da = (decr+=0.001);
+		// previous = ballPosY;
+		// double _ballPosY = ballPosY + (initSpeedY-=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);
+
+		if (ballPosY >= FLOOR_BED+BALL_RADIUS+speedY) { 
+			ballPosY -= speedY;
+			// ballPosY = _ballPosY;
+		} else {
+			speedY *= -1;
+			ballPosY -= speedY;
+		// else if (ballPosY <= 1) {
+			// while (ballPosY < 1 - da) {  // makes sure it doesnt go past the origin
+			// 	resetBall = 0;
+			// 	da -= 0.1;
+			// ballPosY -= (initSpeedY+=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);  // rise back to top from ground
+			// }
+			// ballPosY = 10;
+			// initSpeedY = 0;
+			// da = (decr+=0.001);
 	
-		// 	if (resetBall) {
-		// 		speedY += (initSpeedY+=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t); 
-		// 	 	if (abs((speedY-previous))  < 0.5) rstBall();
-		// 	}
-		// 	resetBall = true;
-		// }
+			// if (resetBall) {
+			// 	ballPosY += (initSpeedY+=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t); 
+			//  	if (abs((ballPosY-previous))  < 0.5) rstBall();
+			// }
+			// resetBall = true;
+		}
+
+		
 	}
-	
-	// glutPostRedisplay(); 
+
 	glutTimerFunc(30, ballBounce, 0); 
 }
 
