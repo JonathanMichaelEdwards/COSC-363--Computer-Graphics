@@ -43,17 +43,17 @@ const float doorPointGlobal[3] = { };   // diff of point
 
 
 #define PI		3.14159265358979323846
-#define GRAVITY 9.81
+#define GRAVITY 98.1
 
-#define velTheta      9
+#define velTheta      90
 #define _velTheta     (velTheta * PI) / 180
-#define airFric       1
-#define t             1.2
+#define airFric       0.47
+#define t             0.01
 
-double initSpeedX = 0;//20; 
-double initSpeedY = 12;//16.1264;            // tan(theta) * Vx
+double initSpeedX = 0; //20; 
+double initSpeedY = 0; //16.1264;            // tan(theta) * Vx
 double speedX = 0;
-double speedY = 0;
+double speedY = 5;  // pos height
 
 bool _spacePressed = false;
 double previous = 0;
@@ -122,15 +122,25 @@ GLdouble x_view=0,z_view=0, x_view_2=0,z_view_2=0, top_x=0, top_z=-1, top_x_2=0,
 // 3d person camera  ----------------------------------------
 void moveBack(float angle)
 {
-	eye_x -= 0.5*sin(angle);
-	eye_z += 0.5*cos(angle);
+	float _eye_x = eye_x - 0.5*sin(angle);  // temp pos x
+	float _eye_z = eye_z + 0.5*cos(angle);  // temp pos z
+
+	if ((-16 <= _eye_x && _eye_x <= 16) && (-16 <= _eye_z && _eye_z <= 16)) {
+		eye_x = _eye_x;
+		eye_z = _eye_z;
+	}
 }
 
 
 void moveForward(float angle)
 {
-	eye_x += 0.5*sin(angle);
-	eye_z -= 0.5*cos(angle);
+	float _eye_x = eye_x + 0.5*sin(angle);  // temp pos x
+	float _eye_z = eye_z - 0.5*cos(angle);  // temp pos z
+
+	if ((-16 <= _eye_x && _eye_x <= 16) && (-16 <= _eye_z && _eye_z <= 16)) {
+		eye_x = _eye_x;
+		eye_z = _eye_z;
+	}
 }
 
 
@@ -383,37 +393,66 @@ void ball(void)
 {
 	glPushMatrix();
 		glColor3f(0, 0, 1);
-		glTranslatef(0, -0.8+speedX, 0);
+		glTranslatef(0, -0.8+speedY, 0);
 		glutSolidSphere(0.1, 36, 18);
 	glPopMatrix();
 }
 
-
+double time_d = 0;
 // collision between wall and ball - bad way
 void ballBounce(int value) 
 {  
-	if (_spacePressed) {  
-		previous = speedY;
-		if (speedY > 1) { 
-			speedY += (initSpeedY-=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t) - da;  // decrease fall height
-		} else if (speedY < 1) {
-			while (speedY < 1 - da) {  // makes sure it doesnt go past the origin
-				resetBall = 0;
-				da -= 0.1;
-				speedY += (initSpeedY+=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);  // rise back to top from ground
-			}
-			da = (decr+=0.001);
+	// if (_spacePressed) {  
+	// 	previous = speedY;
+	// 	if (speedY > 1) { 
+	// 		speedY += (initSpeedY-=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t) - da;  // decrease fall height
+	// 	} else if (speedY < 1) {
+	// 		while (speedY < 1 - da) {  // makes sure it doesnt go past the origin
+	// 			resetBall = 0;
+	// 			da -= 0.1;
+	// 			speedY += (initSpeedY+=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);  // rise back to top from ground
+	// 		}
+	// 		da = (decr+=0.001);
 	
-			if (resetBall) {
-				speedY += (initSpeedY+=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t); 
-			 	if (abs((speedY-previous))  < 0.5) rstBall();
-			}
-			resetBall = true;
-			
-		}
-	}
+	// 		if (resetBall) {
+	// 			speedY += (initSpeedY+=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t); 
+	// 		 	if (abs((speedY-previous))  < 0.5) rstBall();
+	// 		}
+	// 		resetBall = true;
+	// 	}
+	// }
+	// printf("%f\n", speedX);
+	// speedX = speedY / 15;
+	double u = 10 * sin(_velTheta);  // initial speed
+	double mass = 5; // kg
+	double force = GRAVITY * mass;
+	double gravity = force / mass;
+	
 
-	speedX = speedY / 15;
+
+	if (_spacePressed) {  
+		// previous = speedY;
+		if (speedY > 0) { 
+			// speedY += (u * t * sin(_velTheta) - 0.5 * gravity * (t*t));
+			speedY += ((initSpeedY-=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t));
+			// speedY += ((initSpeedY-=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t));  // decrease fall height
+		} 
+		printf("%f\n", speedY);
+		// else if (speedY < 1) {
+		// 	while (speedY < 1 - da) {  // makes sure it doesnt go past the origin
+		// 		resetBall = 0;
+		// 		da -= 0.1;
+		// 		speedY += (initSpeedY+=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);  // rise back to top from ground
+		// 	}
+		// 	da = (decr+=0.001);
+	
+		// 	if (resetBall) {
+		// 		speedY += (initSpeedY+=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t); 
+		// 	 	if (abs((speedY-previous))  < 0.5) rstBall();
+		// 	}
+		// 	resetBall = true;
+		// }
+	}
 	
 	// glutPostRedisplay(); 
 	glutTimerFunc(30, ballBounce, 0); 
@@ -701,9 +740,11 @@ void display(void)
 	if (viewState) {   // top down view
 		glTranslatef(x_view_2, z_view_2, _zoom_);  // since transformed y has become z
 		gluLookAt(0, 30, 0,  0, 0, -1, 0, 1, 0);
-	} else 
+	} else {
 		gluLookAt(eye_x, 0, eye_z,  look_x, 0, look_z,   0, 1, 0);	
+	}
 
+	// printf("x=%f   z=%f       x=%f   z=%f\n", eye_x, eye_z, look_x, look_z);
 
 
 	// disable specular lighting ---------------------
@@ -711,9 +752,9 @@ void display(void)
 
 
 	// draw objects with only ambiant and diffuse lighting
-	displayMuesum();
+	// displayMuesum();
 		
-	skyBox();
+	// skyBox();
 	drawFloor();
 
 	// reset back to white for any other objects that take light
