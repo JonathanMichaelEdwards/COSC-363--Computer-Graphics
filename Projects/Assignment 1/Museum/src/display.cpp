@@ -43,12 +43,12 @@ const float doorPointGlobal[3] = { };   // diff of point
 
 
 #define PI		3.14159265358979323846
-#define GRAVITY 98.1
+#define GRAVITY 9.81
 
 #define velTheta      90
 #define _velTheta     (velTheta * PI) / 180
-#define airFric       0.47
-#define t             0.01
+// #define airFric       0.47
+#define t             0.02
 
 double initSpeedX = 0; //20; 
 double initSpeedY = 0; //16.1264;            // tan(theta) * Vx
@@ -405,96 +405,38 @@ void ball(void)
 }
 
 
-// // happens once
+// perfect elastic collision
 // void bounceUpAndDown(int value) 
 // {  
 	// if (_spacePressed) {  
-	// 	if (ballPosY+speedY >= FLOOR_BED+BALL_RADIUS) { 
-	// 		speedY -= 0.02; // gravity acceleration (drag)
-	// 		ballPosY += speedY;
-	// 	} else {
-	// 		speedY *= -1;  // change direction
-	// 		ballPosY += speedY;
-	// 	}
+	// 	if (ballPosY+speedY >= FLOOR_BED+BALL_RADIUS)
+	// 		speedY -= sin(_velTheta) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);   // acceleration (drag)
+	// 	else 
+	// 		speedY *= -1;                                                            // change direction
+
+	// 	ballPosY += speedY;
 	// }
 
 // 	glutTimerFunc(30, bounceUpAndDown, 0); 
 // }
 
 
-// // collision between wall and ball - bad way
-// void oneTimeBounce(int value) 
-// {  
-// 	double _ballPosY = (initSpeedY-=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);
+#define DRAG_SPHERE 0.45 
+#define AIR_DENSITY 1.225
 
-// 	if (_spacePressed) {  
-// 		if ((ballPosY) >= FLOOR_BED+BALL_RADIUS && accDown) 
-// 			ballPosY += _ballPosY;
-// 		else {
-// 			accDown = false;
-// 			_ballPosY *= -1;
-// 			ballPosY += _ballPosY;
-// 		}
-// 	}
-	
-	
-// 	glutTimerFunc(30, ballBounce, 0); 
-// }
-
-
-
-// collision between wall and ball - bad way
 void ballBounce(int value) 
 {  
-	// if (_spacePressed) {  
-	// 	previous = ballPosY;
-	// 	if (ballPosY > 1) { 
-	// 		ballPosY += (initSpeedY-=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t) - da;  // decrease fall height
-	// 	} else if (ballPosY < 1) {
-	// 		while (ballPosY < 1 - da) {  // makes sure it doesnt go past the origin
-	// 			resetBall = 0;
-	// 			da -= 0.1;
-	// 			ballPosY += (initSpeedY+=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);  // rise back to top from ground
-	// 		}
-	// 		da = (decr+=0.001);
-	
-	// 		if (resetBall) {
-	// 			ballPosY += (initSpeedY+=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t); 
-	// 		 	if (abs((ballPosY-previous))  < 0.5) rstBall();
-	// 		}
-	// 		resetBall = true;
-	// 	}
-	// }
-	// printf("%f\n", speedX);
-	// speedX = ballPosY / 15;
-
-	
-	
-
-	// double _ballPosY = (initSpeedY-=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t) - da;
-
-	// if (_spacePressed) {  
-	// 	if (ballPosY >= FLOOR_BED+BALL_RADIUS) {
-	// 		ballPosY += _ballPosY;
-	// 	} else if (ballPosY < FLOOR_BED+BALL_RADIUS) {
-	// 		// accDown = true;
-	// 		_ballPosY *= -1;
-	// 		ballPosY += _ballPosY;
-
-	// 		da += 0.01;
-	// 	}
-	// }
-
-
+	double mass = 1.;
+	double area = 4 * PI * (BALL_RADIUS*BALL_RADIUS);
+	double vTerminal = sqrt((2*mass*GRAVITY) / (DRAG_SPHERE*AIR_DENSITY*area)) / 100; 
 
 	if (_spacePressed) {  
-		if (ballPosY+speedY >= FLOOR_BED+BALL_RADIUS) { 
-			speedY -= 0.02; // gravity acceleration (drag)
-			ballPosY += speedY;
-		} else {
-			speedY *= -1;  // change direction
-			ballPosY += speedY;
-		}
+		if (ballPosY+speedY >= FLOOR_BED+BALL_RADIUS)
+			speedY -= sin(_velTheta) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);   // Gravity acceleration movement (drag)
+		else 
+			speedY *= -1 + vTerminal;                                                            // change direction - when hit floor
+
+		ballPosY += speedY;
 	}
 
 	printf("%f\n", ballPosY);
