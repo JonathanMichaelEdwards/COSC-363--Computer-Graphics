@@ -48,7 +48,7 @@ const float doorPointGlobal[3] = { };   // diff of point
 #define velTheta      90
 #define _velTheta     (velTheta * PI) / 180
 // #define airFric       0.47
-#define t             0.02
+#define t             0.03
 
 double initSpeedX = 0; //20; 
 double initSpeedY = 0; //16.1264;            // tan(theta) * Vx
@@ -382,15 +382,7 @@ void spacePressed(bool _state)
 }
 
 
-void rstBall(void) 
-{
-	ballPosY = 0; 
-	initSpeedY = 12; 
-	da = 0.1;
-	decr = 0.5;
-	_spacePressed = false;
-	resetBall = false;
-}
+
 
 
 #define BALL_RADIUS 0.1
@@ -424,6 +416,18 @@ void ball(void)
 #define DRAG_SPHERE 0.45 
 #define AIR_DENSITY 1.225
 
+bool reset = false;
+
+
+void rstBall(void) 
+{
+	ballPosY = 3; 
+	speedY = 0;
+	_spacePressed = false;
+	reset = false;
+}
+
+
 void ballBounce(int value) 
 {  
 	double mass = 1.;
@@ -431,15 +435,18 @@ void ballBounce(int value)
 	double vTerminal = sqrt((2*mass*GRAVITY) / (DRAG_SPHERE*AIR_DENSITY*area)) / 100; 
 
 	if (_spacePressed) {  
-		if (ballPosY+speedY >= FLOOR_BED+BALL_RADIUS)
+		if (ballPosY+speedY >= FLOOR_BED+BALL_RADIUS) {
 			speedY -= sin(_velTheta) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);   // Gravity acceleration movement (drag)
-		else 
-			speedY *= -1 + vTerminal;                                                            // change direction - when hit floor
+			ballPosY += speedY; 
+			reset = false;
+		} else {
+			if (reset) rstBall();
+			reset = true;
 
-		ballPosY += speedY;
+			speedY *= -1 + vTerminal;   
+		}
 	}
 
-	printf("%f\n", ballPosY);
 	
 	glutTimerFunc(30, ballBounce, 0); 
 }
