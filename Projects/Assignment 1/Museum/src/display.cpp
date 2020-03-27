@@ -53,7 +53,7 @@ const float doorPointGlobal[3] = { };   // diff of point
 double initSpeedX = 0; //20; 
 double initSpeedY = 0; //16.1264;            // tan(theta) * Vx
 double speedY = 0;
-double ballPosY = 5;  // pos height
+double ballPosY = 3;  // pos height
 
 // double u = ballPosY * sin(_velTheta);  // initial speed
 
@@ -409,38 +409,37 @@ void ball(void)
 // void bounceUpAndDown(int value) 
 // {  
 	// if (_spacePressed) {  
-	// 	if (ballPosY >= FLOOR_BED+BALL_RADIUS) { 
-	// 		speedY -= 0.01;
+	// 	if (ballPosY+speedY >= FLOOR_BED+BALL_RADIUS) { 
+	// 		speedY -= 0.02; // gravity acceleration (drag)
 	// 		ballPosY += speedY;
 	// 	} else {
-	// 		speedY *= -1;
+	// 		speedY *= -1;  // change direction
 	// 		ballPosY += speedY;
 	// 	}
 	// }
-// 	}
 
 // 	glutTimerFunc(30, bounceUpAndDown, 0); 
 // }
 
 
-// collision between wall and ball - bad way
-void oneTimeBounce(int value) 
-{  
-	double _ballPosY = (initSpeedY-=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);
+// // collision between wall and ball - bad way
+// void oneTimeBounce(int value) 
+// {  
+// 	double _ballPosY = (initSpeedY-=airFric) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);
 
-	if (_spacePressed) {  
-		if ((ballPosY) >= FLOOR_BED+BALL_RADIUS && accDown) 
-			ballPosY += _ballPosY;
-		else {
-			accDown = false;
-			_ballPosY *= -1;
-			ballPosY += _ballPosY;
-		}
-	}
+// 	if (_spacePressed) {  
+// 		if ((ballPosY) >= FLOOR_BED+BALL_RADIUS && accDown) 
+// 			ballPosY += _ballPosY;
+// 		else {
+// 			accDown = false;
+// 			_ballPosY *= -1;
+// 			ballPosY += _ballPosY;
+// 		}
+// 	}
 	
 	
-	glutTimerFunc(30, ballBounce, 0); 
-}
+// 	glutTimerFunc(30, ballBounce, 0); 
+// }
 
 
 
@@ -489,15 +488,16 @@ void ballBounce(int value)
 
 
 	if (_spacePressed) {  
-		if (ballPosY >= FLOOR_BED+BALL_RADIUS) { 
-			speedY -= 0.01; // gravity acceleration (drag)
+		if (ballPosY+speedY >= FLOOR_BED+BALL_RADIUS) { 
+			speedY -= 0.02; // gravity acceleration (drag)
 			ballPosY += speedY;
 		} else {
-			speedY *= -1;
+			speedY *= -1;  // change direction
 			ballPosY += speedY;
 		}
 	}
 
+	printf("%f\n", ballPosY);
 	
 	glutTimerFunc(30, ballBounce, 0); 
 }
