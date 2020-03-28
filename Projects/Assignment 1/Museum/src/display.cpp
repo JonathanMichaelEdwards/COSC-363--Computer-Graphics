@@ -398,7 +398,7 @@ void ball(void)
 // void bounceUpAndDown(int value) 
 // {  
 	// if (_spacePressed) {  
-	// 	if (ballPosY+speedY >= FLOOR_BED+BALL_RADIUS)
+	// 	if (ballPosY >= FLOOR_BED+BALL_RADIUS)
 	// 		speedY -= sin(_velTheta) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);   // acceleration (drag)
 	// 	else 
 	// 		speedY *= -1;                                                            // change direction
@@ -490,25 +490,24 @@ void rstBall(void)
 double da = 0.1;
 double decr = 0.5;
 bool resetBall = false;
-double _speedY = sin(_velTheta) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);
+// double _speedY = sin(_velTheta) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);
 
 void ballBounce(int value) 
 {  
-	double mass = .1;
+	double mass = 5.;
 	double area = 4 * PI * (BALL_RADIUS*BALL_RADIUS);
 	double vTerminal = sqrt((2*(mass)*GRAVITY) / (DRAG_SPHERE*AIR_DENSITY*area)) / 100; 
 
 	if (_spacePressed) {  
 		if (ballPosY+speedY >= FLOOR_BED+BALL_RADIUS) {
-			// ballPosY += speedY;
+			reset = false;
 			speedY -=  sin(_velTheta) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);   // Gravity acceleration movement (drag)
-			ballPosY += speedY;// - da; 
-			// reset = false;
-		// } else if ( circleRect(0, ballPosY, BALL_RADIUS)) {
-			}else {// if (reset) rstBall();
-			// reset = true;
-			speedY *= -1 + vTerminal;
-			// ballPosY += speedY; 
+			ballPosY += speedY;
+		} else {
+			if (reset) rstBall();
+			reset = true;
+			speedY *= -1 + vTerminal;  // resistance percentage
+			ballPosY += speedY;
 		}
 	}
 	
