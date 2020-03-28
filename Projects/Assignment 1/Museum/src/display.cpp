@@ -409,20 +409,37 @@ void box(void)
 		// 	glVertex3f(ballPosX/2+0,  ballPosY+1, 0); 
 		// glEnd();
 
-		// diagonal
+		// // diagonal
+		// for (int i = 0; i < 3; i++) {
+		// 	glBegin(GL_TRIANGLES);
+		// 		glColor3f(0, 0, 1);
+		// 		// bottom
+		// 		glVertex3f(-ballPosX/2+0+i, ballPosY+0+i, 0);  
+		// 		glVertex3f(-ballPosX/2+1+i, ballPosY+ 0+i, 0);  
+		// 		glVertex3f(-ballPosX/2+0+i,  ballPosY+1+i, 0); 
+
+		// 		// top
+		// 		glColor3f(0, 1, 0);
+		// 		glVertex3f(ballPosX/2+1+i, ballPosY+0+i, 0);  
+		// 		glVertex3f(ballPosX/2+1+i, ballPosY+ 1+i, 0);  
+		// 		glVertex3f(ballPosX/2+0+i,  ballPosY+1+i, 0); 
+		// 	glEnd();
+		// }
+
+		// vertical
 		for (int i = 0; i < 3; i++) {
 			glBegin(GL_TRIANGLES);
 				glColor3f(0, 0, 1);
 				// bottom
-				glVertex3f(-ballPosX/2+0+i, ballPosY+0+i, 0);  
-				glVertex3f(-ballPosX/2+1+i, ballPosY+ 0+i, 0);  
-				glVertex3f(-ballPosX/2+0+i,  ballPosY+1+i, 0); 
+				glVertex3f(-ballPosX/2+0, ballPosY+0+i, 0);  
+				glVertex3f(-ballPosX/2+1, ballPosY+ 0+i, 0);  
+				glVertex3f(-ballPosX/2+0,  ballPosY+1+i, 0); 
 
 				// top
 				glColor3f(0, 1, 0);
-				glVertex3f(ballPosX/2+1+i, ballPosY+0+i, 0);  
-				glVertex3f(ballPosX/2+1+i, ballPosY+ 1+i, 0);  
-				glVertex3f(ballPosX/2+0+i,  ballPosY+1+i, 0); 
+				glVertex3f(ballPosX/2+1, ballPosY+0+i, 0);  
+				glVertex3f(ballPosX/2+1, ballPosY+ 1+i, 0);  
+				glVertex3f(ballPosX/2+0,  ballPosY+1+i, 0); 
 			glEnd();
 		}
 
