@@ -27,10 +27,10 @@
 #define WALL_ROT_THETA      22
 #define WALL_ROT_RAD        (WALL_ROT_THETA*M_PI) / 180
 #define WALL_SCALE_WIDTH    0.3
-#define WALL_SCALE_HEIGHT   1.5
-#define WALL_SCALE_LENGTH   5
+#define WALL_SCALE_HEIGHT   3
+#define WALL_SCALE_LENGTH   8
 #define FLOOR_BED           -1
-#define WIDTH_SPACE         4
+#define WIDTH_SPACE         9
 
 // move wall in place respect to angles
 #define WALL_X     WALL_SCALE_LENGTH*sin(WALL_ROT_RAD)
@@ -44,6 +44,9 @@ const float doorPointGlobal[3] = { };   // diff of point
 
 #define PI		3.14159265358979323846
 #define GRAVITY 9.81
+
+#define FLOOR_X  26
+#define FLOOR_Z  26
 
 #define velTheta      90
 #define _velTheta     (velTheta * PI) / 180
@@ -122,7 +125,7 @@ void showFPS(void)
 
 
 static bool viewState = 0;
-float look_x, look_z=-1, eye_x, eye_z;  //Camera parameters
+float look_x, look_z=-1, eye_x, eye_z=20;  //Camera parameters
 GLdouble x_view=0,z_view=0, x_view_2=0,z_view_2=0, top_x=0, top_z=-1, top_x_2=0, top_z_2=-1, _zoom_=0;
   
 
@@ -132,7 +135,7 @@ void moveBack(float angle)
 	float _eye_x = eye_x - 0.5*sin(angle);  // temp pos x
 	float _eye_z = eye_z + 0.5*cos(angle);  // temp pos z
 
-	if ((-16 <= _eye_x && _eye_x <= 16) && (-16 <= _eye_z && _eye_z <= 16)) {
+	if ((-FLOOR_X <= _eye_x && _eye_x <= FLOOR_X) && (-FLOOR_Z <= _eye_z && _eye_z <= FLOOR_Z)) {
 		eye_x = _eye_x;
 		eye_z = _eye_z;
 	}
@@ -144,7 +147,7 @@ void moveForward(float angle)
 	float _eye_x = eye_x + 0.5*sin(angle);  // temp pos x
 	float _eye_z = eye_z - 0.5*cos(angle);  // temp pos z
 
-	if ((-16 <= _eye_x && _eye_x <= 16) && (-16 <= _eye_z && _eye_z <= 16)) {
+	if ((-FLOOR_X <= _eye_x && _eye_x <= FLOOR_X) && (-FLOOR_Z <= _eye_z && _eye_z <= FLOOR_Z)) {
 		eye_x = _eye_x;
 		eye_z = _eye_z;
 	}
@@ -355,10 +358,10 @@ void drawFloor(void)
 
 	glBegin(GL_QUADS);
 	glNormal3f(0, 1, 0);
-	for(int x = -16; x <= 16; x += 2) {
-		for(int z = -16; z <= 16; z += 2) {
-			if(flag) glColor3f(0.6, 1.0, 0.8);
-			else glColor3f(0.8, 1.0, 0.6);
+	for(int x = -FLOOR_X; x <= FLOOR_X; x += 2) {
+		for(int z = -FLOOR_Z; z <= FLOOR_Z; z += 2) {
+			if(flag) glColor3f(1, 1, 1);
+			else glColor3f(0, 0, 0);
 			glVertex3f(x, FLOOR_BED, z);
 			glVertex3f(x, FLOOR_BED, z+2);
 			glVertex3f(x+2, FLOOR_BED, z+2);
@@ -433,7 +436,6 @@ void rstBall(void)
 double da = 0.1;
 double decr = 0.5;
 bool resetBall = false;
-// double _speedY = sin(_velTheta) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);
 
 void ballBounce(int value) 
 {  
@@ -475,7 +477,7 @@ void wall(void)
 void openDoor(void)
 {
 	glTranslatef(0, (WALL_SCALE_HEIGHT/2)-1, 0);        // y = -0.25  
-	glScalef(WALL_SCALE_WIDTH, WALL_SCALE_HEIGHT, WALL_SCALE_LENGTH/2.5f);
+	glScalef(WALL_SCALE_WIDTH, WALL_SCALE_HEIGHT, WALL_SCALE_LENGTH/2.0f);
 	glutSolidCube(1);
 }
 
@@ -483,7 +485,7 @@ void openDoor(void)
 void sideWall(void)
 {
 	glTranslatef(0, (WALL_SCALE_HEIGHT/2)-1, 0);        // y = -0.25  
-	glScalef(WALL_SCALE_WIDTH, WALL_SCALE_HEIGHT, 3.7);
+	glScalef(WALL_SCALE_WIDTH, WALL_SCALE_HEIGHT, WALL_SCALE_LENGTH+0.3);
 	glutSolidCube(1);
 }
 
@@ -495,7 +497,7 @@ void sideWalls()
 		glColor3f(0, 0, 1);
 		glTranslatef(0, 0, -WALL_Z-WALL_Z/2);   
 		glRotatef(90, 0, 1, 0);
-		glScalef(1, 1, 2.6);
+		glScalef(1, 1, 2.5);
 		sideWall();
 	glPopMatrix();
 	
@@ -503,31 +505,16 @@ void sideWalls()
 	// front left
 	glPushMatrix();
 		glColor3f(0, 0, 1);
-		glTranslatef(-WALL_X-WIDTH_SPACE+3, 0, WALL_Z/2);   
+		glTranslatef((-WALL_X*2)-0.2, 0, WALL_Z/2);   
 		glRotatef(90, 0, 1, 0);
 		sideWall();
 	glPopMatrix();
 	
-	// front left top
-	glPushMatrix();
-		glColor3f(0, 0, 1);
-		glTranslatef(-WALL_X-WIDTH_SPACE+3, WALL_SCALE_HEIGHT, WALL_Z/2);   
-		glRotatef(90, 0, 1, 0);
-		sideWall();
-	glPopMatrix();
 
 	// front right
 	glPushMatrix();
 		glColor3f(0, 0, 1);
-		glTranslatef(WALL_X+WIDTH_SPACE-3, 0, WALL_Z/2);   
-		glRotatef(90, 0, 1, 0);
-		sideWall();
-	glPopMatrix();
-
-	// front right top
-	glPushMatrix();
-		glColor3f(0, 0, 1);
-		glTranslatef(WALL_X+WIDTH_SPACE-3, WALL_SCALE_HEIGHT, WALL_Z/2);   
+		glTranslatef((WALL_X*2)+0.2, 0, WALL_Z/2);   
 		glRotatef(90, 0, 1, 0);
 		sideWall();
 	glPopMatrix();
@@ -537,27 +524,13 @@ void sideWalls()
 	glPushMatrix();
 		glColor3f(0, 1, 0);
 
-		glTranslatef(1.27, 0, 1.25 + 1.1); 
-		glRotatef(150, 0, 1, 0);
-		glTranslatef(-1.27, 0, -1.25 - 1.1); 
+		glTranslatef(2, 0, 2 +2);
+		glRotatef(130, 0, 1, 0);
+		glTranslatef(-2, 0, -2 -2);
  
-		glTranslatef(1.27, 0, 1.1); 
+		glTranslatef(2, 0, 2);
 
-		openDoor();
-	glPopMatrix(); 
-
-	// front door top -- air con
-	glPushMatrix();
-		glColor3f(1, 1, 0);
-
-		// glTranslatef(WALL_X+WIDTH_SPACE-5.85, 0, WALL_Z/2);  
-		
-		glTranslatef(1.27, WALL_SCALE_HEIGHT, 1.25 + 1.1); 
-		glRotatef(90, 0, 1, 0);
-		glTranslatef(-1.27, -WALL_SCALE_HEIGHT, -1.25 - 1.1); 
- 
-		glTranslatef(1.27, WALL_SCALE_HEIGHT, 1.1); 
-
+		// glRotatef(90, 0, 1, 0);
 		openDoor();
 	glPopMatrix(); 
 }
@@ -618,8 +591,8 @@ void walls(void)
 #define ROOF_ROT_THETA      45
 #define ROOF_ROT_RAD        (ROOF_ROT_THETA*M_PI) / 180
 #define ROOF_SCALE_WIDTH    0.3
-#define ROOF_SCALE_HEIGHT   2
-#define ROOF_SCALE_LENGTH   5
+#define ROOF_SCALE_HEIGHT   3
+#define ROOF_SCALE_LENGTH   8
 
 const int height = ROOF_SCALE_HEIGHT;
 const float pointLocal[3] = { 0, -1, 0 };                     // pivot point
@@ -742,8 +715,6 @@ void display(void)
 	} else {
 		gluLookAt(eye_x, 0, eye_z,  look_x, 0, look_z,   0, 1, 0);	
 	}
-
-	// printf("x=%f   z=%f       x=%f   z=%f\n", eye_x, eye_z, look_x, look_z);
 
 
 	// disable specular lighting ---------------------
