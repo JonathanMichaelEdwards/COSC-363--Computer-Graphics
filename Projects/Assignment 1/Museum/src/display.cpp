@@ -57,7 +57,7 @@ double initSpeedX = 0; //20;
 double initSpeedY = 0; //16.1264;            // tan(theta) * Vx
 double speedY = 0;
 double speedX = 0;
-double ballPosY = 3;  // pos height
+double ballPosY = 1;  // pos height
 double ballPosX = 0;  // pos width
 
 // double u = ballPosY * sin(_velTheta);  // initial speed
@@ -387,31 +387,80 @@ void spacePressed(bool _state)
 
 
 
-
-void box(int sizeX, int sizeY)
+// draw 2D box
+void _box(int sizeX, int sizeY)
 {
+	float j = 0;
+								
 	glPushMatrix();
-		// stack boxes - vertical
-		for (int x = 0; x < sizeX; x++) {
-			for (int i = 0; i < sizeY; i++) {
+		for (float x = 0; x < sizeX; x+=0.1) {
+			for (float i = 0; i < sizeY; i+=0.1) {
 				glBegin(GL_TRIANGLES);
 					glColor3f(0, 0, 1);
 					// bottom
-					glVertex3f(-ballPosX/2+0+x, ballPosY+0+i, 0);  
-					glVertex3f(-ballPosX/2+1+x, ballPosY+ 0+i, 0);  
-					glVertex3f(-ballPosX/2+0+x,  ballPosY+1+i, 0); 
+					if (_spacePressed)  // once pressed make sure every piece hits the ground or eachother
+						j = (rand() % 10) / 10.f;
+					glVertex3f(-ballPosX/8+0+x-j, j+ballPosY+   0+i, 0);  
+					glVertex3f(-ballPosX/8+0.1+x-j, j+ballPosY+ 0+i, 0);  
+					glVertex3f(-ballPosX/8+0+x-j,  j+ballPosY+  0.1+i, 0); 
 
 					// top
 					glColor3f(0, 1, 0);
-					glVertex3f(ballPosX/2+1+x, ballPosY+0+i, 0);  
-					glVertex3f(ballPosX/2+1+x, ballPosY+ 1+i, 0);  
-					glVertex3f(ballPosX/2+0+x,  ballPosY+1+i, 0); 
+					glVertex3f(ballPosX/8+0.1+x+j, j+ballPosY+  0+i, 0);  
+					glVertex3f(ballPosX/8+0.1+x+j, j+ballPosY+  0.1+i, 0);  
+					glVertex3f(ballPosX/8+0+x+j,  j+ballPosY+   0.1+i, 0); 
 				glEnd();
 			}
 		}
 
 	glPopMatrix();
 }
+
+
+// draw 3d box
+// note: 1x1 default
+void box(void)
+{
+	// front
+	glPushMatrix();
+		_box(1, 1);
+	glPopMatrix();
+
+	// back
+	glPushMatrix();
+		glTranslatef(0, 0, -1);
+		_box(1, 1);
+	glPopMatrix();
+
+	// left
+	glPushMatrix();
+		glRotatef(90, 0, 1, 0);
+		_box(1, 1);
+	glPopMatrix();
+
+	// right
+	glPushMatrix();
+		glRotatef(90, 0, 1, 0);
+		glTranslatef(0, 0, 1);
+		_box(1, 1);
+	glPopMatrix();
+
+	// bottom
+	glPushMatrix();
+		glTranslatef(0, ballPosY, -ballPosY-1);  // shape point bottom left
+		glRotatef(90, 1, 0, 0);
+		_box(1, 1);
+	glPopMatrix();
+
+	// top
+	glPushMatrix();
+		glTranslatef(0, ballPosY+1, -ballPosY-1);  // shape point bottom left
+		glRotatef(90, 1, 0, 0);
+		_box(1, 1);
+	glPopMatrix();
+}
+
+
 
 
 #define BALL_RADIUS 0.1
@@ -763,7 +812,8 @@ void display(void)
 
 	ball();
 
-	box(3, 3);
+	box();
+
 	
 	glutSwapBuffers();	
 

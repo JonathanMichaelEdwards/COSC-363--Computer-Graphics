@@ -58,7 +58,7 @@ void initialize(char *pjtPath)
 
 
 	// Load and enable Textures
-	loadTexture(); 
+	// loadTexture(); 
 
 	glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
