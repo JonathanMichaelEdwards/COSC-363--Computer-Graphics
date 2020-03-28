@@ -388,59 +388,26 @@ void spacePressed(bool _state)
 
 
 
-void box(void)
+void box(int sizeX, int sizeY)
 {
 	glPushMatrix();
-		// bottom left
-		// glBegin(GL_TRIANGLES);
-		// 	glColor3f(1, 0, 0);
+		// stack boxes - vertical
+		for (int x = 0; x < sizeX; x++) {
+			for (int i = 0; i < sizeY; i++) {
+				glBegin(GL_TRIANGLES);
+					glColor3f(0, 0, 1);
+					// bottom
+					glVertex3f(-ballPosX/2+0+x, ballPosY+0+i, 0);  
+					glVertex3f(-ballPosX/2+1+x, ballPosY+ 0+i, 0);  
+					glVertex3f(-ballPosX/2+0+x,  ballPosY+1+i, 0); 
 
-		// 	glVertex3f(-ballPosX/2+0, ballPosY+0, 0);  
-		// 	glVertex3f(-ballPosX/2+1, ballPosY+ 0, 0);  
-		// 	glVertex3f(-ballPosX/2+0,  ballPosY+1, 0);  
-		// glEnd();
-
-		// // top right
-		// glBegin(GL_TRIANGLES);
-		// 	glColor3f(0, 1, 0);
-
-		// 	glVertex3f(ballPosX/2+1, ballPosY+0, 0);  
-		// 	glVertex3f(ballPosX/2+1, ballPosY+ 1, 0);  
-		// 	glVertex3f(ballPosX/2+0,  ballPosY+1, 0); 
-		// glEnd();
-
-		// // diagonal
-		// for (int i = 0; i < 3; i++) {
-		// 	glBegin(GL_TRIANGLES);
-		// 		glColor3f(0, 0, 1);
-		// 		// bottom
-		// 		glVertex3f(-ballPosX/2+0+i, ballPosY+0+i, 0);  
-		// 		glVertex3f(-ballPosX/2+1+i, ballPosY+ 0+i, 0);  
-		// 		glVertex3f(-ballPosX/2+0+i,  ballPosY+1+i, 0); 
-
-		// 		// top
-		// 		glColor3f(0, 1, 0);
-		// 		glVertex3f(ballPosX/2+1+i, ballPosY+0+i, 0);  
-		// 		glVertex3f(ballPosX/2+1+i, ballPosY+ 1+i, 0);  
-		// 		glVertex3f(ballPosX/2+0+i,  ballPosY+1+i, 0); 
-		// 	glEnd();
-		// }
-
-		// vertical
-		for (int i = 0; i < 3; i++) {
-			glBegin(GL_TRIANGLES);
-				glColor3f(0, 0, 1);
-				// bottom
-				glVertex3f(-ballPosX/2+0, ballPosY+0+i, 0);  
-				glVertex3f(-ballPosX/2+1, ballPosY+ 0+i, 0);  
-				glVertex3f(-ballPosX/2+0,  ballPosY+1+i, 0); 
-
-				// top
-				glColor3f(0, 1, 0);
-				glVertex3f(ballPosX/2+1, ballPosY+0+i, 0);  
-				glVertex3f(ballPosX/2+1, ballPosY+ 1+i, 0);  
-				glVertex3f(ballPosX/2+0,  ballPosY+1+i, 0); 
-			glEnd();
+					// top
+					glColor3f(0, 1, 0);
+					glVertex3f(ballPosX/2+1+x, ballPosY+0+i, 0);  
+					glVertex3f(ballPosX/2+1+x, ballPosY+ 1+i, 0);  
+					glVertex3f(ballPosX/2+0+x,  ballPosY+1+i, 0); 
+				glEnd();
+			}
 		}
 
 	glPopMatrix();
@@ -796,7 +763,7 @@ void display(void)
 
 	ball();
 
-	box();
+	box(3, 3);
 	
 	glutSwapBuffers();	
 
