@@ -361,7 +361,7 @@ void drawFloor(void)
 	for(int x = -FLOOR_X; x <= FLOOR_X; x += 2) {
 		for(int z = -FLOOR_Z; z <= FLOOR_Z; z += 2) {
 			if(flag) glColor3f(1, 1, 1);
-			else glColor3f(0, 0, 0);
+			else glColor3f(1, 1, 1);
 			glVertex3f(x, FLOOR_BED, z);
 			glVertex3f(x, FLOOR_BED, z+2);
 			glVertex3f(x+2, FLOOR_BED, z+2);
@@ -385,6 +385,49 @@ void spacePressed(bool _state)
 
 
 
+
+
+
+void box(void)
+{
+	glPushMatrix();
+		// bottom left
+		// glBegin(GL_TRIANGLES);
+		// 	glColor3f(1, 0, 0);
+
+		// 	glVertex3f(-ballPosX/2+0, ballPosY+0, 0);  
+		// 	glVertex3f(-ballPosX/2+1, ballPosY+ 0, 0);  
+		// 	glVertex3f(-ballPosX/2+0,  ballPosY+1, 0);  
+		// glEnd();
+
+		// // top right
+		// glBegin(GL_TRIANGLES);
+		// 	glColor3f(0, 1, 0);
+
+		// 	glVertex3f(ballPosX/2+1, ballPosY+0, 0);  
+		// 	glVertex3f(ballPosX/2+1, ballPosY+ 1, 0);  
+		// 	glVertex3f(ballPosX/2+0,  ballPosY+1, 0); 
+		// glEnd();
+
+		// diagonal
+		for (int i = 0; i < 3; i++) {
+			glBegin(GL_TRIANGLES);
+				glColor3f(0, 0, 1);
+				// bottom
+				glVertex3f(-ballPosX/2+0+i, ballPosY+0+i, 0);  
+				glVertex3f(-ballPosX/2+1+i, ballPosY+ 0+i, 0);  
+				glVertex3f(-ballPosX/2+0+i,  ballPosY+1+i, 0); 
+
+				// top
+				glColor3f(0, 1, 0);
+				glVertex3f(ballPosX/2+1+i, ballPosY+0+i, 0);  
+				glVertex3f(ballPosX/2+1+i, ballPosY+ 1+i, 0);  
+				glVertex3f(ballPosX/2+0+i,  ballPosY+1+i, 0); 
+			glEnd();
+		}
+
+	glPopMatrix();
+}
 
 
 #define BALL_RADIUS 0.1
@@ -447,7 +490,7 @@ void ballBounce(int value)
 		if (ballPosY+speedY >= FLOOR_BED+BALL_RADIUS) {
 			reset = false;
 			speedY -=  sin(_velTheta) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);   // Gravity acceleration movement (drag)
-			ballPosX += 0.1;
+			ballPosX += 0.1;  // x-direction movement
 		} else {
 			if (reset) rstBall();
 			reset = true;
@@ -701,7 +744,7 @@ void displayMuesum()
 // ----------------------------------------------------------------------------
 void display(void)  
 {
-	const float lposHouse[4] = { 0.f, 2.f, 0.f, 1.f };  // light pos for house
+	const float lposHouse[4] = { 0.f, 3.f, -3.f, 1.f };  // light pos for house
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);    //GL_LINE = Wireframe;   GL_FILL = Solid
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
@@ -722,9 +765,9 @@ void display(void)
 
 
 	// draw objects with only ambiant and diffuse lighting
-	displayMuesum();
+	// displayMuesum();
 		
-	skyBox();
+	// skyBox();
 	drawFloor();
 
 	// reset back to white for any other objects that take light
@@ -736,7 +779,7 @@ void display(void)
 
 	ball();
 
-	
+	box();
 	
 	glutSwapBuffers();	
 
