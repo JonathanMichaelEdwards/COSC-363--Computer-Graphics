@@ -48,12 +48,14 @@ const float doorPointGlobal[3] = { };   // diff of point
 #define velTheta      90
 #define _velTheta     (velTheta * PI) / 180
 // #define airFric       0.47
-#define t             0.03
+#define t             0.01
 
 double initSpeedX = 0; //20; 
 double initSpeedY = 0; //16.1264;            // tan(theta) * Vx
 double speedY = 0;
+double speedX = 0;
 double ballPosY = 3;  // pos height
+double ballPosX = 0;  // pos width
 
 // double u = ballPosY * sin(_velTheta);  // initial speed
 
@@ -65,9 +67,9 @@ bool accUp = false;
 
 
 
-#define DIST_Z     100
-#define DIST_X     100
-#define HEIGHT_Y   50
+#define DIST_Z     200
+#define DIST_X     200
+#define HEIGHT_Y   160
 
 // #define GL_CLAMP_TO_EDGE                        0x812F
 
@@ -388,7 +390,7 @@ void ball(void)
 {
 	glPushMatrix();
 		glColor3f(0, 0, 1);
-		glTranslatef(0, ballPosY, 0);
+		glTranslatef(ballPosX, ballPosY, 0);
 		glutSolidSphere(BALL_RADIUS, 36, 18);
 	glPopMatrix();
 }
@@ -420,7 +422,9 @@ bool reset = false;
 void rstBall(void) 
 {
 	ballPosY = 3; 
+	ballPosX = 0;
 	speedY = 0;
+	speedX = 0;
 	_spacePressed = false;
 	reset = false;
 }
@@ -441,6 +445,7 @@ void ballBounce(int value)
 		if (ballPosY+speedY >= FLOOR_BED+BALL_RADIUS) {
 			reset = false;
 			speedY -=  sin(_velTheta) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);   // Gravity acceleration movement (drag)
+			ballPosX += 0.1;
 		} else {
 			if (reset) rstBall();
 			reset = true;
@@ -449,7 +454,7 @@ void ballBounce(int value)
 		ballPosY += speedY;
 	}
 	
-	glutTimerFunc(30, ballBounce, 0); 
+	glutTimerFunc(10, ballBounce, 0); 
 }
 
 
@@ -746,9 +751,9 @@ void display(void)
 
 
 	// draw objects with only ambiant and diffuse lighting
-	// displayMuesum();
+	displayMuesum();
 		
-	// skyBox();
+	skyBox();
 	drawFloor();
 
 	// reset back to white for any other objects that take light
