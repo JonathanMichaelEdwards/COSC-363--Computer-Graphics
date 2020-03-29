@@ -24,7 +24,9 @@ void getView(bool _view);
 void zoom(GLdouble _zoom);
 
 void spacePressed(bool _state);
-void ballBounce(int value);
+// void ballBounce(int value);
+void boxCube(int value);
+void collBox(int value);
 
 char *getPath(char *path);
 void loadTexture(void);	

@@ -8,6 +8,7 @@
 // Standard libaries
 #include <stdio.h>
 #include <libgen.h>  
+#include <pthread.h>
 #include <math.h>
 
 // OpenGL libaries
@@ -53,11 +54,15 @@ const float doorPointGlobal[3] = { };   // diff of point
 // #define airFric       0.47
 #define t             0.01
 
+#define BOX_SIZE       2
+double boxPosStart[BOX_SIZE] =  { 1, 6 };
+
 double initSpeedX = 0; //20; 
 double initSpeedY = 0; //16.1264;            // tan(theta) * Vx
-double speedY = 0;
+double speedY[BOX_SIZE] = { 0 };
+bool   reset[BOX_SIZE]  = { false };
 double speedX = 0;
-double ballPosY = 1;  // pos height
+double ballPosY[BOX_SIZE] = { 1, 6 };  // pos height
 double ballPosX = 0;  // pos width
 
 // double u = ballPosY * sin(_velTheta);  // initial speed
@@ -351,6 +356,8 @@ void skyBox(void)
 //--------------------------------------------------------------------------------
 
 
+
+
 //----------draw a floor plane-------------------
 void drawFloor(void)
 {
@@ -385,94 +392,243 @@ void spacePressed(bool _state)
 
 
 
-
-
-// draw 2D box
-void _box(int sizeX, int sizeY)
-{
-	float j = 0;
+// // draw 2D box
+// void _box(int sizeX, int sizeY)
+// {
+// 	float j = 0;
 								
-	glPushMatrix();
-		for (float x = 0; x < sizeX; x+=0.1) {
-			for (float i = 0; i < sizeY; i+=0.1) {
-				glBegin(GL_TRIANGLES);
-					glColor3f(0, 0, 1);
-					// bottom
-					if (_spacePressed)  // once pressed make sure every piece hits the ground or eachother
-						j = (rand() % 10) / 10.f;
-					glVertex3f(-ballPosX/8+0+x-j, j+ballPosY+   0+i, 0);  
-					glVertex3f(-ballPosX/8+0.1+x-j, j+ballPosY+ 0+i, 0);  
-					glVertex3f(-ballPosX/8+0+x-j,  j+ballPosY+  0.1+i, 0); 
+// 	glPushMatrix();
+// 		for (float x = 0; x < sizeX; x+=0.1) {
+// 			for (float i = 0; i < sizeY; i+=0.1) {
+// 				glBegin(GL_TRIANGLES);
+// 					glColor3f(0, 0, 1);
+// 					// bottom
+// 					if (_spacePressed)  // once pressed make sure every piece hits the ground or eachother
+// 						j = (rand() % 10) / 10.f;
+// 					glVertex3f(-ballPosX/8+0+x-j, j+ballPosY+   0+i, 0);  
+// 					glVertex3f(-ballPosX/8+0.1+x-j, j+ballPosY+ 0+i, 0);  
+// 					glVertex3f(-ballPosX/8+0+x-j,  j+ballPosY+  0.1+i, 0); 
 
-					// top
-					glColor3f(0, 1, 0);
-					glVertex3f(ballPosX/8+0.1+x+j, j+ballPosY+  0+i, 0);  
-					glVertex3f(ballPosX/8+0.1+x+j, j+ballPosY+  0.1+i, 0);  
-					glVertex3f(ballPosX/8+0+x+j,  j+ballPosY+   0.1+i, 0); 
-				glEnd();
-			}
+// 					// top
+// 					glColor3f(0, 1, 0);
+// 					glVertex3f(ballPosX/8+0.1+x+j, j+ballPosY+  0+i, 0);  
+// 					glVertex3f(ballPosX/8+0.1+x+j, j+ballPosY+  0.1+i, 0);  
+// 					glVertex3f(ballPosX/8+0+x+j,  j+ballPosY+   0.1+i, 0); 
+// 				glEnd();
+// 			}
+// 		}
+
+// 	glPopMatrix();
+// }
+
+
+// // draw 3d box
+// // note: 1x1 default
+// void box(void)
+// {
+// 	// front
+// 	glPushMatrix();
+// 		_box(1, 1);
+// 	glPopMatrix();
+
+// 	// back
+// 	glPushMatrix();
+// 		glTranslatef(0, 0, -1);
+// 		_box(1, 1);
+// 	glPopMatrix();
+
+// 	// left
+// 	glPushMatrix();
+// 		glRotatef(90, 0, 1, 0);
+// 		_box(1, 1);
+// 	glPopMatrix();
+
+// 	// right
+// 	glPushMatrix();
+// 		glRotatef(90, 0, 1, 0);
+// 		glTranslatef(0, 0, 1);
+// 		_box(1, 1);
+// 	glPopMatrix();
+
+// 	// bottom
+// 	glPushMatrix();
+// 		glTranslatef(0, ballPosY, -ballPosY-1);  // shape point bottom left
+// 		glRotatef(90, 1, 0, 0);
+// 		_box(1, 1);
+// 	glPopMatrix();
+
+// 	// top
+// 	glPushMatrix();
+// 		glTranslatef(0, ballPosY+1, -ballPosY-1);  // shape point bottom left
+// 		glRotatef(90, 1, 0, 0);
+// 		_box(1, 1);
+// 	glPopMatrix();
+// }
+
+
+
+#define DRAG_SPHERE 0.45 
+#define AIR_DENSITY 1.225
+
+
+int count = 0;
+int change = 0;
+
+void rstBall(void) 
+{
+	for (int i = 0; i < BOX_SIZE; i++) {
+		ballPosY[i] = boxPosStart[i]; 
+		reset[i] = false;
+	}
+
+	ballPosX = 0;
+	speedY[2] = { 0 };
+	speedX = 0;
+	_spacePressed = false;
+	change = 0;
+}
+
+
+
+
+void *one(void *arg)
+{
+	double mass = 5.;
+	double area = 4 * PI * (0.1*0.1);
+	double vTerminal = sqrt((2*(mass)*GRAVITY) / (DRAG_SPHERE*AIR_DENSITY*area)) / 100;
+
+	int i = *(int*)arg;  // block index
+
+	// printf("%d\n", *(int*)arg);
+    // for (int i = 0; i < 2; i++) {
+		// if (ballPosY[i] <= FLOOR_BED) i=1;
+		if (ballPosY[i]+speedY[i] >= FLOOR_BED) {
+			reset[i] = false;
+			change--;
+			speedY[i] -=  sin(_velTheta) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);   // Gravity acceleration movement (drag)
+			ballPosX += 0.1;  // x-direction movement
+			ballPosY[i] += speedY[i];
+		} else {
+			if ((change >= 10))
+				rstBall();
+			change++;
+			reset[i] = true;
+			speedY[i] *= -1 + vTerminal;  // resistance percentage
+		}
+	// }
+
+    return NULL;
+}
+
+
+pthread_t threads[2];
+int st = 2;
+int b[2] = { 0 };
+// void *a = &b;
+
+
+void collBox(int value) 
+{  
+	// double mass = 5.;
+	// double area = 4 * PI * (0.1*0.1);
+	// double vTerminal = sqrt((2*(mass)*GRAVITY) / (DRAG_SPHERE*AIR_DENSITY*area)) / 100;
+
+
+
+	if (_spacePressed) {  
+		for (int i = 0; i < BOX_SIZE; i++) {
+			b[i] = i;
+    		pthread_create(&threads[i], NULL, one, &b[i]);
 		}
 
-	glPopMatrix();
+		for (int i = 0; i < BOX_SIZE; i++) {
+    		pthread_join(threads[i], NULL);
+		}
+
+		// for (int i = 0; i < 2; i++) {
+		// 	if (ballPosY[i] <= FLOOR_BED) i=1;
+		// 	if (ballPosY[i]+speedY >= FLOOR_BED) {
+		// 		// reset = false;
+		// 		speedY -=  sin(_velTheta) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);   // Gravity acceleration movement (drag)
+		// 		ballPosX += 0.1;  // x-direction movement
+		// 	} else {
+		// 		// if (reset) rstBall();
+		// 		// reset = true;
+		// 		speedY *= -1 + vTerminal;  // resistance percentage
+		// 	}
+		// 	ballPosY[i] += speedY;
+		// }
+	}
+	
+	glutTimerFunc(10, collBox, 0); 
 }
 
 
-// draw 3d box
-// note: 1x1 default
-void box(void)
-{
-	// front
-	glPushMatrix();
-		_box(1, 1);
-	glPopMatrix();
-
-	// back
-	glPushMatrix();
-		glTranslatef(0, 0, -1);
-		_box(1, 1);
-	glPopMatrix();
-
-	// left
-	glPushMatrix();
-		glRotatef(90, 0, 1, 0);
-		_box(1, 1);
-	glPopMatrix();
-
-	// right
-	glPushMatrix();
-		glRotatef(90, 0, 1, 0);
-		glTranslatef(0, 0, 1);
-		_box(1, 1);
-	glPopMatrix();
-
-	// bottom
-	glPushMatrix();
-		glTranslatef(0, ballPosY, -ballPosY-1);  // shape point bottom left
-		glRotatef(90, 1, 0, 0);
-		_box(1, 1);
-	glPopMatrix();
-
-	// top
-	glPushMatrix();
-		glTranslatef(0, ballPosY+1, -ballPosY-1);  // shape point bottom left
-		glRotatef(90, 1, 0, 0);
-		_box(1, 1);
-	glPopMatrix();
-}
-
-
-
-
-#define BALL_RADIUS 0.1
-
-void ball(void)
+void _boxCube(void)
 {
 	glPushMatrix();
-		glColor3f(0, 0, 1);
-		glTranslatef(ballPosX, ballPosY, 0);
-		glutSolidSphere(BALL_RADIUS, 36, 18);
+		glScalef(0.5, 0.5, 0.5);
+		glutSolidCube(1);
 	glPopMatrix();
 }
+
+
+bool coll = false;
+float mov = 1;
+float j = 0;
+void boxCube(void)
+{
+	// bottom left
+	glPushMatrix();	
+		// if (_spacePressed) st = 0;
+		glColor3f(1, 0, 0);
+
+		glRotatef(-20, 0, 1, 0);
+		glTranslatef(-ballPosX/8, ballPosY[0]+0.25, 0);
+		_boxCube();
+	glPopMatrix();
+
+	// top left
+	glPushMatrix();	
+		// if (_spacePressed) st = 1;
+		glColor3f(0, 1, 0);
+
+		glRotatef(20, 0, 1, 0);
+		glTranslatef(-ballPosX/8, ballPosY[1]+0.25, 0);
+		_boxCube();
+	glPopMatrix();
+
+	// // bottom right
+	// glPushMatrix();	
+	// 	glColor3f(0, 1, 0);
+
+	// 	glRotatef(-20, 0, 1, 0);
+	// 	glTranslatef(ballPosX/8 + 0.5, ballPosY+0.25, 0);
+	// 	_boxCube();
+	// glPopMatrix();
+
+	// // top right
+	// glPushMatrix();	
+	// 	glColor3f(1, 0, 0);
+	// 	glRotatef(20, 0, 1, 0);
+	// 	glTranslatef(ballPosX/8 + 0.5, ballPosY+0.75, 0);
+	// 	_boxCube();
+	// glPopMatrix();
+}
+
+
+
+
+// #define BALL_RADIUS 0.1
+
+// void ball(void)
+// {
+// 	glPushMatrix();
+// 		glColor3f(0, 0, 1);
+// 		glTranslatef(ballPosX, ballPosY, 0);
+// 		glutSolidSphere(BALL_RADIUS, 36, 18);
+// 	glPopMatrix();
+// }
 
 
 // perfect elastic collision
@@ -491,49 +647,45 @@ void ball(void)
 // }
 
 
-#define DRAG_SPHERE 0.45 
-#define AIR_DENSITY 1.225
+// #define DRAG_SPHERE 0.45 
+// #define AIR_DENSITY 1.225
 
-bool reset = false;
-
-
-
-void rstBall(void) 
-{
-	ballPosY = 3; 
-	ballPosX = 0;
-	speedY = 0;
-	speedX = 0;
-	_spacePressed = false;
-	reset = false;
-}
+// bool reset = false;
 
 
-double da = 0.1;
-double decr = 0.5;
-bool resetBall = false;
 
-void ballBounce(int value) 
-{  
-	double mass = 5.;
-	double area = 4 * PI * (BALL_RADIUS*BALL_RADIUS);
-	double vTerminal = sqrt((2*(mass)*GRAVITY) / (DRAG_SPHERE*AIR_DENSITY*area)) / 100; 
+// void rstBall(void) 
+// {
+// 	ballPosY = 1; 
+// 	ballPosX = 0;
+// 	speedY = 0;
+// 	speedX = 0;
+// 	_spacePressed = false;
+// 	reset = false;
+// }
 
-	if (_spacePressed) {  
-		if (ballPosY+speedY >= FLOOR_BED+BALL_RADIUS) {
-			reset = false;
-			speedY -=  sin(_velTheta) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);   // Gravity acceleration movement (drag)
-			ballPosX += 0.1;  // x-direction movement
-		} else {
-			if (reset) rstBall();
-			reset = true;
-			speedY *= -1 + vTerminal;  // resistance percentage
-		}
-		ballPosY += speedY;
-	}
+
+// void ballBounce(int value) 
+// {  
+// 	double mass = 5.;
+// 	double area = 4 * PI * (BALL_RADIUS*BALL_RADIUS);
+// 	double vTerminal = sqrt((2*(mass)*GRAVITY) / (DRAG_SPHERE*AIR_DENSITY*area)) / 100; 
+
+// 	if (_spacePressed) {  
+// 		if (ballPosY+speedY >= FLOOR_BED+BALL_RADIUS) {
+// 			reset = false;
+// 			speedY -=  sin(_velTheta) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);   // Gravity acceleration movement (drag)
+// 			ballPosX += 0.1;  // x-direction movement
+// 		} else {
+// 			if (reset) rstBall();
+// 			reset = true;
+// 			speedY *= -1 + vTerminal;  // resistance percentage
+// 		}
+// 		ballPosY += speedY;
+// 	}
 	
-	glutTimerFunc(10, ballBounce, 0); 
-}
+// 	glutTimerFunc(10, ballBounce, 0); 
+// }
 
 
 
@@ -810,9 +962,9 @@ void display(void)
 	// Default scene lighting
 	glLightfv(GL_LIGHT0, GL_POSITION, lposHouse);   // light for house
 
-	ball();
-
-	box();
+	// ball();
+	boxCube();
+	// box();
 
 	
 	glutSwapBuffers();	

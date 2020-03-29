@@ -14,7 +14,7 @@ TARGET = main
 CC = g++ $(INCLUDES)
 CFLAGS = -g -Wall -std=c++11
 INCLUDES = -I./../include
-OPENGL_LIB = -lGL -lGLU -lGLEW -lglut
+OPENGL_LIB = -lpthread -lGL -lGLU -lGLEW -lglut
 exe = -no-pie  # changes (x-libshare -> x-executable)
 
 # Getting Object Name Automatically.
