@@ -52,10 +52,10 @@ const float doorPointGlobal[3] = { };   // diff of point
 #define velTheta      90
 #define _velTheta     (velTheta * PI) / 180
 // #define airFric       0.47
-#define t             0.01
+#define t             0.00001
 
-#define BOX_SIZE       10
-double boxPosStart[BOX_SIZE] = { 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9};
+#define BOX_SIZE       2
+double boxPosStart[BOX_SIZE] = { 1.0, 1.3 };//, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9};
 
 double initSpeedX = 0; //20; 
 double initSpeedY = 0; //16.1264;            // tan(theta) * Vx
@@ -64,8 +64,8 @@ bool   reset[BOX_SIZE]  = { false };
 double speedX = 0;
 
 // 1 m heigh
-double ballPosY[BOX_SIZE] = { 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9};  // pos height
-double ballPosX = 0;  // pos width
+double ballPosY[BOX_SIZE] = { 1.0, 1.3 };//, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9};  // pos height
+double ballPosX[BOX_SIZE] = { 0 };  // pos width
 
 // double u = ballPosY * sin(_velTheta);  // initial speed
 
@@ -484,15 +484,16 @@ void rstBall(void)
 {
 	for (int i = 0; i < BOX_SIZE; i++) {
 		ballPosY[i] = boxPosStart[i]; 
+		speedY[i] = 0;
+		ballPosX[i] = 0;
 		reset[i] = false;
 	}
 
-	ballPosX = 0;
 	speedY[BOX_SIZE] = { 0 };
-	speedX = 0;
+	// speedX = 0;
 	_spacePressed = false;
 	_iState = false;
-	change = 0;
+	change = 0;  // debouncing check
 }
 
 
@@ -507,19 +508,35 @@ void *floorCollisionBOX(void *arg)
 	int i = *(int*)arg;  // block number
 
 
+	// box piece's collision with floor
+	// if current pos y plus last speed is greater then floor bed, calculate new pos due to speed and direction
 	if (ballPosY[i]+speedY[i] >= FLOOR_BED) {
 		reset[i] = false;
 		change--;
 		speedY[i] -=  sin(_velTheta) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);   // Gravity acceleration movement (drag)
-		ballPosX += 0.02;  // x-direction movement
-		ballPosY[i] += speedY[i];
+		// ballPosX[i] += 0.01;  // x-direction movement
 	} else {
 		if ((change >= 10))
 			rstBall();
 		change++;
 		reset[i] = true;
 		speedY[i] *= -1 + vTerminal;  // resistance percentage
+		// printf("%d: hit\n", i);
 	}
+	ballPosY[i] += speedY[i];
+	ballPosX[i] += 0.01;// change x to how Y is calculated
+	
+	for (int j = 0; j < BOX_SIZE; j++) {
+		if (j == i) break;
+		else if ((ballPosY[i]-0.05) <= (ballPosY[j]+0.05) && (ballPosY[j]-0.05) <= (ballPosY[i]+0.05)) { 
+		// else if ((ballPosX[i]+0.05) >= (ballPosX[j]-0.05) && (ballPosX[j]+0.05) >= (ballPosX[i]-0.05)){
+				puts("yes");
+			// }else puts("no");
+		}
+		else puts("no");
+	}
+
+	// printf("%d: %f  ", i, ballPosY[i]);
 
     return NULL;
 }
@@ -535,9 +552,10 @@ void collBox(int value)
 
 		for (int i = 0; i < BOX_SIZE; i++) 
     		pthread_join(threads[i], NULL);
+		puts("");
 	}
 	
-	glutTimerFunc(5, collBox, 0); 
+	glutTimerFunc(10, collBox, 0); 
 }
 
 
@@ -563,12 +581,12 @@ void _cube3D(int _posCube, int row)
 
 	if (_spacePressed) _iState = true;
 
-	for (float x = 0; x <= 1; x+=0.1) {
+	for (float x = 0; x < 0.1; x+=0.1) { //(BOX_SIZE/10.f); x+=0.1) {
 		glPushMatrix();	
 			glColor3f(0, 1, 0);
 
 			if (_spacePressed) glRotatef(rot[row][(int)(x*10)], 0, 1, 0);
-			glTranslatef(-ballPosX/8+x, ballPosY[_posCube]+0.25, 0);
+			glTranslatef(-ballPosX[row]/8+x, ballPosY[_posCube]+0.25, 0);
 			_boxCube();
 		glPopMatrix();
 	}
@@ -577,9 +595,11 @@ void _cube3D(int _posCube, int row)
 
 void boxCube(void)
 {
-	// for (float y = 0; y <= 2; y+=1) 
-		for (float y = 0; y < 10; y+=1) 
+	for (float y = 0; y < BOX_SIZE; y+=1) 
 		_cube3D(y, y);
+
+
+
 
 		// _cube3D(0, 0);
 		// _cube3D(1, 1);
