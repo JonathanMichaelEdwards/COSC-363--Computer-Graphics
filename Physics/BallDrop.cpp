@@ -44,7 +44,7 @@ float cam_hgt = 100;
 double initSpeedX = 0;//20; 
 double initSpeedY = 12;//16.1264;            // tan(theta) * Vx
 double speedX = 0;
-double speedY = 0;
+double speedY = 12;
 
 bool spacePressed = false;
 
