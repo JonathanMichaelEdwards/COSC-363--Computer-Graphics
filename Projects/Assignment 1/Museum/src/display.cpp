@@ -54,8 +54,8 @@ const float doorPointGlobal[3] = { };   // diff of point
 // #define airFric       0.47
 #define t             0.001   // good slow-motion camera setting for animation       "0.00001"
 
-#define BOX_SIZE       4
-double boxPosStart[BOX_SIZE] = { 1.0, 2.11, 3.23, 4.34};//, 1.44, 1.55, 1.66, 1.77, 1.88, 1.99 };
+#define BOX_SIZE       8
+double boxPosStart[BOX_SIZE] = { 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7};//, 3.23, 4.34};//, 1.44, 1.55, 1.66, 1.77, 1.88, 1.99 };
 
 double initSpeedX = 0; //20; 
 double initSpeedY = 0; //16.1264;            // tan(theta) * Vx
@@ -64,7 +64,7 @@ bool   reset[BOX_SIZE]  = { false };
 double speedX = 0;
 
 // 1 m heigh
-double ballPosY[BOX_SIZE] = { 1.0, 2.11, 3.23, 4.34};//, 1.44, 1.55, 1.66, 1.77, 1.88, 1.99 }; // pos height
+double ballPosY[BOX_SIZE] = { 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7};//, 3.23, 4.34};//, 1.44, 1.55, 1.66, 1.77, 1.88, 1.99 }; // pos height
 double ballPosX[BOX_SIZE] = { 0 };  // pos width
 
 // double u = ballPosY * sin(_velTheta);  // initial speed
@@ -478,6 +478,7 @@ pthread_t threads_2[BOX_SIZE];
 pthread_mutex_t lock[BOX_SIZE];
 
 int z = 0;
+int da[BOX_SIZE] = { 0 };
 int b[BOX_SIZE] = { 0 };
 int c[BOX_SIZE] = { 0 };
 int count[BOX_SIZE] = { 0 };
@@ -582,16 +583,27 @@ void *floorCollisionBOX(void *arg)
 		if (j == z) break;
 		else if ((ballPosY[z]-0.05) <= (ballPosY[j]+0.05) && (ballPosY[j]-0.05) <= (ballPosY[z]+0.05)) { 
 			if ((ballPosX[z]-0.05) <= (ballPosX[j]+0.05) && (ballPosX[j]-0.05) <= (ballPosX[z]+0.05)) {
-				if (!chkCount[z]) { 
-					speedY[z] *= -0.7;  // reaction force
-					speedY[j] *= -0.6;
-					ballPosY[z] += speedY[z];
-					ballPosY[j] += speedY[j];
-				}
-				chkCount[z] = true;
+				// if (chkCount[z])  {
+					speedY[z] = 0.01-da[z];
+					// speedY[j] = 0.1;
+				// }
+
+				// if (!chkCount[z]) { 
+				// 	speedY[z] *= -0.9;  // reaction force
+				// 	speedY[j] *= -0.8;
+				// 	// ballPosY[z] += speedY[z];
+				// 	// ballPosY[j] += speedY[j];
+				// }
+				// chkCount[z] = true;
 			} 
+			// ballPosY[z] += speedY[z];s
+			// ballPosY[j] += speedY[j];
+			// speedY[z] -= 0.001;
+			// speedY[j] -= 0.001;
 		} else {
 			chkCount[z] = false;
+					// 			speedY[z] -= 0.001;
+					// speedY[j] -= 0.001;
 			// if (ballPosY[z]+speedY[z] >= FLOOR_BED+ (0.1 * (z+1))) {
 				// ballPosY[i] += speedY[i];
 				// ballPosY[j] += speedY[j];
@@ -621,6 +633,7 @@ void *floorCollisionBOX(void *arg)
 			// else count[i]++;
 
 			// reset[i] = true;
+			// da[z]+=0.001; /// add friction4
 			speedY[z] *= -1 + vTerminal;  // resistance percentage
 			// printf("%d: hit\n", i);
 		}
