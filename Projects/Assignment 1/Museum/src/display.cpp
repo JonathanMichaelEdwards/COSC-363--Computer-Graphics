@@ -475,10 +475,10 @@ void spacePressed(bool _state)
 
 pthread_t threads[BOX_SIZE];
 pthread_t threads_2[BOX_SIZE];
-pthread_mutex_t lock[BOX_SIZE];
+pthread_mutex_t *lock;
 
 int z = 0;
-int da[BOX_SIZE] = { 0 };
+double da[BOX_SIZE] = { 0 };
 int b[BOX_SIZE] = { 0 };
 int c[BOX_SIZE] = { 0 };
 int count[BOX_SIZE] = { 0 };
@@ -557,6 +557,8 @@ void *floorCollisionBOX(void *arg)
 
 	z = *(int*)arg;  // block number
 
+	pthread_mutex_lock(lock);
+
 	// pthread_create(&threads_22, NULL, three, NULL);
     // pthread_join(threads_22, NULL);
 
@@ -584,15 +586,20 @@ void *floorCollisionBOX(void *arg)
 		else if ((ballPosY[z]-0.05) <= (ballPosY[j]+0.05) && (ballPosY[j]-0.05) <= (ballPosY[z]+0.05)) { 
 			if ((ballPosX[z]-0.05) <= (ballPosX[j]+0.05) && (ballPosX[j]-0.05) <= (ballPosX[z]+0.05)) {
 				// if (chkCount[z])  {
-					speedY[z] = 0.01-da[z];
+					// pthread_mutex_lock(lock);
+
+					speedY[z] = 0.02;  // da is friction
+
+					// pthread_mutex_unlock(lock);
+
 					// speedY[j] = 0.1;
 				// }
 
 				// if (!chkCount[z]) { 
-				// 	speedY[z] *= -0.9;  // reaction force
-				// 	speedY[j] *= -0.8;
-				// 	// ballPosY[z] += speedY[z];
-				// 	// ballPosY[j] += speedY[j];
+					// speedY[z] *= -0.4;  // reaction force
+					// speedY[j] *= -0.8;
+					// ballPosY[z] += speedY[z];
+					// ballPosY[j] += speedY[j];
 				// }
 				// chkCount[z] = true;
 			} 
@@ -625,16 +632,21 @@ void *floorCollisionBOX(void *arg)
 			// }
 
 			// change--;
+			// pthread_mutex_lock(lock);
+
 			speedY[z] -= sin(_velTheta) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);   // Gravity acceleration movement (drag)
-			// ballPosX[z] += 0.001;  // change x to how Y is calculated
+
+			// pthread_mutex_unlock(lock);
+			ballPosX[z] += 0.01;  // change x to how Y is calculated
 		} else {
 			// chkCount[i] = true;
 			// if (count[i] > 10) rstBall();
 			// else count[i]++;
 
 			// reset[i] = true;
-			// da[z]+=0.001; /// add friction4
+			// pthread_mutex_lock(lock);
 			speedY[z] *= -1 + vTerminal;  // resistance percentage
+			// pthread_mutex_unlock(lock);
 			// printf("%d: hit\n", i);
 		}
 		// if (count) ballPosY[0] += speedY[0];
@@ -662,7 +674,7 @@ void *floorCollisionBOX(void *arg)
 	// for (int j = 0; j < BOX_SIZE; j++) 
 	// 	pthread_join(threads_2[j], NULL);
 
-
+	pthread_mutex_unlock(lock);
 
 
 	// // check to see if box fragment hits anyother's
@@ -729,14 +741,14 @@ void *floorCollisionBOX(void *arg)
     return NULL;
 }
 
-
+pthread_mutex_t _lock = PTHREAD_MUTEX_INITIALIZER;
 void collBox(int value) 
 {  
-	if (_spacePressed) {  
+	// if (_spacePressed) {  
 		// pthread_mutex_t _lock = PTHREAD_MUTEX_INITIALIZER;
 
 		for (int i = 0; i < BOX_SIZE; i++) {
-		// 	// lock[i] = _lock;
+			lock = &_lock;
 			b[i] = i;
 			// floorCollisionBOX(&b[i]);
     		pthread_create(&threads[i], NULL, floorCollisionBOX, &b[i]);
@@ -757,9 +769,9 @@ void collBox(int value)
 	
 
 
-		// for (int i = 0; i < BOX_SIZE; i++) 
-    	// 	pthread_join(threads[i], NULL);
-	}
+		for (int i = 0; i < BOX_SIZE; i++) 
+    		pthread_join(threads[i], NULL);
+	// }
 	
 	glutTimerFunc(10, collBox, 0); 
 }
@@ -1219,6 +1231,12 @@ void display(void)
 
 	// ball();
 	boxCube();
+
+	
+	// glutTimerFunc(10, collBox, 0); 
+	// collBox(5);
+	// for (int i = 0; i < BOX_SIZE; i++) 
+	// 	pthread_join(threads[i], NULL);
 	// box();
 
 	
