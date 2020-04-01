@@ -52,10 +52,18 @@ const float doorPointGlobal[3] = { };   // diff of point
 #define velTheta      90
 #define _velTheta     (velTheta * PI) / 180
 // #define airFric       0.47
-#define t             0.0001   // good slow-motion camera setting for animation       "0.00001"
+
+#define THREADS_BOX_COLL  6
+
+#define t             0.001   // good slow-motion camera setting for animation       "0.0001"
+
 
 #define BOX_SIZE       8
 double boxPosStart[BOX_SIZE] = { 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 2.7};//, 3.23, 4.34};//, 1.44, 1.55, 1.66, 1.77, 1.88, 1.99 };
+double ballPosY[BOX_SIZE] = { 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 2.7};
+
+// double boxPosStart[BOX_SIZE] = { 1.0, 1.1, 1.2, 1.3};//, 3.23, 4.34};//, 1.44, 1.55, 1.66, 1.77, 1.88, 1.99 };
+// double ballPosY[BOX_SIZE] = { 1.0, 1.1, 1.2, 1.3};
 
 double initSpeedX = 0; //20; 
 double initSpeedY = 0; //16.1264;            // tan(theta) * Vx
@@ -64,7 +72,7 @@ bool   reset[BOX_SIZE]  = { false };
 double speedX = 0;
 
 // 1 m heigh
-double ballPosY[BOX_SIZE] = { 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 2.7};//, 3.23, 4.34};//, 1.44, 1.55, 1.66, 1.77, 1.88, 1.99 }; // pos height
+// double ballPosY[BOX_SIZE] = { 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 2.7};//, 3.23, 4.34};//, 1.44, 1.55, 1.66, 1.77, 1.88, 1.99 }; // pos height
 double ballPosX[BOX_SIZE] = { 0 };  // pos width
 
 // double u = ballPosY * sin(_velTheta);  // initial speed
@@ -521,8 +529,8 @@ void *objCollCheck(void *arg)
 		if ((ballPosX[z]-0.05) <= (ballPosX[j]+0.05) && (ballPosX[j]-0.05) <= (ballPosX[z]+0.05)) {
 
 			if (!chkCount[z]) { 
-				speedY[z] *= -0.6;  // reaction force
-				speedY[j] *= -0.6;
+				speedY[z] *= -0.8;  // reaction force
+				speedY[j] *= -0.8;
 				ballPosY[z] += speedY[z];
 				ballPosY[j] += speedY[j];
 			}
@@ -553,7 +561,7 @@ int _count = 0;
 
 void *floorCollisionBOX(void *arg)
 {
-	double mass = 50.;
+	double mass = 1.;
 	double area = 4 * PI * (0.1*0.1);
 	double vTerminal = sqrt((2*(mass)*GRAVITY) / (DRAG_SPHERE*AIR_DENSITY*area)) / 100;
 
@@ -598,13 +606,37 @@ void *floorCollisionBOX(void *arg)
 				// 	puts("no");
 					// pthread_mutex_lock(lock);
 				// count[z]++;
-
+				
 				// if (speedY[z] < speedY[z]*1000.f) {
 				// 	// count[z]++;
 				// 	objCollision[z] = true;
 				// } else {
 				// if (0 != (int)(speedY[z]*1000.f))
-					speedY[z] = 0.002;  // da is friction
+
+				// initial collison detected - only run once while in contact
+				// change direction if rising
+				if (!chkCount[z]) {
+					// if (speedY[z] < 0)
+					// 	speedY[z] *= 0.8;
+					// else 
+					// speedY[z] *= -0.6;
+					if (speedY[z] < 0){
+						speedY[z] *= -0.7;
+					} else 
+						speedY[z] *= 0.7;
+
+					if (speedY[j] < 0){
+						speedY[j] *= 0.7;
+					} else 
+						speedY[j] *= -0.7;
+
+					// speedY[z] /= THREADS_BOX_COLL;
+					// speedY[j] /= THREADS_BOX_COLL;
+				}
+				ballPosY[z] += speedY[z] / THREADS_BOX_COLL;
+				ballPosY[j] += speedY[j] / THREADS_BOX_COLL;
+				// ballPosY[j] += speedY[j];
+					// speedY[z] = 0.02;//0.02;  // da is friction
 					// speedY[j] = 0.002;
 					// count[z]--;
 				// }
@@ -655,8 +687,10 @@ void *floorCollisionBOX(void *arg)
 		} else {
 			chkCount[z] = false;
 			chkCount[j] = false;
+			// speedY[z] += 0.001;
 
-			
+			// increase falling space between objects
+			ballPosY[j] += (speedY[j]/BOX_SIZE) / THREADS_BOX_COLL;  // iterates in relation to box size
 			// puts("1");
 					// 			speedY[z] -= 0.001;
 					// speedY[j] -= 0.001;
@@ -665,14 +699,17 @@ void *floorCollisionBOX(void *arg)
 				// ballPosY[j] += speedY[j];
 			// }
 		}
-		if (0 == (int)(speedY[j]*1000.f) && 0 == (int)(speedY[z]*1000.f)) {
-			// count[z]++;
-			objCollision[z] = false;
-			objCollision[j] = false;
-		} else {
-			objCollision[z] = true;
-			objCollision[j] = true;
-		}
+		// ballPosY[j] += speedY[j]/BOX_SIZE;  // iterates in relation to box size
+		// ballPosY[z] += speedY[z]/BOX_SIZE; 
+		// if speed is 0 -> collision = stuck
+		// if (0 == (int)(speedY[j]*1000.f) && 0 == (int)(speedY[z]*1000.f)) {
+		// 	// count[z]++;
+		// 	objCollision[z] = false;
+		// 	objCollision[j] = false;
+		// } else {
+		// 	objCollision[z] = true;
+		// 	objCollision[j] = true;
+		// }
 		
 	}
 	pthread_mutex_unlock(lock);
@@ -682,24 +719,24 @@ void *floorCollisionBOX(void *arg)
 
 	// box piece's collision with floor
 	// if current pos y plus last speed is greater then floor bed, calculate new pos due to speed and direction
-	if (!chkCount[z] && objCollision[z]) {
+	if (!chkCount[z]) {
 		if (ballPosY[z]+speedY[z] >= FLOOR_BED) {
 			// if (!chkCount[z])
 			// if (speedY[z] == 0 || speedY[z] = 0.02)
-			speedY[z] -= sin(_velTheta) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);   // Gravity acceleration movement (drag)
-			ballPosX[z] += 0.01;  // change x to how Y is calculated
+			speedY[z] -= (sin(_velTheta) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t)) / THREADS_BOX_COLL;;   // Gravity acceleration movement (drag)
+			// ballPosX[z] += 0.01;  // change x to how Y is calculated
 			// if (0 == (int)(speedY[z]*1000.f))
 			// 	speedY[z] = 0;// sin(_velTheta) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);   // Gravity acceleration movement (drag)
-			
-		} else { // hit the floor
-			// if (0 != (int)(speedY[z]*10000.f))
-			if (0 == (int)(speedY[z]*1000.f))
-				speedY[z] = 0;
-			else speedY[z] *= -1 + vTerminal;  // resistance percentage
 
+		} else { // hit the floor
+
+			if (0 == (int)(speedY[z]*1000.f))  // use boolen expression to register
+				speedY[z] = 0;
+			else speedY[z] *= (-1 + vTerminal) / THREADS_BOX_COLL;;  // resistance percentage 
 		}
-		ballPosY[z] += speedY[z];
-		_count++;
+		// speedY[z] /= THREADS_BOX_COLL;
+
+		ballPosY[z] += speedY[z] / THREADS_BOX_COLL;
 	}
 
 	
@@ -739,9 +776,8 @@ void collBox(int value)
 		// 	pthread_join(threads_2[j], NULL);
 
 	
-
 		// number of workers
-		for (int i = 0; i < 4; i++) {
+		for (int i = 0; i < THREADS_BOX_COLL; i++) {
 			lock = &_lock;
 			b[i] = i;
 			// floorCollisionBOX(0);
@@ -749,7 +785,7 @@ void collBox(int value)
 		}
 
 
-		for (int i = 0; i < 4; i++) 
+		for (int i = 0; i < THREADS_BOX_COLL; i++) 
     		pthread_join(threads[i], NULL);
 
 		// printf("%d\n", count);
