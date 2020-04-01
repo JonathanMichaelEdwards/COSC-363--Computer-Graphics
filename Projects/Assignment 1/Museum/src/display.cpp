@@ -52,7 +52,7 @@ const float doorPointGlobal[3] = { };   // diff of point
 #define velTheta      90
 #define _velTheta     (velTheta * PI) / 180
 // #define airFric       0.47
-#define t             0.001   // good slow-motion camera setting for animation       "0.00001"
+#define t             0.0001   // good slow-motion camera setting for animation       "0.00001"
 
 #define BOX_SIZE       8
 double boxPosStart[BOX_SIZE] = { 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 2.7};//, 3.23, 4.34};//, 1.44, 1.55, 1.66, 1.77, 1.88, 1.99 };
@@ -549,6 +549,7 @@ void *objCollCheck(void *arg)
 //     return NULL;
 // }
 
+int _count = 0;
 
 void *floorCollisionBOX(void *arg)
 {
@@ -556,9 +557,11 @@ void *floorCollisionBOX(void *arg)
 	double area = 4 * PI * (0.1*0.1);
 	double vTerminal = sqrt((2*(mass)*GRAVITY) / (DRAG_SPHERE*AIR_DENSITY*area)) / 100;
 
-	z = *(int*)arg;  // block number
+	// z = *(int*)arg;  // block number
 
-	pthread_mutex_lock(lock);
+	for (int i = 0; i < BOX_SIZE; i++) {
+		pthread_mutex_lock(lock);
+		z = i;
 
 	// pthread_create(&threads_22, NULL, three, NULL);
     // pthread_join(threads_22, NULL);
@@ -635,8 +638,6 @@ void *floorCollisionBOX(void *arg)
 					// ballPosY[j] += speedY[j];
 				// }
 				chkCount[z] = true;
-
-				
 				chkCount[j] = true;
 			} 
 			// double l = FLOOR_BED+ (0.1 * (z+1));
@@ -674,17 +675,19 @@ void *floorCollisionBOX(void *arg)
 		}
 		
 	}
+	pthread_mutex_unlock(lock);
 
+	pthread_mutex_lock(lock);
 
 
 	// box piece's collision with floor
 	// if current pos y plus last speed is greater then floor bed, calculate new pos due to speed and direction
 	if (!chkCount[z] && objCollision[z]) {
-		if (ballPosY[z]+speedY[z] >= FLOOR_BED+0.1) {
+		if (ballPosY[z]+speedY[z] >= FLOOR_BED) {
 			// if (!chkCount[z])
-			
+			// if (speedY[z] == 0 || speedY[z] = 0.02)
 			speedY[z] -= sin(_velTheta) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);   // Gravity acceleration movement (drag)
-			// ballPosX[z] += 0.01;  // change x to how Y is calculated
+			ballPosX[z] += 0.01;  // change x to how Y is calculated
 			// if (0 == (int)(speedY[z]*1000.f))
 			// 	speedY[z] = 0;// sin(_velTheta) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);   // Gravity acceleration movement (drag)
 			
@@ -696,10 +699,16 @@ void *floorCollisionBOX(void *arg)
 
 		}
 		ballPosY[z] += speedY[z];
+		_count++;
 	}
 
-
+	
 	pthread_mutex_unlock(lock);
+
+	}
+	// while(1); // test to see if threads are working
+
+
 
     return NULL;
 }
@@ -710,12 +719,12 @@ void collBox(int value)
 	if (_spacePressed) {  
 		// pthread_mutex_t _lock = PTHREAD_MUTEX_INITIALIZER;
 
-		for (int i = 0; i < BOX_SIZE; i++) {
-			lock = &_lock;
-			b[i] = i;
-			// floorCollisionBOX(&b[i]);
-    		pthread_create(&threads[i], NULL, floorCollisionBOX, &b[i]);
-		}
+		// for (int i = 0; i < BOX_SIZE; i++) {
+		// 	lock = &_lock;
+		// 	b[i] = i;
+		// 	// floorCollisionBOX(&b[i]);
+    	// 	pthread_create(&threads[i], NULL, floorCollisionBOX, &b[i]);
+		// }
 
 
 		// dont do this way !!!
@@ -731,9 +740,19 @@ void collBox(int value)
 
 	
 
+		// number of workers
+		for (int i = 0; i < 4; i++) {
+			lock = &_lock;
+			b[i] = i;
+			// floorCollisionBOX(0);
+    		pthread_create(&threads[i], NULL, floorCollisionBOX, &b[i]);
+		}
 
-		for (int i = 0; i < BOX_SIZE; i++) 
+
+		for (int i = 0; i < 4; i++) 
     		pthread_join(threads[i], NULL);
+
+		// printf("%d\n", count);
 	}
 	
 	glutTimerFunc(10, collBox, 0); 
