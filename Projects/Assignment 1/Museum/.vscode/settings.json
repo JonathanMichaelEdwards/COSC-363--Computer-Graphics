@@ -21,6 +21,5 @@
                 "command": "cd Windows && main.exe",
             }
         ]
-    },
-    "C_Cpp.dimInactiveRegions": false,
+    }
 }

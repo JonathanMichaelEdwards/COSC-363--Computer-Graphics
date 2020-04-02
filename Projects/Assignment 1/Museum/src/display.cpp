@@ -8,8 +8,11 @@
 // Standard libaries
 #include <stdio.h>
 #include <libgen.h>  
-#include <pthread.h>
 #include <math.h>
+#include <pthread.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 
 // OpenGL libaries
 #include <GL/freeglut.h>
@@ -45,7 +48,7 @@ const float doorPointGlobal[3] = { };   // diff of point
 
 #define PI		3.14159265358979323846
 #define GRAVITY 9.81
-#define DRAG_CUBE   1.05
+#define DRAG_CUBE   1.05  // face  , edge = 0.8
 
 #define FLOOR_X  26
 #define FLOOR_Z  26
@@ -54,15 +57,22 @@ const float doorPointGlobal[3] = { };   // diff of point
 #define _velTheta     (velTheta * PI) / 180
 // #define airFric       0.47
 
+
+
 // #define THREADS_BOX_COLL  6
 
-#define t             0.001   // good slow-motion camera setting for animation       "0.0001"
+#define t             0.001   // good slow-motion camera setting for animation       "0.0001" or "0.00001"
 
 
 #define BOX_SIZE       8
 double boxPosStart[BOX_SIZE] = { 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7 };//, 3.23, 4.34};//, 1.44, 1.55, 1.66, 1.77, 1.88, 1.99 };
 double ballPosY[BOX_SIZE] = { 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7 };
 double conBallPosY[BOX_SIZE] = { 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7 };
+
+
+#define FRAG_BOX_START  2.0
+
+
 
 // double boxPosStart[BOX_SIZE] = { 1.0, 1.1, 1.2, 1.3};//, 3.23, 4.34};//, 1.44, 1.55, 1.66, 1.77, 1.88, 1.99 };
 // double ballPosY[BOX_SIZE] = { 1.0, 1.1, 1.2, 1.3};
@@ -90,6 +100,36 @@ bool accUp = false;
 #define DIST_Z     200
 #define DIST_X     200
 #define HEIGHT_Y   160
+
+
+#define DRAG_SPHERE 0.45 
+#define AIR_DENSITY 1.225
+
+
+pthread_t threads[BOX_SIZE];
+pthread_t threadsBoxColl[BOX_SIZE];
+pthread_mutex_t *lock;
+pthread_mutex_t *lockBoxColl;
+
+
+int z = 0;
+double da[BOX_SIZE] = { 0 };
+int h[BOX_SIZE] = { 0 };
+int b[BOX_SIZE] = { 0 };
+int c[BOX_SIZE] = { 0 };
+
+// int change = 0;
+bool _iState = false; 
+bool objStill[BOX_SIZE] = { false };
+bool objCollision[BOX_SIZE] = { false };
+bool chkCount[BOX_SIZE] = { false };
+
+
+#define BOX_FRAG_SIZE                   0.1
+
+#define MASS_BOX_PIECE                  .01
+#define AREA_BOX_PIECE(size)            size * size * size       // sphere area 4 * PI * (0.1*0.1);
+#define V_Terminal(mass, area, drag)    sqrt((2*(mass)*GRAVITY) / (drag*AIR_DENSITY*area)) / 100.
 
 // #define GL_CLAMP_TO_EDGE                        0x812F
 
@@ -479,25 +519,7 @@ void spacePressed(bool _state)
 
 
 
-#define DRAG_SPHERE 0.45 
-#define AIR_DENSITY 1.225
 
-
-pthread_t threads[BOX_SIZE];
-pthread_t threads_2[BOX_SIZE];
-pthread_mutex_t *lock;
-
-int z = 0;
-double da[BOX_SIZE] = { 0 };
-int h[BOX_SIZE] = { 0 };
-int b[BOX_SIZE] = { 0 };
-int c[BOX_SIZE] = { 0 };
-
-// int change = 0;
-bool _iState = false; 
-bool objStill[BOX_SIZE] = { false };
-bool objCollision[BOX_SIZE] = { false };
-bool chkCount[BOX_SIZE] = { false };
 
 
 void rstBall(void) 
@@ -522,96 +544,136 @@ void rstBall(void)
 
 
 
-void *floorCollisionBOX(void *arg)
+void boxChangeSpeed(int j)
 {
-	double mass = 0.1;
-	double area = 0.1 * 0.1 * 0.1;    // 4 * PI * (0.1*0.1);
-	double vTerminal = sqrt((2*(mass)*GRAVITY) / (DRAG_CUBE*AIR_DENSITY*area)) / 100;
+	if (speedY[z] < 0){
+		speedY[z] *= (-1 + V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(BOX_FRAG_SIZE), DRAG_CUBE));
+	} else 
+		speedY[z] *= (1 - V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(BOX_FRAG_SIZE), DRAG_CUBE));
 
-	// z = *(int*)arg;  // block number
-		
-	for (int n = 0; n < BOX_SIZE; n++) {
+	if (speedY[j] < 0){
+		speedY[j] *= (1 - V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(BOX_FRAG_SIZE), DRAG_CUBE));
+	} else 
+		speedY[j] *= (-1 + V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(BOX_FRAG_SIZE), DRAG_CUBE));	
+}
 
-		pthread_mutex_lock(lock);
-		
-		z = n;
-		// check to see if current checking box fragment hits anyother's
-		for (int j = 0; j < BOX_SIZE; j++) {
-			if (j == z) break;
-			else if ((ballPosY[z]-0.05) <= (ballPosY[j]+0.05) && (ballPosY[j]-0.05) <= (ballPosY[z]+0.05)) { 
-				if ((ballPosX[z]-0.05) <= (ballPosX[j]+0.05) && (ballPosX[j]-0.05) <= (ballPosX[z]+0.05)) {
 
-					// initial collison detected - only run once while in contact
-					// change direction if rising
-					if (!chkCount[z]) {
-						if (0 == (int)(speedY[z]*1000.f)) {
-							speedY[z] = 0;
-							objStill[z] = true;
-							objStill[j] = true;
-						} else {
-							if (speedY[z] < 0){
-								speedY[z] *= (-1 + vTerminal);
-							} else 
-								speedY[z] *= (1 - vTerminal);
-
-							if (speedY[j] < 0){
-								speedY[j] *= (1 - vTerminal);
-							} else 
-								speedY[j] *= (-1 + vTerminal);
-							
-							objStill[z] = false;
-							objStill[j] = false;
-						}
-
-						ballPosY[z] += speedY[z] / (((THREADS_BOX_COLL*THREADS_BOX_COLL)));
-						ballPosY[j] += speedY[j] / (((THREADS_BOX_COLL*THREADS_BOX_COLL)));
-
-						// ballPosY[z] += speedY[z] / ((THREADS_BOX_COLL));
-						// ballPosY[j] += speedY[j] / ((THREADS_BOX_COLL));
-					}
-
-					chkCount[z] = true;
-					chkCount[j] = true;
-				} 
+void boxCollision(int j, bool )
+{
+	// initial collison detected - only run once while in contact
+	// change direction if rising
+	if (!chkCount[z]) {
+		if (0 == (int)(speedY[z]*1000.f)) {
+			speedY[z] = 0;
+			
+			if (ballPosY[z] >= FRAG_BOX_START) {
+				objStill[z] = false;
+				objStill[j] = false;
 			} else {
-				chkCount[z] = false;
-				chkCount[j] = false;
-
-				// increase falling space between objects
-				ballPosY[j] += (speedY[j]/BOX_SIZE) / ((THREADS_BOX_COLL*THREADS_BOX_COLL));  // iterates in relation to box size
-				// ballPosY[j] += (speedY[j]/BOX_SIZE) / ((THREADS_BOX_COLL));
+				objStill[z] = true;
+				objStill[j] = true;
 			}
+		} else {
+			boxChangeSpeed(j);
+
+			objStill[z] = false;
+			objStill[j] = false;
 		}
-		
-		pthread_mutex_unlock(lock);
+
+		// only runs once when detected
+		ballPosY[z] += speedY[z] / (THREADS_BOX_COLL*THREADS_BOX_COLL);
+		ballPosY[j] += speedY[j] / (THREADS_BOX_COLL*THREADS_BOX_COLL);
+	}
+}
+
+
+void *_boxDetectBoxCollision(void *arg)
+{
+	pthread_mutex_lock(lockBoxColl);
+
+	// check to see if current checking box fragment hits anyother boxes
+	for (int j = 0; j < BOX_SIZE; j++) {
+		if (j == z) break;
+		else if ((ballPosY[z]-0.05) <= (ballPosY[j]+0.05) && (ballPosY[j]-0.05) <= (ballPosY[z]+0.05)) { 
+			if ((ballPosX[z]-0.05) <= (ballPosX[j]+0.05) && (ballPosX[j]-0.05) <= (ballPosX[z]+0.05)) {
+
+				boxCollision(j, chkCount);
+
+				chkCount[z] = true;
+				chkCount[j] = true;
+			} 
+		} else {
+			chkCount[z] = false;
+			chkCount[j] = false;
+
+			// increase falling space between objects
+			ballPosY[j] += ((speedY[j]/BOX_SIZE) / ((THREADS_BOX_COLL*THREADS_BOX_COLL*THREADS_BOX_BOX_COLL)));  // iterates in relation to box size
+		}
+	}
+
+	pthread_mutex_unlock(lockBoxColl);
+
+	return NULL;
+}
+
+
+pthread_mutex_t _lockBoxColl = PTHREAD_MUTEX_INITIALIZER;  // thread safe
+void boxDetectBoxCollision()
+{
+	for (int i = 0; i < THREADS_BOX_BOX_COLL; i++) {
+		lockBoxColl = &_lockBoxColl;
+		// boxColl[i] = i;
+		pthread_create(&threadsBoxColl[i], NULL, _boxDetectBoxCollision, NULL);
+	}
+
+	for (int i = 0; i < THREADS_BOX_BOX_COLL; i++) 
+		pthread_join(threadsBoxColl[i], NULL);
+}
 
 
 
-	pthread_mutex_lock(lock);
-
-
+void boxDetectGroundCollision()
+{
 	// box piece's collision with floor
 	// if current pos y plus last speed is greater then floor bed, calculate new pos due to speed and direction
 	if (!chkCount[z]) {
 		if (ballPosY[z]+speedY[z] >= FLOOR_BED) {
 			speedY[z] -= (sin(_velTheta) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t));
 			// ballPosX[z] += 0.001;  // change x to how Y is calculated
+			objStill[z] = false;  // cannot be stationary/stoped when its in the air
 		} else { // hit the floor
 
 			if (0 == (int)(speedY[z]*1000.f)) { // use boolen expression to register
 				speedY[z] = 0;
 				objStill[z] = true;
 			} else {
-				speedY[z] *= (-1 + vTerminal);  // resistance percentage 
+				speedY[z] *= (-1 + V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(BOX_FRAG_SIZE), DRAG_CUBE) );  // resistance percentage 
 				objStill[z] = false;
 			}
 		}
 		ballPosY[z] += speedY[z] / (((THREADS_BOX_COLL*THREADS_BOX_COLL)));
-		// ballPosY[z] += speedY[z] / ((THREADS_BOX_COLL));
+		
 	}
-	
-	pthread_mutex_unlock(lock);
 }
+
+
+void *floorCollisionBOX(void *arg)
+{
+	// z = *(int*)arg;  // block number
+		
+	for (int n = 0; n < BOX_SIZE; n++) {
+		pthread_mutex_lock(lock);
+
+		if (!objStill[n]) {  // calculate
+			
+			
+			z = n;
+			boxDetectBoxCollision();
+			boxDetectGroundCollision();
+			
+		}
+		pthread_mutex_unlock(lock);
+	}
 
 
     return NULL;
@@ -636,23 +698,20 @@ void collBox(int value)
 			_threadStop = true;  // all boxes are true - complete (stop and reset)
 		}
 
-
-
-		// if (!_threadStop) {
+		if (!_threadStop) {
 			// workers
-		for (int i = 0; i < THREADS_BOX_COLL; i++) {
-			lock = &_lock;
-			b[i] = i;
+			for (int i = 0; i < THREADS_BOX_COLL; i++) {
+				lock = &_lock;
+				b[i] = i;
+				pthread_create(&threads[i], NULL, floorCollisionBOX, &b[i]);
+			}
 
-			// floorCollisionBOX(0);
-			pthread_create(&threads[i], NULL, floorCollisionBOX, &b[i]);
+			for (int i = 0; i < THREADS_BOX_COLL; i++) 
+				pthread_join(threads[i], NULL);
 		}
-
-		for (int i = 0; i < THREADS_BOX_COLL; i++) 
-			pthread_join(threads[i], NULL);
 	}
 	
-	glutTimerFunc(10, collBox, 0); 
+	// glutTimerFunc(10, collBox, 0); 
 }
 
 
@@ -815,7 +874,7 @@ void boxCube(void)
 // {  
 // 	double mass = 5.;
 // 	double area = 4 * PI * (BALL_RADIUS*BALL_RADIUS);
-// 	double vTerminal = sqrt((2*(mass)*GRAVITY) / (DRAG_SPHERE*AIR_DENSITY*area)) / 100; 
+// 	double V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(MASS_BOX_PIECE), DRAG_CUBE)  = sqrt((2*(mass)*GRAVITY) / (DRAG_SPHERE*AIR_DENSITY*area)) / 100; 
 
 // 	if (_spacePressed) {  
 // 		if (ballPosY+speedY >= FLOOR_BED+BALL_RADIUS) {
@@ -825,7 +884,7 @@ void boxCube(void)
 // 		} else {
 // 			if (reset) rstBall();
 // 			reset = true;
-// 			speedY *= -1 + vTerminal;  // resistance percentage
+// 			speedY *= -1 + V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(MASS_BOX_PIECE), DRAG_CUBE) ;  // resistance percentage
 // 		}
 // 		ballPosY += speedY;
 // 	}
@@ -1110,7 +1169,15 @@ void display(void)
 
 	// ball();
 	boxCube();
-	// collBox(0);
+	collBox(0);
+	
+
+	// if (childPid < 0) 
+	// 	
+	// else if (childPid > 0)
+	// 	puts("hi");
+
+
 	
 	glutSwapBuffers();	
 
