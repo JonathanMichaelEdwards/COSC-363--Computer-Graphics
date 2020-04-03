@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
 	glutSpecialFunc(special);
 	glutTimerFunc(TIMER_DELAY, idle, TIMER_DELAY);  // fps counter
 	// glutTimerFunc(10, ballBounce, 0);  // ball physics
-	// glutTimerFunc(10, collBox, 0);   // better performance the other way
+	// glutTimerFunc(1, collBox, 0);   // better performance the other way
 	
 	glutMainLoop();
 	
