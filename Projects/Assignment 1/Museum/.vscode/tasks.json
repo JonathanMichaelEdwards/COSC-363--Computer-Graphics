@@ -29,7 +29,7 @@
                 "command": "cd Windows && main.exe"
             },
             "linux": {
-                "command": "cd Linux && ./main"
+                "command": "cd Linux && __GL_SYNC_TO_VBLANK=0 ./main"
             },
         }
     ],

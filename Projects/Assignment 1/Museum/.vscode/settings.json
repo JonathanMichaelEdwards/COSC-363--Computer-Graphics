@@ -14,11 +14,11 @@
             {
                 "name": "Build $(checklist)",
                 "singleInstance": true,
-                "command": "cd Windows && make all",
+                "command": "cd Linux && make all",
             }, {
                 "name": "Run  $(arrow-right)",
                 "singleInstance": true,
-                "command": "cd Windows && main.exe",
+                "command": "cd Linux && __GL_SYNC_TO_VBLANK=0 ./main",
             }
         ]
     }

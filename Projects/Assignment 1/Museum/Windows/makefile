@@ -14,7 +14,7 @@ TARGET = main
 CC = g++ $(INCLUDES)
 CFLAGS = -g -Wall -std=c++11
 INCLUDES = -I./../include
-OPENGL_LIB = -lOpenGL32 -lGLU32 -lfreeGLUT -lGLEW32
+OPENGL_LIB = -lpthread -lOpenGL32 -lGLU32 -lfreeGLUT -lGLEW32
 
 # Getting Object Name Automatically.
 SOURCES_LOCATION  = ../src
