@@ -71,7 +71,7 @@ const float doorPointGlobal[3] = { };   // diff of point
 
 
 
-#define t             0.00001   // good slow-motion camera setting for animation       "0.0001" or "0.00001"
+#define t             0.001   // good slow-motion camera setting for animation       "0.0001" or "0.00001"
 
 
 
@@ -156,7 +156,7 @@ bool objStill[BOX_SIZE][BOX_SIZE] = { false };
 
 #define BOX_FRAG_SIZE                   0.1
 
-#define MASS_BOX_PIECE                  .1
+#define MASS_BOX_PIECE                  .01
 #define AREA_BOX_PIECE(size)            size * size * size       // sphere area 4 * PI * (0.1*0.1);
 #define V_Terminal(mass, area, drag)    sqrt((2*(mass)*GRAVITY) / (drag*AIR_DENSITY*area)) / 100.
 
@@ -575,15 +575,16 @@ void rstBall(void)
 
 void boxChangeSpeed(int j, int j_2)
 {
-	if (speedY[z][z_2] <= 0){
-		speedY[z][z_2] *= (-1 + V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(BOX_FRAG_SIZE), DRAG_CUBE));
+	if (speedY[z][z_2] <= 0.0) {
+		speedY[z][z_2] *= 0.9;//(-1 + V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(BOX_FRAG_SIZE), DRAG_CUBE));
 	} else 
-		speedY[z][z_2] *= (1 - V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(BOX_FRAG_SIZE), DRAG_CUBE));
+		speedY[z][z_2] *= -0.9;//(1 - V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(BOX_FRAG_SIZE), DRAG_CUBE));
 
-	if (speedY[j][j_2] <= 0){
-		speedY[j][j_2] *= (1 - V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(BOX_FRAG_SIZE), DRAG_CUBE));
+
+	if (speedY[j][j_2] <= 0.0) {
+		speedY[j][j_2] *= -0.9;//(1 - V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(BOX_FRAG_SIZE), DRAG_CUBE));
 	} else 
-		speedY[j][j_2] *= (-1 + V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(BOX_FRAG_SIZE), DRAG_CUBE));	
+		speedY[j][j_2] *= 0.9;//(-1 + V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(BOX_FRAG_SIZE), DRAG_CUBE));	
 }
 
 
@@ -593,7 +594,7 @@ void boxCollision(int j, int j_2)
 	// change direction if rising
 	if (!chkCount[z][z_2]) {
 		if (0 == (int)(speedY[z][z_2]*10000.f)) {
-			// speedY[z][z_2] = 0;
+			speedY[z][z_2] = 0;
 			// horizontal detection
 			horizontalCol[z][z_2] = true;
 			horizontalCol[j][j_2] = true;
@@ -606,19 +607,32 @@ void boxCollision(int j, int j_2)
 				objStill[j][j_2] = true;
 			}
 		} else {
-			boxChangeSpeed(j, j_2);
+			// boxChangeSpeed(j, j_2);
+			speedY[z][z_2] *= (-1 + V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(BOX_FRAG_SIZE), DRAG_CUBE));
+			speedY[j][j_2] *= (-1 + V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(BOX_FRAG_SIZE), DRAG_CUBE));
+
 
 			objStill[z][z_2] = false;
 			objStill[j][j_2] = false;
 		}
-		// only runs once when detected
-		ballPosY[z][z_2] += speedY[z][z_2] / (THREADS_BOX_COLL*THREADS_BOX_COLL);
-		ballPosY[j][j_2] += speedY[j][j_2] / (THREADS_BOX_COLL*THREADS_BOX_COLL);
+		
 
 
 		// change the horizontal speed of x
 		posRand_X[z][z_2] *= -0.9;
 		posRand_X[j][j_2] *= -0.9;
+
+		// speedY[z][z_2] *= -0.9;
+		// speedY[j][j_2] *= -0.9;
+		// speedY[z][z_2] *= (-1 + V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(BOX_FRAG_SIZE), DRAG_CUBE));
+		// speedY[j][j_2] *= (-1 + V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(BOX_FRAG_SIZE), DRAG_CUBE));
+
+		// only runs once when detected
+		ballPosY[z][z_2] += speedY[z][z_2] / (THREADS_BOX_COLL*THREADS_BOX_COLL);
+		ballPosY[j][j_2] += speedY[j][j_2] / (THREADS_BOX_COLL*THREADS_BOX_COLL);
+
+		// ballPosX[z][z_2] += posRand_X[z][z_2];
+		// ballPosX[j][j_2] += posRand_X[j][j_2];
 	}
 }
 
