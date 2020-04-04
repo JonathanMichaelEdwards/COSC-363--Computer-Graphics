@@ -7,8 +7,8 @@
 #define TIMER_DELAY    FPS_SEC / FPS
 #define QUATER_SEC     250
 #define TITLE_SPACE    100
-#define THREADS_BOX_COLL      5  // Windows: 1
-#define THREADS_BOX_BOX_COLL  4  // Windows: 1
+#define THREADS_BOX_COLL      1//5  // Windows: 1
+#define THREADS_BOX_BOX_COLL  1//4  // Windows: 1
 
 
 // globals --change

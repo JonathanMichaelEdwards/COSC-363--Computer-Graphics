@@ -12,9 +12,8 @@
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
-            "externalConsole": true,
+            "externalConsole": false,
             "MIMode": "gdb",
-            
 
             "windows": {
                 "program": "${workspaceFolder}/Windows/main.exe",
