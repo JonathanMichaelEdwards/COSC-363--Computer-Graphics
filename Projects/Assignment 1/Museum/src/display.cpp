@@ -622,10 +622,10 @@ void boxCollision(int j, int j_2, bool target)
 			// objStill[z][z_2] = false;
 			objStill[j][j_2] = false;
 
-			if (target) {
-				// posRand_X[z][z_2] *= -0.5;
-				posRand_X[j][j_2] *= -0.5;
-			} 
+			// if (target) {
+				posRand_X[z][z_2] *= -0.2;
+				posRand_X[j][j_2] *= -0.2;
+			// } 
 
 			// only runs once when detected
 			// ballPosY[z][z_2] += speedY[z][z_2] / (THREADS_BOX_COLL*THREADS_BOX_COLL);
@@ -733,8 +733,8 @@ void *_boxDetectBoxCollision(void *arg)
 			// if (!chkCount[j][j_2])
 			// 	target[j][j_2] = checkPosX(j, j_2);
 
-			if (!chkCount[j][j_2])
-				checkPosX(j, j_2, &target);
+			// if (!chkCount[j][j_2])
+			// 	checkPosX(j, j_2, &target);
 		}
 	}
 
@@ -880,11 +880,11 @@ void _cube3D(int row, int col)
 			}
 		}
 
-		// posRand_X[0][0] = 0.001;
-		// posRand_X[0][1] = -0.001;
+		posRand_X[0][0] = 0.005;
+		posRand_X[0][1] = -0.004;
 
-		// posRand_X[1][0] = 0.001;
-		// posRand_X[1][1] = 0.001;
+		posRand_X[1][0] = 0.001;
+		posRand_X[1][1] = -0.001;
 
 
 		// run once when btn pressed
@@ -1037,7 +1037,7 @@ void _cube3D(int row, int col)
 			glTranslatef(ballPosX[row][col], ballPosY[row][col], ballPosZ[row][col]);
 
 			// rotate box with respect to its position
-			val = 0;//RAD_TO_DEG(atan(ballPosZ[row][col]/ballPosX[row][col]));
+			val = RAD_TO_DEG(atan(ballPosZ[row][col]/ballPosX[row][col]));
 			if (_spacePressed) glRotatef(val, 0, 1, 0); 
 			_boxCube();
 		glPopMatrix();
