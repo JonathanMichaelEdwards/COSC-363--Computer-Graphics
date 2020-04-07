@@ -2,12 +2,12 @@
 #define DISPLAY_H
 
 // FPS details  
-#define FPS            60
+#define FPS            80
 #define FPS_SEC        1000
 #define TIMER_DELAY    FPS_SEC / FPS
 #define QUATER_SEC     250
 #define TITLE_SPACE    100
-#define THREADS_BOX_COLL      4  // Windows: 1
+#define THREADS_BOX_COLL      2  // Windows: 1
 #define THREADS_BOX_BOX_COLL  2  // Windows: 1
 
 
@@ -25,6 +25,7 @@ void topBottomRight(void);
 void getView(bool _view);
 void zoom(double _zoom);
 void loadMeshFile(const char* fname);
+void myTimer(int value);
 
 void spacePressed(bool _state);
 void ballBounce(int value);

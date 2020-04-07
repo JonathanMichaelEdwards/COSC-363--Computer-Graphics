@@ -98,6 +98,7 @@ int main(int argc, char *argv[])
 	glutSpecialFunc(special);
 	glutTimerFunc(TIMER_DELAY, idle, TIMER_DELAY);  // fps counter
 	glutTimerFunc(10, ballBounce, 0);  // ball physics
+	glutTimerFunc(20, myTimer, 0);     // animate cannon ball
 	// glutTimerFunc(1, collBox, 0);   // better performance the other way
 	
 	glutMainLoop();

@@ -75,9 +75,10 @@ const float doorPointGlobal[3] = { };   // diff of point
 #define FLOOR_X  26
 #define FLOOR_Z  26
 
-#define velTheta      90
-#define _velTheta     (velTheta * PI) / 180
-// #define airFric       0.47
+#define VERTICAL_THETA       90
+#define VEL_THETA(theta)     (theta * PI) / 180    // converts angle from (deg to rad)
+#define CANNON_BALL_VEL_THETA     38.88 
+#define AIR_FRI       0.35
 
 
 
@@ -90,7 +91,7 @@ const float doorPointGlobal[3] = { };   // diff of point
 
 
 
-#define t             0.001   // good slow-motion camera setting for animation       "0.0001" or "0.00001"
+#define t             0.0001   // good slow-motion camera setting for animation       "0.0001" or "0.00001"
 
 
 
@@ -128,8 +129,8 @@ double ballBounceX = 0;
 float posRand_X[BOX_SIZE+1][BOX_SIZE+1]= { 0 };
 float posRand_Z[BOX_SIZE+1][BOX_SIZE+1]= { 0 };
 
-double initSpeedX = 0; //20; 
-double initSpeedY = 0; //16.1264;            // tan(theta) * Vx
+// double initSpeedX = 0; //20; 
+// double initSpeedY = 0; //16.1264;            // tan(theta) * Vx
 
 // double speedY[BOX_SIZE][2] = { { 0.001, 0.001 }, 
 // 				{ 0.001, 0.001 }, 
@@ -144,7 +145,7 @@ double initSpeedY = 0; //16.1264;            // tan(theta) * Vx
 bool horizontalCol[BOX_SIZE][BOX_SIZE] = { false };
 bool   reset[BOX_SIZE]  = { false };
 bool detectColl[BOX_SIZE][BOX_SIZE] = { false };
-double speedX = 0;
+// double speedX = 0;
 
 enum {
 	RANGE_OUT = 0,
@@ -155,7 +156,7 @@ enum {
 // 1 m heigh
 // double ballPosY[BOX_SIZE] = { 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 2.7};//, 3.23, 4.34};//, 1.44, 1.55, 1.66, 1.77, 1.88, 1.99 }; // pos height
 
-// double u = ballPosY * sin(_velTheta);  // initial speed
+// double u = ballPosY * sin(VEL_THETA(theta));  // initial speed
 
 bool _spacePressed = false;
 bool _spacePressedBallBounce = false;
@@ -772,7 +773,7 @@ void boxDetectGroundCollision()
 			// 	// else
 					
 			// } else {
-				speedY[z][z_2] -= (sin(_velTheta) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t));
+				speedY[z][z_2] -= (sin(VEL_THETA(VERTICAL_THETA)) * t * sin(VEL_THETA(VERTICAL_THETA)) - 0.5 * GRAVITY * (t*t));
 			// 	objStill[z][z_2] = false;
 			// }
 		} else { // hit the floor
@@ -889,8 +890,8 @@ void _cube3D(int row, int col)
 		for (int i = 0; i < BOX_SIZE; i++) {
 			for (int j = 0; j < BOX_SIZE; j++) {
 				// iRand[i][j] = rand() % BOX_SIZE;	
-				posRand_X[i][j] = (float)(rand() % 10) / 2000.f;
-				posRand_Z[i][j] = (float)(rand() % 10) / 2000.f;
+				posRand_X[i][j] = (float)(rand() % 10) / 5000.f;
+				posRand_Z[i][j] = (float)(rand() % 10) / 5000.f;
 			}
 		}
 
@@ -1082,7 +1083,7 @@ void ball(void)
 // {  
 	// if (_spacePressed) {  
 	// 	if (ballPosY+speedY >= FLOOR_BED+BALL_RADIUS)
-	// 		speedY -= sin(_velTheta) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);   // acceleration (drag)
+	// 		speedY -= sin(VEL_THETA(theta)) * t * sin(VEL_THETA(theta)) - 0.5 * GRAVITY * (t*t);   // acceleration (drag)
 	// 	else 
 	// 		speedY *= -1;                                                            // change direction
 
@@ -1110,7 +1111,7 @@ void ballBounce(int value)
 {  
 	double mass = 1.;
 	double area = 4 * PI * (BALL_RADIUS*BALL_RADIUS);  // area of sphere
-	double _t = 0.001;
+	double _t = 0.0001;
 	static double _fri = 0;
 
 	static double ballVelBounceY = 0;
@@ -1119,7 +1120,7 @@ void ballBounce(int value)
 	if (_spacePressedBallBounce) {  
 		if (ballBounceY+ballVelBounceY >= FLOOR_BED+BALL_RADIUS) {
 			reset = false;
-			ballVelBounceY -=  sin(_velTheta) * _t * sin(_velTheta) - 0.5 * GRAVITY * (_t*_t);   // Gravity acceleration movement (drag)
+			ballVelBounceY -=  sin(VEL_THETA(VERTICAL_THETA)) * _t * sin(VEL_THETA(VERTICAL_THETA)) - 0.5 * GRAVITY * (_t*_t);   // Gravity acceleration movement (drag)
 			ballBounceX += 0.01 - _fri;  // x-dir movement
 		} else {
 			_fri += 0.0001;  // slow x-movement every time hit GND
@@ -1387,15 +1388,10 @@ int nvrt, ntri;			//total number of vertices and triangles
 // float cam_hgt = 100;
 
 
-#define velTheta_2      38.88 
-#define _velTheta_2     (velTheta_2 * PI) / 180
-#define airFric       0.35
-#define t             1
-
-// double initSpeedX = 20; 
-// double initSpeedY = 16.1264;            // tan(theta) * Vx
-// double speedX = 0;
-// double speedY = 0;
+double initSpeedX = 30; 
+double initSpeedY = CANNON_BALL_VEL_THETA;
+double cannonBallSpeedX = 0;
+double cannonBallSpeedY = 0;
 
 
 
@@ -1456,14 +1452,13 @@ void normal(int tindx)
 }
 
 //--------draws the mesh model of the cannon----------------------------
-void drawCannon(void)
+void _drawCannon(void)
 {
 	glColor3f(0.4, 0.5, 0.4);
 
     //Construct the object model here using triangles read from OFF file
 	glBegin(GL_TRIANGLES);
-		for(int tindx = 0; tindx < ntri; tindx++)
-		{
+		for(int tindx = 0; tindx < ntri; tindx++) {
 		   normal(tindx);
 		   glVertex3d(x[t1[tindx]], y[t1[tindx]], _z[t1[tindx]]);
 		   glVertex3d(x[t2[tindx]], y[t2[tindx]], _z[t2[tindx]]);
@@ -1482,6 +1477,64 @@ void mntBrack(GLfloat xT, GLfloat yT, GLfloat zT, GLfloat xS, GLfloat yS, GLfloa
 		glScalef(xS, yS, zS);
 		glutSolidCube(1);
 	glPopMatrix();
+}
+
+
+// Create and fire a cannon ball as a projectile.
+void cannonBall(void)
+{
+	glPushMatrix();
+		glColor3f(0, 0, 1);
+		glTranslatef(CANNON_BALL_VEL_THETA+cannonBallSpeedX, 64+cannonBallSpeedY, 0);
+		glutSolidSphere(5, 36, 18);
+	glPopMatrix();
+}
+
+
+void resetCannon() 
+{
+	cannonBallSpeedX = cannonBallSpeedY = 0; 
+	initSpeedY = CANNON_BALL_VEL_THETA;
+	_spacePressed = false;
+}
+
+
+// Cannon ball animation
+void myTimer(int value) 
+{  
+	double _t = 0.1;
+
+	// theta += (theta <= -20 ? dir*=-1 : 20 <= theta ? dir*=-1 : dir); 
+	if (_spacePressed) {
+		if (cannonBallSpeedY > -64) {
+			cannonBallSpeedX += initSpeedX * _t * cos(VEL_THETA(CANNON_BALL_VEL_THETA));                                  // Speed X stays constant
+			cannonBallSpeedY += (initSpeedY-=AIR_FRI) * _t * sin(VEL_THETA(CANNON_BALL_VEL_THETA)) - 0.5 * GRAVITY * (_t*_t);   // Speed Y changes due to gravity and air friction
+		} else resetCannon();
+	}
+
+	glutTimerFunc(20, myTimer, 0); 
+}
+
+
+void drawCannon(void)
+{
+	// rotate pivot point then draw cannon
+	glPushMatrix();
+		glTranslatef(-20, 30, 0);    // Pivot point coordinates    3. Cancel first Translation to get original Translation made
+		glRotatef(30, 0, 0, 1);      // Rotate pivot points        2. Rotate object
+		glTranslatef(20, -30, 0);    // inverse of pivot points    1. Translate object to position
+		_drawCannon();                // draw object                0. Draw object
+	glPopMatrix();
+
+	// create brackets
+	mntBrack(-10, 5, 17, 80, 10, 6);   // first cube
+	mntBrack(-20, 25, 17, 40, 30, 6);  // second cube
+
+	// mirrored bracket
+	mntBrack(-10, 5, -17, 80, 10, 6); 
+	mntBrack(-20, 25, -17, 40, 30, 6);
+
+	cannonBall();  // cannon ball - projectile motion fire
 }
 
 
@@ -1523,21 +1576,14 @@ void display(void)
 	// Default scene lighting
 	glLightfv(GL_LIGHT0, GL_POSITION, lposHouse);   // light for house
 
+
+
 	glPushMatrix();
-		// glTranslatef(0 , 0, -6.5);
-		glScalef(0.02, 0.02, 0.02);
-		
-		drawCannon();
+		glTranslatef(-7, FLOOR_BED, 1);
+		glRotatef(45, 0, 1, 0);
+		glScalef(0.02, 0.02, 0.02);     // scale cannon to scene size ( 2.0 % of obj) 
+		drawCannon();                   // draw whole cannon
 	glPopMatrix();
-
-	mntBrack(-1, 0, 1, 80*0.02, 10*0.02, 6*0.02);   // first cube
-	mntBrack(-2, 3, 1, 40*0.02, 30*0.02, 6*0.02);  // second cube
-
-	// mirrored bracket
-	mntBrack(-1, 0, -1, 80*0.02, 10*0.02, 6*0.02); 
-	mntBrack(-2, 3, -1, 40*0.02, 30*0.02, 6*0.02);
-
-
 
 
 	glPushMatrix();

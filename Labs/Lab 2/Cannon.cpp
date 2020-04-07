@@ -262,7 +262,7 @@ void resetCannon()
 }
 
 
-// Adding walk animation
+// Adding ball movement animation
 void myTimer(int value) 
 {  
 	// theta += (theta <= -20 ? dir*=-1 : 20 <= theta ? dir*=-1 : dir); 
@@ -308,7 +308,7 @@ int main(int argc, char** argv)
    glutDisplayFunc(display);
    glutSpecialFunc(special); 
    glutKeyboardFunc(keyEvents);
-   glutTimerFunc(30, myTimer, 0);  // animate humnoid
+   glutTimerFunc(30, myTimer, 0);  // animate cannon ball
    glutMainLoop();
    return 0;
 }
