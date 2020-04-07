@@ -55,6 +55,23 @@ const float doorPointGlobal[3] = { };   // diff of point
 #define GRAVITY 9.81
 #define DRAG_CUBE   1.05  // face  , edge = 0.8
 
+#define DRAG_SPHERE 0.45 
+#define AIR_DENSITY 1.225
+
+#define BOX_FRAG_SIZE                   0.1
+#define BALL_RADIUS 0.1
+
+
+#define MASS_BOX_PIECE                  0.01
+#define AREA_BOX_PIECE(size)            size * size * size       // sphere area 4 * PI * (0.1*0.1);
+#define V_Terminal(mass, area, drag)    sqrt((2*(mass)*GRAVITY) / (drag*AIR_DENSITY*area)) / 100.
+
+
+
+#define GL_CLAMP_TO_EDGE                        0x812F
+
+
+
 #define FLOOR_X  26
 #define FLOOR_Z  26
 
@@ -95,6 +112,10 @@ double ballPosY[BOX_SIZE][BOX_SIZE] = { 0 };
 double ballPosX[BOX_SIZE][BOX_SIZE] = { 0 };  // pos width
 double ballPosZ[BOX_SIZE][BOX_SIZE] = { 0 };
 double speedY[BOX_SIZE][BOX_SIZE] = { 0 };
+
+// bouncing ball
+double ballBounceY = 1+BALL_RADIUS;
+double ballBounceX = 0;
 
 
 #define FRAG_BOX_START  2.0
@@ -137,6 +158,7 @@ enum {
 // double u = ballPosY * sin(_velTheta);  // initial speed
 
 bool _spacePressed = false;
+bool _spacePressedBallBounce = false;
 double previous = 0;
 
 bool accDown = true;
@@ -149,8 +171,7 @@ bool accUp = false;
 #define HEIGHT_Y   160
 
 
-#define DRAG_SPHERE 0.45 
-#define AIR_DENSITY 1.225
+
 
 
 pthread_t threads[BOX_SIZE];
@@ -177,13 +198,7 @@ bool chkCount[BOX_SIZE][BOX_SIZE] = { false };
 bool objStill[BOX_SIZE][BOX_SIZE] = { false };
 
 
-#define BOX_FRAG_SIZE                   0.1
 
-#define MASS_BOX_PIECE                  0.01
-#define AREA_BOX_PIECE(size)            size * size * size       // sphere area 4 * PI * (0.1*0.1);
-#define V_Terminal(mass, area, drag)    sqrt((2*(mass)*GRAVITY) / (drag*AIR_DENSITY*area)) / 100.
-
-#define GL_CLAMP_TO_EDGE                        0x812F
 
 
 
@@ -490,8 +505,13 @@ void drawFloor(void)
 
 void spacePressed(bool _state)
 {
-	if (_state) _spacePressed=true;
-	else _spacePressed=false;
+	if (_state) {
+		_spacePressed=true;
+		_spacePressedBallBounce=true;
+	} else {
+		_spacePressed=false;
+		_spacePressedBallBounce=false;
+	}
 }
 
 
@@ -1045,16 +1065,16 @@ void boxCube(void)
 
 
 
-// #define BALL_RADIUS 0.1
 
-// void ball(void)
-// {
-// 	glPushMatrix();
-// 		glColor3f(0, 0, 1);
-// 		glTranslatef(ballPosX, ballPosY, 0);
-// 		glutSolidSphere(BALL_RADIUS, 36, 18);
-// 	glPopMatrix();
-// }
+
+void ball(void)
+{
+	glPushMatrix();
+		glColor3f(0, 0, 1);
+		glTranslatef(ballBounceX, ballBounceY+BALL_RADIUS, 0);
+		glutSolidSphere(BALL_RADIUS, 36, 18);
+	glPopMatrix();
+}
 
 
 // perfect elastic collision
@@ -1073,45 +1093,45 @@ void boxCube(void)
 // }
 
 
-// #define DRAG_SPHERE 0.45 
-// #define AIR_DENSITY 1.225
 
-// bool reset = false;
+void rstBall(double *ballVelBounceY, double *ballBounceY, double *ballBounceX, double *_fri, bool *reset) 
+{
+	*ballBounceY = 1+BALL_RADIUS;
+	*ballVelBounceY = 0;
+	*ballBounceX = 0;
+	*_fri = 0;
 
-
-
-// void rstBall(void) 
-// {
-// 	ballPosY = 1; 
-// 	ballPosX = 0;
-// 	speedY = 0;
-// 	speedX = 0;
-// 	_spacePressed = false;
-// 	reset = false;
-// }
+	*reset = false;
+	_spacePressedBallBounce = false;
+}
 
 
-// void ballBounce(int value) 
-// {  
-// 	double mass = 5.;
-// 	double area = 4 * PI * (BALL_RADIUS*BALL_RADIUS);
-// 	double V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(MASS_BOX_PIECE), DRAG_CUBE)  = sqrt((2*(mass)*GRAVITY) / (DRAG_SPHERE*AIR_DENSITY*area)) / 100; 
+void ballBounce(int value) 
+{  
+	double mass = 1.;
+	double area = 4 * PI * (BALL_RADIUS*BALL_RADIUS);  // area of sphere
+	double _t = 0.001;
+	static double _fri = 0;
 
-// 	if (_spacePressed) {  
-// 		if (ballPosY+speedY >= FLOOR_BED+BALL_RADIUS) {
-// 			reset = false;
-// 			speedY -=  sin(_velTheta) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t);   // Gravity acceleration movement (drag)
-// 			ballPosX += 0.1;  // x-direction movement
-// 		} else {
-// 			if (reset) rstBall();
-// 			reset = true;
-// 			speedY *= -1 + V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(MASS_BOX_PIECE), DRAG_CUBE) ;  // resistance percentage
-// 		}
-// 		ballPosY += speedY;
-// 	}
-	
-// 	glutTimerFunc(10, ballBounce, 0); 
-// }
+	static double ballVelBounceY = 0;
+	static bool reset = false;
+
+	if (_spacePressedBallBounce) {  
+		if (ballBounceY+ballVelBounceY >= FLOOR_BED+BALL_RADIUS) {
+			reset = false;
+			ballVelBounceY -=  sin(_velTheta) * _t * sin(_velTheta) - 0.5 * GRAVITY * (_t*_t);   // Gravity acceleration movement (drag)
+			ballBounceX += 0.01 - _fri;  // x-dir movement
+		} else {
+			_fri += 0.0001;  // slow x-movement every time hit GND
+			if (reset) rstBall(&ballVelBounceY, &ballBounceY, &ballBounceX, &_fri, &reset);  // if ball hits ground more then twice at a time - reset ball
+			reset = true;
+			ballVelBounceY *= -1 + V_Terminal(mass, area, DRAG_SPHERE) ;  // resistance percentage - relating to mass and shape
+		}
+		ballBounceY += ballVelBounceY;
+	}
+
+	glutTimerFunc(10, ballBounce, 0); 
+}
 
 
 
@@ -1350,6 +1370,121 @@ void displayMuesum()
 }
 
 
+
+#include <iostream>
+#include <fstream>
+#include <climits>
+#include <math.h> 
+#include <GL/freeglut.h>
+using namespace std;
+
+
+//--Globals ---------------------------------------------------------------
+float *x, *y, *_z;		//vertex coordinate arrays
+int *t1, *t2, *t3;		//triangles
+int nvrt, ntri;			//total number of vertices and triangles
+// float angle = -10.0;	//Rotation angle for viewing
+// float cam_hgt = 100;
+
+
+#define velTheta_2      38.88 
+#define _velTheta_2     (velTheta_2 * PI) / 180
+#define airFric       0.35
+#define t             1
+
+// double initSpeedX = 20; 
+// double initSpeedY = 16.1264;            // tan(theta) * Vx
+// double speedX = 0;
+// double speedY = 0;
+
+
+
+
+// -- given to us
+//-- Loads mesh data in OFF format    -------------------------------------
+void loadMeshFile(const char* fname)  
+{
+	ifstream fp_in;
+	int num, ne;
+
+	fp_in.open(fname, ios::in);
+	if(!fp_in.is_open())
+	{
+		cout << "Error opening mesh file" << endl;
+		exit(1);
+	}
+
+	fp_in.ignore(INT_MAX, '\n');				//ignore first line
+	fp_in >> nvrt >> ntri >> ne;			    // read number of vertices, polygons, edges
+
+    x = new float[nvrt];                        //create arrays
+    y = new float[nvrt];
+    _z = new float[nvrt];
+
+    t1 = new int[ntri];
+    t2 = new int[ntri];
+    t3 = new int[ntri];
+
+	for(int i=0; i < nvrt; i++)                         //read vertex list 
+		fp_in >> x[i] >> y[i] >> _z[i];
+
+	for(int i=0; i < ntri; i++)                         //read polygon list 
+	{
+		fp_in >> num >> t1[i] >> t2[i] >> t3[i];
+		if(num != 3)
+		{
+			cout << "ERROR: Polygon with index " << i  << " is not a triangle." << endl;  //not a triangle!!
+			exit(1);
+		}
+	}
+
+	fp_in.close();
+	cout << " File successfully read." << endl;
+}
+
+//--Function to compute the normal vector of a triangle with index tindx ----------
+void normal(int tindx)
+{
+	float x1 = x[t1[tindx]], x2 = x[t2[tindx]], x3 = x[t3[tindx]];
+	float y1 = y[t1[tindx]], y2 = y[t2[tindx]], y3 = y[t3[tindx]];
+	float z1 = _z[t1[tindx]], z2 = _z[t2[tindx]], z3 = _z[t3[tindx]];
+	float nx, ny, nz;
+	nx = y1*(z2-z3) + y2*(z3-z1) + y3*(z1-z2);
+	ny = z1*(x2-x3) + z2*(x3-x1) + z3*(x1-x2);
+	nz = x1*(y2-y3) + x2*(y3-y1) + x3*(y1-y2);
+	glNormal3f(nx, ny, nz);
+}
+
+//--------draws the mesh model of the cannon----------------------------
+void drawCannon(void)
+{
+	glColor3f(0.4, 0.5, 0.4);
+
+    //Construct the object model here using triangles read from OFF file
+	glBegin(GL_TRIANGLES);
+		for(int tindx = 0; tindx < ntri; tindx++)
+		{
+		   normal(tindx);
+		   glVertex3d(x[t1[tindx]], y[t1[tindx]], _z[t1[tindx]]);
+		   glVertex3d(x[t2[tindx]], y[t2[tindx]], _z[t2[tindx]]);
+		   glVertex3d(x[t3[tindx]], y[t3[tindx]], _z[t3[tindx]]);
+		}
+	glEnd();
+}
+
+
+// Create mount bracket object for cannon.
+void mntBrack(GLfloat xT, GLfloat yT, GLfloat zT, GLfloat xS, GLfloat yS, GLfloat zS)
+{
+	glPushMatrix();
+		glColor3f(1, 0.8, 0);
+		glTranslatef(xT, yT, zT); 
+		glScalef(xS, yS, zS);
+		glutSolidCube(1);
+	glPopMatrix();
+}
+
+
 // ----------------------------------------------------------------------------
 //  				  		Display OpenGL graphics				
 // ----------------------------------------------------------------------------
@@ -1388,7 +1523,27 @@ void display(void)
 	// Default scene lighting
 	glLightfv(GL_LIGHT0, GL_POSITION, lposHouse);   // light for house
 
-	// ball();
+	glPushMatrix();
+		// glTranslatef(0 , 0, -6.5);
+		glScalef(0.02, 0.02, 0.02);
+		
+		drawCannon();
+	glPopMatrix();
+
+	mntBrack(-1, 0, 1, 80*0.02, 10*0.02, 6*0.02);   // first cube
+	mntBrack(-2, 3, 1, 40*0.02, 30*0.02, 6*0.02);  // second cube
+
+	// mirrored bracket
+	mntBrack(-1, 0, -1, 80*0.02, 10*0.02, 6*0.02); 
+	mntBrack(-2, 3, -1, 40*0.02, 30*0.02, 6*0.02);
+
+
+
+
+	glPushMatrix();
+		glTranslatef(0 , 0, -6.5);
+		ball();  // bouncing ball
+	glPopMatrix();
 
 	// move the box cube to it's spot in the scene
 	glPushMatrix();	
@@ -1416,23 +1571,25 @@ void display(void)
 		glVertex3f(4, 3, -7);
 		glVertex3f(-4, 3, -7);
 
+		// top
+		glVertex3f(-4, 3, -5);
+		glVertex3f(4, 3, -5);
+		glVertex3f(4, 3, -7);
+		glVertex3f(-4, 3, -7);
+
 		// left
+		glColor4f(255.f/200.f, 255.f/175.f, 1.f, 0.7f);
 		glVertex3f(-4, FLOOR_BED, -5);
 		glVertex3f(-4, FLOOR_BED, -7);
 		glVertex3f(-4, 3, -7);
 		glVertex3f(-4, 3, -5);
 
 		// right
+		glColor4f(255.f/200.f, 255.f/175.f, 1.f, 0.7f);
 		glVertex3f(4, FLOOR_BED, -5);
 		glVertex3f(4, FLOOR_BED, -7);
 		glVertex3f(4, 3, -7);
 		glVertex3f(4, 3, -5);
-
-		// top
-		glVertex3f(-4, 3, -5);
-		glVertex3f(4, 3, -5);
-		glVertex3f(4, 3, -7);
-		glVertex3f(-4, 3, -7);
 
 		// middle
 		glColor4f(1.f, 1.f, 1.f, 0.75f);

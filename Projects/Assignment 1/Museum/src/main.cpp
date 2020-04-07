@@ -53,13 +53,13 @@ void initialize(char *pjtPath)
 
  	
 	glEnable(GL_DEPTH_TEST);
-	// glEnable(GL_BLEND);
 	glEnable(GL_NORMALIZE);
 
 
 
 	// Load and enable Textures
-	loadTexture(); 
+	// loadTexture(); 
+	loadMeshFile("../Models/Cannon.off");	
 
 	glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
 	glutKeyboardFunc(keyEvents);
 	glutSpecialFunc(special);
 	glutTimerFunc(TIMER_DELAY, idle, TIMER_DELAY);  // fps counter
-	// glutTimerFunc(10, ballBounce, 0);  // ball physics
+	glutTimerFunc(10, ballBounce, 0);  // ball physics
 	// glutTimerFunc(1, collBox, 0);   // better performance the other way
 	
 	glutMainLoop();

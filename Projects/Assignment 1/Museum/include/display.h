@@ -24,9 +24,10 @@ void topBottomLeft(void);
 void topBottomRight(void);
 void getView(bool _view);
 void zoom(double _zoom);
+void loadMeshFile(const char* fname);
 
 void spacePressed(bool _state);
-// void ballBounce(int value);
+void ballBounce(int value);
 void boxCube(int value);
 void collBox(int value);
 
