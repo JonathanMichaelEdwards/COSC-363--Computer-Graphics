@@ -43,22 +43,23 @@ void initialize(char *pjtPath)
 	//	Define light's ambient, diffuse, specular properties
 	glLightfv(GL_LIGHT0, GL_AMBIENT, grey);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, white);
-	glLightfv(GL_LIGHT0, GL_SPECULAR, white);
+	// glLightfv(GL_LIGHT0, GL_SPECULAR, white);
 
 	glEnable(GL_COLOR_MATERIAL);
 	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);  
   
-	glMaterialfv(GL_FRONT, GL_SPECULAR, white);    
-  	glMaterialf(GL_FRONT, GL_SHININESS, 50);
+	// glMaterialfv(GL_FRONT, GL_SPECULAR, white);    
+  	// glMaterialf(GL_FRONT, GL_SHININESS, 50);
 
  	
 	glEnable(GL_DEPTH_TEST);
+	// glEnable(GL_BLEND);
 	glEnable(GL_NORMALIZE);
 
 
 
 	// Load and enable Textures
-	// loadTexture(); 
+	loadTexture(); 
 
 	glMatrixMode(GL_PROJECTION);
     glLoadIdentity();

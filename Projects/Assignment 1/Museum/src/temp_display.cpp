@@ -9,6 +9,7 @@
 #if 0  // disables file 
 
 
+
 // ============================================================================
 // 	Author:       Jonathan Edwards
 //
@@ -82,7 +83,7 @@ const float doorPointGlobal[3] = { };   // diff of point
 
 
 
-#define t             0.00001   // good slow-motion camera setting for animation       "0.0001" or "0.00001"
+#define t             0.001   // good slow-motion camera setting for animation       "0.0001" or "0.00001"
 
 
 
@@ -103,6 +104,7 @@ double ballPosY[BOX_SIZE][BOX_SIZE] = { 0 };
 // double ballPosX[BOX_SIZE] = { 0 };  // pos width
 double ballPosX[BOX_SIZE][BOX_SIZE] = { 0 };  // pos width
 double ballPosZ[BOX_SIZE][BOX_SIZE] = { 0 };
+double speedY[BOX_SIZE][BOX_SIZE] = { 0 };
 
 
 #define FRAG_BOX_START  2.0
@@ -113,10 +115,21 @@ double ballPosZ[BOX_SIZE][BOX_SIZE] = { 0 };
 // double ballPosY[BOX_SIZE] = { 1.0, 1.1, 1.2, 1.3};
 
 float posRand_X[BOX_SIZE+1][BOX_SIZE+1]= { 0 };
+float posRand_Z[BOX_SIZE+1][BOX_SIZE+1]= { 0 };
 
 double initSpeedX = 0; //20; 
 double initSpeedY = 0; //16.1264;            // tan(theta) * Vx
-double speedY[BOX_SIZE][BOX_SIZE] = { { -0.002, -0.002 }, { -0.001, -0.001 } };
+
+// double speedY[BOX_SIZE][2] = { { 0.001, 0.001 }, 
+// 				{ 0.001, 0.001 }, 
+// 				{ 0.001, 0.001 }, 
+// 				{ 0.001, 0.001 }, 
+// 				{ 0.001, 0.001 }, 
+// 				{ 0.001, 0.001 }, 
+// 				{ 0.001, 0.001 }, 
+// 				{ 0.001, 0.001 }, 
+// };
+
 bool horizontalCol[BOX_SIZE][BOX_SIZE] = { false };
 bool   reset[BOX_SIZE]  = { false };
 bool detectColl[BOX_SIZE][BOX_SIZE] = { false };
@@ -154,6 +167,8 @@ pthread_t threads[BOX_SIZE];
 pthread_t threadsBoxColl[BOX_SIZE];
 pthread_mutex_t *lock;
 pthread_mutex_t *lockBoxColl;
+pthread_mutex_t _lockBoxColl = PTHREAD_MUTEX_INITIALIZER;  // thread safe
+pthread_mutex_t _lock = PTHREAD_MUTEX_INITIALIZER;  // thread safe
 
 
 int z = 0;
@@ -174,7 +189,7 @@ bool objStill[BOX_SIZE][BOX_SIZE] = { false };
 
 #define BOX_FRAG_SIZE                   0.1
 
-#define MASS_BOX_PIECE                  0.1
+#define MASS_BOX_PIECE                  0.01
 #define AREA_BOX_PIECE(size)            size * size * size       // sphere area 4 * PI * (0.1*0.1);
 #define V_Terminal(mass, area, drag)    sqrt((2*(mass)*GRAVITY) / (drag*AIR_DENSITY*area)) / 100.
 
@@ -591,108 +606,64 @@ void rstBall(void)
 
 
 // reaction force - when obj 'z' has been hit
-void boxChangeSpeed(int j, int j_2)
-{
-	// for (int i = 0; i < 30; i++) {
-	// 	if (i == 0 && speedY[j][j_2] != 0) {
-			if (speedY[z][z_2] < 0.0) {
-				speedY[z][z_2] *= -0.7;
-				// ballPosY[z][z_2] 
-			} else 
-				speedY[z][z_2] *= 0.7;
+void boxChangeSpeed(int j)
+{	
+	// for (int i = 0; i < 100; i++) {
+		// if (i == 0 && speedY[j][z_2] != 0) {
+			if (speedY[z][z_2] < 0)
+				speedY[z][z_2] *= -0.9;
+			else 
+				speedY[z][z_2] *= 0.9;
 
-			if (speedY[j][j_2] < 0.0) {
-				// ballPosY[z][z_2] -= 0.1;
-				speedY[j][j_2] *= 0.7; //(-1 + V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(BOX_FRAG_SIZE), DRAG_CUBE));
-			} else{ 
-				// ballPosY[z][z_2] += 0.1;
-				speedY[j][j_2] *= -0.7; //(1 - V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(BOX_FRAG_SIZE), DRAG_CUBE));
-		}
-
-		// if (i == 0 && speedY[j][j_2] != 0 && 0 == (int)(speedY[j][j_2]*100000.f))
-		// 	speedY[j][j_2] *= -0.1;
-
-		// if (i == 0 && speedY[z][z_2] != 0)
-		// 	speedY[z][z_2] *= -0.1;
-		
-		ballPosY[z][z_2] += speedY[z][z_2] / (THREADS_BOX_COLL*THREADS_BOX_COLL);
-		ballPosY[j][j_2] += speedY[j][j_2] / (THREADS_BOX_COLL*THREADS_BOX_COLL);
+			if (speedY[j][z_2] < 0)
+				speedY[j][z_2] *= 0.9;
+			else 
+				speedY[j][z_2] *= -0.9;
+		// }
+		ballPosY[z][z_2] += speedY[z][z_2] / (THREADS_BOX_COLL*THREADS_BOX_COLL*THREADS_BOX_BOX_COLL);
+		ballPosY[j][z_2] += speedY[j][z_2] / (THREADS_BOX_COLL*THREADS_BOX_COLL*THREADS_BOX_BOX_COLL);
 	// }
 }
 
 
-void boxCollision(int j, int j_2, bool target)
+void boxCollision(int j)
 {
-	// initial collison detected - only run once while in contact
-	// change direction if rising
-	if (!chkCount[j][j_2] && !chkCount[z][z_2]) {
-		if (0 == (int)(speedY[j][j_2]*100000.f) && 0 == (int)(speedY[z][z_2]*100000.f)) {
-			// speedY[z][z_2] = 0;
-			// speedY[j][j_2] = 0;
-		// 	// horizontal detection
-		// 	// horizontalCol[z][z_2] = true;
-		// 	// horizontalCol[j][j_2] = true;
+	if (!chkCount[z][z_2]) {
+		// if (0 == (int)(speedY[z][z_2]*10000000.f)) {
+		// 	speedY[z][z_2] = 0;
+			// speedY[j][z_2] = 0;
+			// objStill[z][z_2] = true;
+			// objStill[j][z_2] = false;
 
-		// 	if (ballPosY[z][z_2] >= FRAG_BOX_START) {
-		// 		objStill[z][z_2] = false;
-		// 		objStill[j][j_2] = false;
-		// 	} else {
-		// 		objStill[z][z_2] = true;
-		// 		objStill[j][j_2] = true;
-		// 	}
-		} 
-		else {
-			// if (ballPosY[z][z_2] < 1) 
-				boxChangeSpeed(j, j_2);
-			// speedY[z][z_2] *= (-1 + V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(BOX_FRAG_SIZE), DRAG_CUBE));
-			// speedY[j][j_2] *= (-1 + V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(BOX_FRAG_SIZE), DRAG_CUBE));
+			// chkCount[z][z_2] = false;
+			// 		chkCount[j][z_2] = false;
 
-
+		// } else {
+			boxChangeSpeed(j);
+			
 			objStill[z][z_2] = false;
-			objStill[j][j_2] = false;
+			objStill[j][z_2] = false;
 
-			// if (target) {
-				posRand_X[z][z_2] *= 0.5;
-				posRand_X[j][j_2] *= -0.5;
-			// } 
+			// chkCount[z][z_2] = true;
+			// chkCount[j][z_2] = true;
+		// }
 
-			// only runs once when detected
-			// ballPosY[z][z_2] += speedY[z][z_2] / (THREADS_BOX_COLL*THREADS_BOX_COLL);
-			// ballPosY[j][j_2] += speedY[j][j_2] / (THREADS_BOX_COLL*THREADS_BOX_COLL);
-		}
-		// ballPosY[z][z_2] += speedY[z][z_2] / (THREADS_BOX_COLL*THREADS_BOX_COLL);
-		// ballPosY[j][j_2] += speedY[j][j_2] / (THREADS_BOX_COLL*THREADS_BOX_COLL);
-		
-	// if (speedY[z][z_2] <= 0.0) {
-	// 	speedY[z][z_2] *= 0.9;//(-1 + V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(BOX_FRAG_SIZE), DRAG_CUBE));
-	// } else 
-	// 	speedY[z][z_2] *= -0.9;//(1 - V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(BOX_FRAG_SIZE), DRAG_CUBE));
+		posRand_X[z][z_2] *= -0.5;
+		posRand_X[j][z_2] *= -0.5;
 
-		// change the horizontal speed of x
-		// posRand_X[z][z_2] *= -0.9;
-		// posRand_X[j][j_2] *= -0.9;
-
-		// speedY[z][z_2] *= -0.9;
-		// speedY[j][j_2] *= -0.9;
-		// speedY[z][z_2] *= (-1 + V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(BOX_FRAG_SIZE), DRAG_CUBE));
-		// speedY[j][j_2] *= (-1 + V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(BOX_FRAG_SIZE), DRAG_CUBE));
-
-		// if true, hit horizontal face, change x-direction
-		// if (target) {
-		// 	posRand_X[z][z_2] *= -0.5;
-		// 	posRand_X[j][j_2] *= -0.5;
-		// } 
-
-		// // only runs once when detected
-		// ballPosY[z][z_2] += speedY[z][z_2] / (THREADS_BOX_COLL*THREADS_BOX_COLL);
-		// ballPosY[j][j_2] += speedY[j][j_2] / (THREADS_BOX_COLL*THREADS_BOX_COLL);
-
-		// ballPosX[z][z_2] += posRand_X[z][z_2];
-		// ballPosX[j][j_2] += posRand_X[j][j_2];
+		// posRand_Z[z][z_2] *= -0.5;
+		// posRand_Z[j][z_2] *= -0.5;
 	}
-	// // ballPosY[z][z_2] += speedY[z][z_2] / (THREADS_BOX_COLL*THREADS_BOX_COLL);
-	// ballPosY[j][j_2] += speedY[j][j_2] / (THREADS_BOX_COLL*THREADS_BOX_COLL);
+
+
+	ballPosX[z][z_2] += posRand_X[z][z_2];
+	// ballPosZ[j][z_2] += posRand_Z[j][z_2];
+
+	// ballPosY[z][z_2] += speedY[z][z_2] / (THREADS_BOX_COLL*THREADS_BOX_COLL*THREADS_BOX_BOX_COLL);
+	// ballPosY[j][z_2] += speedY[j][z_2] / (THREADS_BOX_COLL*THREADS_BOX_COLL*THREADS_BOX_BOX_COLL);
 }
+
+
 
 
 // if y-dir found, then change x-dir
@@ -728,51 +699,38 @@ void *_boxDetectBoxCollision(void *arg)
 
 	static bool target = false;
 
-	// check to see if current box fragment hits anyothers
-	// for (int j = 0; j < BOX_SIZE; j++) {  // row  (check current row on with every row of the cube)
-	// 	for (int j_2 = 0; j_2 < BOX_SIZE; j_2++) {
-	// 		if (j == z && j_2 == z_2) break;
-	// 		if ((ballPosX[z][z_2]-0.05) <= (ballPosX[j][j_2]+0.05) && (ballPosX[j][j_2]-0.05) <= (ballPosX[z][z_2]+0.05)) {
-	// 			if ((ballPosY[z][z_2]-0.05) <= (ballPosY[j][j_2]+0.05) && (ballPosY[j][j_2]-0.05) <= (ballPosY[z][z_2]+0.05)) { 
-	// 				if ((ballPosZ[z][z_2]-0.05) <= (ballPosZ[j][j_2]+0.05) && (ballPosZ[j][j_2]-0.05) <= (ballPosZ[z][z_2]+0.05)) {
-	// 					boxCollision(j, j_2, target[z][z_2]);
 
-	for (int j = 0; j < BOX_SIZE; j++) {  // row  (check current row on with every row of the cube)
-		for (int j_2 = 0; j_2 < 1; j_2++) {
-			if (j == z && j_2 == z_2) break;
-			else if ((ballPosX[z][z_2]-0.05) <= (ballPosX[j][j_2]+0.05) && (ballPosX[j][j_2]-0.05) <= (ballPosX[z][z_2]+0.05)) {
-				if ((ballPosY[z][z_2]-0.05) <= (ballPosY[j][j_2]+0.05) && (ballPosY[j][j_2]-0.05) <= (ballPosY[z][z_2]+0.05)) { 
-					if ((ballPosZ[z][z_2]-0.05) <= (ballPosZ[j][j_2]+0.05) && (ballPosZ[j][j_2]-0.05) <= (ballPosZ[z][z_2]+0.05)) {
-						boxCollision(j, j_2, target);
-						// printf("%d: %f\n", j, speedY[z][z_2]);
-						// printf("%d\n", j);
-						// chkCount[z][z_2] = true;  // object - 'z' has been hit
-						chkCount[j][j_2] = true;
-						// break;
-					}
-				} 
+	// check to see if ball 'z' hits any other balls
+	for (int j = 0; j < BOX_SIZE; j++) {
+		for (int j_2 = 0; j_2 < 2; j_2++) {
+		if (j == z && j_2 == z_2) break;
+		else if ((ballPosX[z][z_2]-0.05) <= (ballPosX[j][j_2]+0.05) && (ballPosX[j][j_2]-0.05) <= (ballPosX[z][z_2]+0.05)) {
+			if ((ballPosY[z][z_2]-0.05) <= (ballPosY[j][j_2]+0.05) && (ballPosY[j][j_2]-0.05) <= (ballPosY[z][z_2]+0.05)) { 
+				if ((ballPosZ[z][z_2]-0.05) <= (ballPosZ[j][j_2]+0.05) && (ballPosZ[j][j_2]-0.05) <= (ballPosZ[z][z_2]+0.05)) {
+	// else if ((ballPosX[z][z_2]-0.05) <= (ballPosX[j][z_2]+0.05) && (ballPosX[j][z_2]-0.05) <= (ballPosX[z][z_2]+0.05)) { 
+	// 	if ((ballPosY[z][z_2]-0.05) <= (ballPosY[j][z_2]+0.05) && (ballPosY[j][z_2]-0.05) <= (ballPosY[z][z_2]+0.05)) {
+	// 		if ((ballPosZ[z][z_2]-0.05) <= (ballPosZ[j][z_2]+0.05) && (ballPosZ[j][z_2]-0.05) <= (ballPosZ[z][z_2]+0.05)) {
+				// if (!chkCount[j][j_2]) {
+
+					// posRand_X[z][z_2] *= -0.2;
+					// posRand_X[j][j_2] *= -0.2;
+				// }
+				// boxCollision(j);
+
+				chkCount[z][z_2] = true;
+				chkCount[j][j_2] = true;
 			} else {
-				// checkPosX(j, j_2);
-
-				// horizontalCol[z][z_2] = RANGE_OUT;
-				// chkCount[z][z_2] = false;
+				chkCount[z][z_2] = false;
 				chkCount[j][j_2] = false;
-
-			// if (ballPosY[j][j_2]+speedY[j][j_2] >= FLOOR_BED) {
-			// 	// ballPosY[z][z_2] += ((speedY[z][z_2]/BOX_SIZE) / ((THREADS_BOX_COLL*THREADS_BOX_COLL*THREADS_BOX_BOX_COLL)));  // iterates in relation to box size
-			// 	ballPosY[j][j_2] += ((speedY[j][j_2]/BOX_SIZE) / ((THREADS_BOX_COLL*THREADS_BOX_COLL*THREADS_BOX_BOX_COLL)));  // iterates in relation to box size
-			// }
-				// increase falling space between objects
-				// ballPosY[z][z_2] += ((speedY[z][z_2]/BOX_SIZE) / ((THREADS_BOX_COLL*THREADS_BOX_COLL*THREADS_BOX_BOX_COLL)));  // iterates in relation to box size
-			}
-
-			// if (!chkCount[j][j_2])
-			// 	target[j][j_2] = checkPosX(j, j_2);
-
-			// if (!chkCount[j][j_2])
-			// 	checkPosX(j, j_2, &target);
-		}
-	}
+			}}
+		else {
+			chkCount[z][z_2] = false;
+			chkCount[j][j_2] = false;
+		}} 
+	else {
+		chkCount[z][z_2] = false;
+		chkCount[j][j_2] = false;
+	}}}
 
 
 	pthread_mutex_unlock(lockBoxColl);
@@ -781,7 +739,7 @@ void *_boxDetectBoxCollision(void *arg)
 }
 
 
-pthread_mutex_t _lockBoxColl = PTHREAD_MUTEX_INITIALIZER;  // thread safe
+
 void boxDetectBoxCollision()
 {
 
@@ -803,25 +761,30 @@ void boxDetectGroundCollision()
 	// box piece's collision with floor
 	// if current pos y plus last speed is greater then floor bed, calculate new pos due to speed and direction
 	if (!chkCount[z][z_2]) {
-		if (ballPosY[z][z_2] >= FLOOR_BED+0.05 && speedY[z][z_2] != 0) {
-			// if (speedY[z][z_2] > -0.05f) 
-				speedY[z][z_2] -= (sin(_velTheta) * 0.001 * sin(_velTheta) - 0.5 * GRAVITY * (0.001*0.001));
-			
-			// objStill[z][z_2] = false;
+		if (ballPosY[z][z_2]+speedY[z][z_2] >= FLOOR_BED) {
+
+			// if (0 == (int)(speedY[z][z_2]*1000000000.f)) { // use boolen expression to register
+			// 	objStill[z][z_2] = true;
+			// 	speedY[z][z_2] = 0;
+			// 	// if (ballPosY[z][z_2] > FLOOR_BED);
+			// 	// 	// speedY[z][z_2] -= 0.001;
+			// 	// else
+					
+			// } else {
+				speedY[z][z_2] -= (sin(_velTheta) * t * sin(_velTheta) - 0.5 * GRAVITY * (t*t));
+			// 	objStill[z][z_2] = false;
+			// }
 		} else { // hit the floor
-			if (0 == (int)(speedY[z][z_2]*100000.f)) { // use boolen expression to register
-				// speedY[z][z_2] = 0;
-				// horizontalCol[z][z_2] = true;
-				objStill[z][z_2] = true;
-			} else {
-				// boxDetectBoxCollision();
+			// if (0 == (int)(speedY[z][z_2]*1000000000.f)) { // use boolen expression to register
+			// 	speedY[z][z_2] = 0;
+			// 	objStill[z][z_2] = true;
+			// } else {
 				speedY[z][z_2] *= (-1 + V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(BOX_FRAG_SIZE), DRAG_CUBE));  // resistance percentage 
-				objStill[z][z_2] = false;
-			}
+			// 	objStill[z][z_2] = false;
+			// }
 		}
-		// printf("%d: %f\n", z, speedY[z][z_2]);
-		if (speedY[z][z_2] != 0)
-			ballPosY[z][z_2] += speedY[z][z_2];// / ((THREADS_BOX_COLL*THREADS_BOX_COLL));
+
+		ballPosY[z][z_2] += speedY[z][z_2] / ((THREADS_BOX_COLL*THREADS_BOX_COLL));
 	}
 }
 
@@ -829,31 +792,45 @@ void boxDetectGroundCollision()
 void *floorCollisionBOX(void *arg)
 {
 	// z = *(int*)arg;  // block number
+	
 	pthread_mutex_lock(lock);
 
-
 	for (int n = 0; n < BOX_SIZE; n++) {               // rows
-		for (int n_2 = 0; n_2 < 1; n_2++) {     // cols
-
+		for (int n_2 = 0; n_2 < 2; n_2++) {     // cols
+			
 			z = n;
 			z_2 = n_2;
 
 			// if (!objStill[n][n_2]) {
 				boxDetectGroundCollision();
 				boxDetectBoxCollision();
+				
+
+
+
+				for (int i = 0; i < BOX_SIZE; i++) {                     // rows
+					for (int j = 0; j < 2; j++) {
+						// if (0 == (int)(speedY[i][j]*1000000000000.f)) {
+						// 	objStill[i][j] = true;
+						// 	speedY[i][j] = 0;	
+						// } 
+					}
+				}
+
+
 			// }
 		}
 	}
 
-
 	pthread_mutex_unlock(lock);
+
+
+	
 
     return NULL;
 }
 
 
-
-pthread_mutex_t _lock = PTHREAD_MUTEX_INITIALIZER;  // thread safe
 void collBox(int value) 
 {  
 	static bool _threadStop = false;
@@ -863,7 +840,7 @@ void collBox(int value)
 
 		// if thread is false trigger to stop
 		for (int i = 0; i < BOX_SIZE; i++) {
-			for (int j = 0; j < 1; j++) {
+			for (int j = 0; j < 2; j++) {
 				if (!objStill[i][j]) {
 					_threadStop = false;
 					break;
@@ -872,7 +849,7 @@ void collBox(int value)
 			}
 		}
 			
-		// if (!_threadStop) {
+		if (!_threadStop) {
 			// workers
 			for (int i = 0; i < THREADS_BOX_COLL; i++) {
 				lock = &_lock;
@@ -882,7 +859,7 @@ void collBox(int value)
 
 			for (int i = 0; i < THREADS_BOX_COLL; i++) 
 				pthread_join(threads[i], NULL);
-		// }
+		}
 	}
 	// glutTimerFunc(1, collBox, 0); 
 }
@@ -900,25 +877,27 @@ void _boxCube(void)
 void _cube3D(int row, int col)
 {
 	double val = 0;
-	static int iRand[BOX_SIZE+1][BOX_SIZE+1] = { 0 };
+	// static int iRand[BOX_SIZE+1][BOX_SIZE+1] = { 0 };
 	// static float posRand_X[BOX_SIZE+1][BOX_SIZE+1]= { 0 };
-	static float posRand_Z[BOX_SIZE+1][BOX_SIZE+1]= { 0 };
-	static double _fri[BOX_SIZE+1][BOX_SIZE+1] = { 0 };
+	// static float posRand_Z[BOX_SIZE+1][BOX_SIZE+1]= { 0 };
+	// static double _fri[BOX_SIZE+1][BOX_SIZE+1] = { 0 };
 	bool posRand[2] = { false };  // x, z
 
 	// get random values when btn pressed - run once
 	if (!_iState) {
 		// keep finding random values every clock tick unitl btn pressed
 		for (int i = 0; i < BOX_SIZE; i++) {
-			for (int j = 0; j < 1; j++) {
-				iRand[i][j] = rand() % BOX_SIZE;	
+			for (int j = 0; j < 2; j++) {
+				// iRand[i][j] = rand() % BOX_SIZE;	
 				// posRand_X[i][j] = (float)(rand() % 10) / 2000.f;
 				// posRand_Z[i][j] = (float)(rand() % 10) / 2000.f;
 			}
 		}
+		// for (int i = 0; i < BOX_SIZE; i++) 
+		// 	posRand_X[i][0] = 0.003;
 
-		// posRand_X[0][0] = 0.002;
-		// posRand_X[0][1] = -0.002;
+		posRand_X[0][0] = 0.002;
+		posRand_X[0][1] = -0.002;
 
 		// posRand_X[1][0] = 0.001;
 		// posRand_X[1][1] = -0.001;
@@ -927,25 +906,20 @@ void _cube3D(int row, int col)
 		// run once when btn pressed
 		if (_spacePressed) {
 			// for (int i = 0; i < BOX_SIZE; i++)
-			// 	for (int j = 0; j < BOX_SIZE; j++)
-			// 		ballPosX[row][col] += posRand_X[i][j];
+			// 	for (int j = 0; j < 2; j++)
+			// 		ballPosX[row][col] += 0;//posRand_X[i][j];
 
 			_iState = true;
 		}
 	}
 
 	if (_spacePressed) {
-		// // for (int i = 0; i < BOX_SIZE; i++)
-		// // 	for (int j = 0; j < BOX_SIZE; j++)
-		// if (_fri[row][col] >= -0.005) {
-		// 	posRand_X[row][col] = 0;
-		// 	// _fri[row][col] = 0;
-		// } else
-		// 	// _fri[row][col] -= 0.00001;
 
-		// ballPosX[row][col] += posRand_X[row][col] + _fri[row][col];
+		// for (int i = 0; i < BOX_SIZE; i++) 
+		// 	posRand_X[i][0] = 0.003;
 
-		if (0 == speedY[row][col]) {
+
+		if (0 == (int)(speedY[row][col]*10000.f)) {
 			if ((int)(posRand_X[row][col]*100000.f) == 0)
 				posRand_X[row][col] = 0;
 			else if (posRand_X[row][col] > 0)
@@ -954,127 +928,31 @@ void _cube3D(int row, int col)
 				posRand_X[row][col] += 0.00001;
 				
 			ballPosX[row][col] += posRand_X[row][col];
+
+			if ((int)(posRand_Z[row][col]*100000.f) == 0)
+				posRand_Z[row][col] = 0;
+			else if (posRand_Z[row][col] > 0)
+				posRand_Z[row][col] -= 0.00001;
+			else
+				posRand_Z[row][col] += 0.00001;
+				
+			ballPosZ[row][col] += posRand_Z[row][col];
 		} 
-		else 
+		else {
 			ballPosX[row][col] += posRand_X[row][col];
-	}
-
-#if 0
-	if (_spacePressed) {
-		// if (0 == (int)(posRand_X[iRand[row][col]][iRand[row][col]] *10000.f)) {
-		// 	posRand_X[iRand[row][col]][iRand[row][col]] = 0;
-		// 	posRand[0] = true;
-		// } else {
-		// 	posRand[0] = false;
-		// }
-			
-		// if (0 == (int)(posRand_Z[iRand[row][col]][iRand[row][col]] *10000.f)) {
-		// 	posRand_Z[iRand[row][col]][iRand[row][col]] = 0;
-		// 	posRand[1] = true;
-		// } else {
-		// 	posRand[1] = false;
-		// }
-
-
-
-
-
-
-		// stop ball from moving when stationary
-		if (0 != speedY[row][col] && !objStill[row][col] && !horizontalCol[row][col]) {
-			ballPosX[row][col] += posRand_X[iRand[row][col]][iRand[row][col]];
-			ballPosZ[row][col] += posRand_Z[iRand[row][col]][iRand[row][col]];
-		} else if (objStill[row][col] && horizontalCol[row][col]) {		
-
-			// if (ballPosX[row][col] <= 0)
-			// 	ballPosX[row][col] *= -0.2;
-			// else 
-			// 	ballPosX[row][col] *= 0.2;
-
-			// if (ballPosZ[row][col] <= 0)
-			// 	ballPosZ[row][col] *= -0.2;
-			// else 
-			// 	ballPosZ[row][col] *= 0.2;
-			speedY[row][col] = 0;
-
-			// if (!posRand[0]) {
-				if (ballPosX[row][col] <= 0)
-					posRand_X[iRand[row][col]][iRand[row][col]] *= -0.5;
-				else 
-					posRand_X[iRand[row][col]][iRand[row][col]] *= 0.5;
-			// }
-
-			// if (!posRand[1]) {
-				if (ballPosZ[row][col] <= 0)
-					posRand_Z[iRand[row][col]][iRand[row][col]] *= -0.5;
-				else 
-					posRand_Z[iRand[row][col]][iRand[row][col]] *= 0.5;
-			// }
-
-			ballPosX[row][col] += posRand_X[iRand[row][col]][iRand[row][col]];
-			ballPosZ[row][col] += posRand_Z[iRand[row][col]][iRand[row][col]];
-		}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-		// // stop ball from moving when stationary
-		// if (0 != speedY[row][col] && !objStill[row][col] && !horizontalCol[row][col]) {
-		// 	ballPosX[row][col] += posRand_X[iRand[row][col]][iRand[row][col]];
-		// 	ballPosZ[row][col] += posRand_Z[iRand[row][col]][iRand[row][col]];
-		// } else if (objStill[row][col] && horizontalCol[row][col]) {		
-
-		// 	// if (ballPosX[row][col] <= 0)
-		// 	// 	ballPosX[row][col] *= -0.2;
-		// 	// else 
-		// 	// 	ballPosX[row][col] *= 0.2;
-
-		// 	// if (ballPosZ[row][col] <= 0)
-		// 	// 	ballPosZ[row][col] *= -0.2;
-		// 	// else 
-		// 	// 	ballPosZ[row][col] *= 0.2;
-		// 	speedY[row][col] = 0;
-
-		// 	// if (!posRand[0]) {
-		// 		if (ballPosX[row][col] <= 0)
-		// 			posRand_X[iRand[row][col]][iRand[row][col]] *= -0.5;
-		// 		else 
-		// 			posRand_X[iRand[row][col]][iRand[row][col]] *= 0.5;
-		// 	// }
-
-		// 	// if (!posRand[1]) {
-		// 		if (ballPosZ[row][col] <= 0)
-		// 			posRand_Z[iRand[row][col]][iRand[row][col]] *= -0.5;
-		// 		else 
-		// 			posRand_Z[iRand[row][col]][iRand[row][col]] *= 0.5;
-		// 	// }
-
-		// 	ballPosX[row][col] += posRand_X[iRand[row][col]][iRand[row][col]];
-		// 	ballPosZ[row][col] += posRand_Z[iRand[row][col]][iRand[row][col]];
-		// }
+			ballPosZ[row][col] += posRand_Z[row][col];
+		}	
 	}
 
 
-
-#endif
 
 	// for (float x = 0; x < 0.1; x+=0.1) { //(BOX_SIZE/10.f); x+=0.1) {
 		glPushMatrix();	
 			glColor3f(0, 1, 0);
-			glTranslatef(ballPosX[row][col], ballPosY[row][col], ballPosZ[row][col]);
+			glTranslatef(ballPosX[row][col], ballPosY[row][col]+0.05, ballPosZ[row][col]);
 
 			// rotate box with respect to its position
-			val = 0;//RAD_TO_DEG(atan(ballPosZ[row][col]/ballPosX[row][col]));
+			val = RAD_TO_DEG(atan(ballPosZ[row][col]/ballPosX[row][col]));
 			if (_spacePressed) glRotatef(val, 0, 1, 0); 
 			_boxCube();
 		glPopMatrix();
@@ -1087,17 +965,20 @@ void boxCube(void)
 	static bool initPos = false;
 
 	if (!initPos) {
-		double _ballPosY[BOX_SIZE] = { 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7 };
-		double _ballPosX[BOX_SIZE] = { 0};
+		double _ballPosY[BOX_SIZE] = { 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7 };
+		// double _ballPosX[BOX_SIZE] = { 0 , 1 , 2, 3, 4, 5, 6, 7 };
+		double _ballPosX[2] = { 1 , 2 };
+		double _speedY = -0.001;
 
 		// double _ballPosY[BOX_SIZE] = { 2, 2.1 };
 		// double _ballPosX[BOX_SIZE] = { -0.5, 0.8};
 
 		// build the box out of multiple cubes
 		for (int i = 0; i < BOX_SIZE; i++) {            // row
-			for (int j = 0; j < 1; j++) {        // col
+			for (int j = 0; j < 2; j++) {        // col
 				ballPosX[i][j] = _ballPosX[j];
 				ballPosY[i][j] = _ballPosY[i];
+				speedY[i][j] = _speedY;
 			}
 		}
 		
@@ -1105,7 +986,7 @@ void boxCube(void)
 	}
 
 	for (int y = 0; y < BOX_SIZE; y+=1) {
-		for (int col = 0; col < 1; col+=1) {
+		for (int col = 0; col < 2; col+=1) {
 			_cube3D(y, col);
 		}
 	}
@@ -1548,6 +1429,7 @@ void display(void)
 
 	showFPS();
 }
+
 
 
 #endif // 0 

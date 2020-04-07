@@ -683,7 +683,7 @@ void checkPosX(int j, int j_2, bool *target)
 
 void *_boxDetectBoxCollision(void *arg)
 {
-	// pthread_mutex_lock(lockBoxColl);
+	pthread_mutex_lock(lockBoxColl);
 
 	static bool target = false;
 
@@ -697,24 +697,24 @@ void *_boxDetectBoxCollision(void *arg)
 					
 					boxCollision(j);
 
-					// chkCount[z][z_2] = true;
-					// chkCount[j][z_2] = true;
+					chkCount[z][z_2] = true;
+					chkCount[j][z_2] = true;
 				} else {
-					// chkCount[z][z_2] = false;
-					// chkCount[j][z_2] = false;
+					chkCount[z][z_2] = false;
+					chkCount[j][z_2] = false;
 				}}
 			else {
 				chkCount[z][z_2] = false;
 				chkCount[j][z_2] = false;
 			}} 
 		else {
-			// chkCount[z][z_2] = false;
-			// chkCount[j][z_2] = false;
+			chkCount[z][z_2] = false;
+			chkCount[j][z_2] = false;
 		}
 	}
 
 
-	// pthread_mutex_unlock(lockBoxColl);
+	pthread_mutex_unlock(lockBoxColl);
 
 	return NULL;
 }
@@ -777,7 +777,7 @@ void *floorCollisionBOX(void *arg)
 	pthread_mutex_lock(lock);
 
 	for (int n = 0; n < BOX_SIZE; n++) {               // rows
-		for (int n_2 = 0; n_2 < 2; n_2++) {     // cols
+		for (int n_2 = 0; n_2 < BOX_SIZE; n_2++) {     // cols
 			
 			z = n;
 			z_2 = n_2;
@@ -867,10 +867,10 @@ void _cube3D(int row, int col)
 	if (!_iState) {
 		// keep finding random values every clock tick unitl btn pressed
 		for (int i = 0; i < BOX_SIZE; i++) {
-			for (int j = 0; j < 2; j++) {
+			for (int j = 0; j < BOX_SIZE; j++) {
 				// iRand[i][j] = rand() % BOX_SIZE;	
 				posRand_X[i][j] = (float)(rand() % 10) / 2000.f;
-				// posRand_Z[i][j] = (float)(rand() % 10) / 2000.f;
+				posRand_Z[i][j] = (float)(rand() % 10) / 2000.f;
 			}
 		}
 
@@ -881,15 +881,10 @@ void _cube3D(int row, int col)
 		// posRand_X[1][1] = -0.001;
 
 
-		// run once when btn pressed
-		if (_spacePressed) {
-			for (int i = 0; i < BOX_SIZE; i++)
-				for (int j = 0; j < 2; j++)
-					ballPosX[row][col] += 0;//posRand_X[i][j];
+			// run once when btn pressed
 
 			_iState = true;
 		}
-	}
 
 	if (_spacePressed) {
 		if (0 == (int)(speedY[row][col]*10000.f)) {
@@ -939,8 +934,8 @@ void boxCube(void)
 
 	if (!initPos) {
 		double _ballPosY[BOX_SIZE] = { 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7 };
-		// double _ballPosX[BOX_SIZE] = { 0 , 1 , 2, 3, 4, 5, 6, 7 };
-		double _ballPosX[2] = { 1 , 2 };
+		double _ballPosX[BOX_SIZE] = { -3.5 , -2.5 , -1.5, -0.5, 0.5, 1.5, 2.5, 3.5 };
+		// double _ballPosX[2] = { 1 , 2 };
 		double _speedY = -0.001;
 
 		// double _ballPosY[BOX_SIZE] = { 2, 2.1 };
@@ -948,7 +943,7 @@ void boxCube(void)
 
 		// build the box out of multiple cubes
 		for (int i = 0; i < BOX_SIZE; i++) {            // row
-			for (int j = 0; j < 2; j++) {        // col
+			for (int j = 0; j < BOX_SIZE; j++) {        // col
 				ballPosX[i][j] = _ballPosX[j];
 				ballPosY[i][j] = _ballPosY[i];
 				speedY[i][j] = _speedY;
@@ -959,7 +954,7 @@ void boxCube(void)
 	}
 
 	for (int y = 0; y < BOX_SIZE; y+=1) {
-		for (int col = 0; col < 2; col+=1) {
+		for (int col = 0; col < BOX_SIZE; col+=1) {
 			_cube3D(y, col);
 		}
 	}
@@ -1377,25 +1372,81 @@ void display(void)
 
 
 	// disable specular lighting ---------------------
-	glMaterialfv(GL_FRONT, GL_SPECULAR, black); 
+	// glMaterialfv(GL_FRONT, GL_SPECULAR, black);     // ---
 
 
 	// draw objects with only ambiant and diffuse lighting
-	// displayMuesum();
+	displayMuesum();
 		
-	// skyBox();
+	skyBox();
 	drawFloor();
 
 	// reset back to white for any other objects that take light
-  	glMaterialfv(GL_FRONT, GL_SPECULAR, white);
+  	// glMaterialfv(GL_FRONT, GL_SPECULAR, white);         // ---
 	// enable specular lighting ----------------------
 
 	// Default scene lighting
 	glLightfv(GL_LIGHT0, GL_POSITION, lposHouse);   // light for house
 
 	// ball();
-	boxCube();
-	collBox(0);
+
+	// move the box cube to it's spot in the scene
+	glPushMatrix();	
+		glTranslatef(0 , 0, -6);
+		boxCube();
+	glPopMatrix();
+
+	
+	glDepthMask(GL_FALSE);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+
+	glBegin(GL_QUADS);
+		glColor4f(255.f/200.f, 255.f/175.f, 1.f, 0.5f);
+
+		// front
+		glVertex3f(-4, FLOOR_BED, -5);
+		glVertex3f(4, FLOOR_BED, -5);
+		glVertex3f(4, 3, -5);
+		glVertex3f(-4, 3, -5);
+
+		// back
+		glVertex3f(-4, FLOOR_BED, -7);
+		glVertex3f(4, FLOOR_BED, -7);
+		glVertex3f(4, 3, -7);
+		glVertex3f(-4, 3, -7);
+
+		// left
+		glVertex3f(-4, FLOOR_BED, -5);
+		glVertex3f(-4, FLOOR_BED, -7);
+		glVertex3f(-4, 3, -7);
+		glVertex3f(-4, 3, -5);
+
+		// right
+		glVertex3f(4, FLOOR_BED, -5);
+		glVertex3f(4, FLOOR_BED, -7);
+		glVertex3f(4, 3, -7);
+		glVertex3f(4, 3, -5);
+
+		// top
+		glVertex3f(-4, 3, -5);
+		glVertex3f(4, 3, -5);
+		glVertex3f(4, 3, -7);
+		glVertex3f(-4, 3, -7);
+
+		// middle
+		glColor4f(1.f, 1.f, 1.f, 0.75f);
+		glVertex3f(-4, 1, -5);
+		glVertex3f(4, 1, -5);
+		glVertex3f(4, 1, -7);
+		glVertex3f(-4, 1, -7);
+	glEnd();
+
+	glDisable(GL_BLEND);
+   glDepthMask(GL_TRUE); 
+
+	
+	collBox(0);  // animate the bouncing mini boxes - thread optimised
 
 	
 	glutSwapBuffers();	
