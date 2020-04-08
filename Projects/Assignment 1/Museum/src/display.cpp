@@ -116,7 +116,12 @@ double speedY[BOX_SIZE][BOX_SIZE] = { 0 };
 
 // bouncing ball
 double ballBounceY = 1+BALL_RADIUS;
+double radiusBallBounce[5] = { 0.05, 0.1, 0.2, 0.25, 0.3};
+double _radiusBallBounce = radiusBallBounce[0];
+double massBallBounce[5] = { 0.1, 0.5, 10., 30., 60.};
+double _massBallBounce = massBallBounce[0];
 double ballBounceX = 0;
+bool wallHit = false;
 
 
 #define FRAG_BOX_START  2.0
@@ -487,14 +492,14 @@ void drawFloor(void)
 
 	glBegin(GL_QUADS);
 	glNormal3f(0, 1, 0);
-	for(int x = -FLOOR_X; x <= FLOOR_X; x += 2) {
-		for(int z = -FLOOR_Z; z <= FLOOR_Z; z += 2) {
-			if(flag) glColor3f(1, 1, 1);
-			else glColor3f(1, 1, 1);
+	for(float x = -FLOOR_X; x <= FLOOR_X; x += 0.5) {
+		for(float z = -FLOOR_Z; z <= FLOOR_Z; z += 0.5) {
+			glColor3f(1, 1, 1);
+			// else glColor3f(1, 1, 1);
 			glVertex3f(x, FLOOR_BED, z);
-			glVertex3f(x, FLOOR_BED, z+2);
-			glVertex3f(x+2, FLOOR_BED, z+2);
-			glVertex3f(x+2, FLOOR_BED, z);
+			glVertex3f(x, FLOOR_BED, z+0.5);
+			glVertex3f(x+0.5, FLOOR_BED, z+0.5);
+			glVertex3f(x+0.5, FLOOR_BED, z);
 			flag = !flag;
 		}
 	}
@@ -809,15 +814,15 @@ void *floorCollisionBOX(void *arg)
 				boxDetectGroundCollision();
 
 
-
-				for (int i = 0; i < BOX_SIZE; i++) {                     // rows
-					for (int j = 0; j < 2; j++) {
-						// if (0 == (int)(speedY[i][j]*1000000000000.f)) {
-						// 	objStill[i][j] = true;
-						// 	speedY[i][j] = 0;	
-						// } 
-					}
-				}
+				// reset speed to '0'
+				// for (int i = 0; i < BOX_SIZE; i++) {                     // rows
+				// 	for (int j = 0; j < 2; j++) {
+				// 		// if (0 == (int)(speedY[i][j]*1000000000000.f)) {
+				// 		// 	objStill[i][j] = true;
+				// 		// 	speedY[i][j] = 0;	
+				// 		// } 
+				// 	}
+				// }
 
 
 			}
@@ -838,7 +843,7 @@ void collBox(int value)
 	static bool _threadStop = false;
 
 
-	if (_spacePressed) {  
+	if (_spacePressed && wallHit) {  
 
 		// if thread is false trigger to stop
 		for (int i = 0; i < BOX_SIZE; i++) {
@@ -908,7 +913,7 @@ void _cube3D(int row, int col)
 			_iState = true;
 		}
 
-	if (_spacePressed) {
+	if (_spacePressed && wallHit) {
 		if (0 == (int)(speedY[row][col]*10000.f)) {
 			if ((int)(posRand_X[row][col]*100000.f) == 0)
 				posRand_X[row][col] = 0;
@@ -943,7 +948,7 @@ void _cube3D(int row, int col)
 
 			// rotate box with respect to its position
 			val = RAD_TO_DEG(atan(ballPosZ[row][col]/ballPosX[row][col]));
-			if (_spacePressed) glRotatef(val, 0, 1, 0); 
+			if (_spacePressed && wallHit) glRotatef(val, 0, 1, 0); 
 			_boxCube();
 		glPopMatrix();
 	// }
@@ -1074,7 +1079,7 @@ void ball(void)
 	glPushMatrix();
 		glColor3f(0, 0, 1);
 		glTranslatef(ballBounceX, ballBounceY+BALL_RADIUS, 0);
-		glutSolidSphere(BALL_RADIUS, 36, 18);
+		glutSolidSphere(_radiusBallBounce, 36, 18);
 	glPopMatrix();
 }
 
@@ -1096,43 +1101,55 @@ void ball(void)
 
 
 
-void rstBall(double *ballVelBounceY, double *ballBounceY, double *ballBounceX, double *_fri, bool *reset) 
+void rstBall(double *ballVelBounceY,  double *ballBounceX, double *_fri, bool *reset, int index, bool *initState) 
 {
-	*ballBounceY = 1+BALL_RADIUS;
+	ballBounceY = 1;
 	*ballVelBounceY = 0;
 	*ballBounceX = 0;
 	*_fri = 0;
 
+	_radiusBallBounce = radiusBallBounce[index%5];
+	_massBallBounce = massBallBounce[index%5];
+
 	*reset = false;
+	*initState = true;
 	_spacePressedBallBounce = false;
 }
 
 
-void ballBounce() 
+void ballBounce(int value) 
 {  
-	double mass = 1.;
-	double area = 4 * PI * (BALL_RADIUS*BALL_RADIUS);  // area of sphere
-	double _t = 0.0001;
+	double area = 4 * PI * (_radiusBallBounce*_radiusBallBounce);  // area of sphere
+	double _t = 0.001;
 	static double _fri = 0;
 
 	static double ballVelBounceY = 0;
 	static bool reset = false;
+	static bool initState = true;
+	static int index = 0;
 
-	if (_spacePressedBallBounce) {  
-		if (ballBounceY+ballVelBounceY >= FLOOR_BED+BALL_RADIUS) {
-			reset = false;
-			ballVelBounceY -=  sin(VEL_THETA(VERTICAL_THETA)) * _t * sin(VEL_THETA(VERTICAL_THETA)) - 0.5 * GRAVITY * (_t*_t);   // Gravity acceleration movement (drag)
-			ballBounceX += 0.01 - _fri;  // x-dir movement
-		} else {
-			_fri += 0.0001;  // slow x-movement every time hit GND
-			if (reset) rstBall(&ballVelBounceY, &ballBounceY, &ballBounceX, &_fri, &reset);  // if ball hits ground more then twice at a time - reset ball
-			reset = true;
-			ballVelBounceY *= -1 + V_Terminal(mass, area, DRAG_SPHERE) ;  // resistance percentage - relating to mass and shape
-		}
-		ballBounceY += ballVelBounceY;
+	
+	// change the mass and radius of the magical - bouncing ball
+	if (initState) {
+		index += 1 % 5;
+		initState = false;
 	}
 
-	// glutTimerFunc(10, ballBounce, 0); 
+	// if (_spacePressedBallBounce) {  
+		if (ballBounceY+ballVelBounceY >= FLOOR_BED+_radiusBallBounce) {
+			reset = false;
+			ballVelBounceY -=  sin(VEL_THETA(VERTICAL_THETA)) * _t * sin(VEL_THETA(VERTICAL_THETA)) - 0.5 * GRAVITY * (_t*_t);   // Gravity acceleration movement (drag)
+			// ballBounceX += 0.01 - _fri;  // x-dir movement
+		} else {
+			_fri += 0.0001;  // slow x-movement every time hit GND
+			if (reset) rstBall(&ballVelBounceY, &ballBounceX, &_fri, &reset, index, &initState);  // if ball hits ground more then twice at a time - reset ball
+			reset = true;
+			ballVelBounceY *= -1 + V_Terminal(_massBallBounce, area, DRAG_SPHERE) ;  // resistance percentage - relating to mass and shape
+		}
+		ballBounceY += ballVelBounceY;
+	// }
+
+	glutTimerFunc(10, ballBounce, 0); 
 }
 
 
@@ -1487,7 +1504,7 @@ void cannonBall(void)
 {
 	glPushMatrix();
 		glColor3f(0, 0, 1);
-		glTranslatef(CANNON_BALL_VEL_THETA-5+cannonBallSpeedX, 75+cannonBallSpeedY, cannonBallPosZ);
+		glTranslatef(CANNON_BALL_VEL_THETA-5+cannonBallSpeedX, 73+cannonBallSpeedY, cannonBallPosZ);
 		glutSolidSphere(5, 36, 18);
 	glPopMatrix();
 }
@@ -1503,12 +1520,11 @@ void resetCannon()
 
 // Cannon ball animation
 // -- spinning rotating ball
-void myTimer(int value) 
+void cannonBall(int value) 
 {  
 	double _t = 0.1;
 	static double ballGlassHit = 0;
 	static bool ballBounce = false;
-	static bool wallHit = false;
 
 	double mass = 10.;
 	double area = 4 * PI * (CANNON_BALL_RADIUS*CANNON_BALL_RADIUS);  // area of sphere
@@ -1519,7 +1535,7 @@ void myTimer(int value)
 			
 	// theta += (theta <= -20 ? dir*=-1 : 20 <= theta ? dir*=-1 : dir); 
 	if (_spacePressed) {
-		if (cannonBallSpeedY > -75+CANNON_BALL_RADIUS-FLOOR_BED && !ballBounce) {
+		if (cannonBallSpeedY > -73+CANNON_BALL_RADIUS-FLOOR_BED && !ballBounce) {
 			if ((cannonBallSpeedX*0.02) >= 7.5) {
 				ballGlassHit += 2;  // collision with gravity less box - shatters front
 				wallHit = true;
@@ -1532,9 +1548,7 @@ void myTimer(int value)
 			cannonBallSpeedY += ((initSpeedY-=AIR_FRI) * _t * sin(VEL_THETA(CANNON_BALL_VEL_THETA)) - 0.5 * GRAVITY * (_t*_t)) + (ballGlassHit/10.);   // Speed Y changes due to gravity and air friction
 		} else { //resetCannon();
 			ballBounce = true;
-			// _t = 1;
-			
-			if (cannonBallSpeedY+ballVelBounceY >= -75+CANNON_BALL_RADIUS-FLOOR_BED) {
+			if (cannonBallSpeedY+ballVelBounceY >= -73+CANNON_BALL_RADIUS-FLOOR_BED) {
 				// reset = false;
 				ballVelBounceY -=  sin(VEL_THETA(VERTICAL_THETA)) * _t * sin(VEL_THETA(VERTICAL_THETA)) - 0.5 * GRAVITY * (_t*_t);   // Gravity acceleration movement (drag)
 				cannonBallSpeedX -= 1 - _fri;  // x-dir movement
@@ -1551,7 +1565,7 @@ void myTimer(int value)
 		}
 	}
 
-	glutTimerFunc(20, myTimer, 0); 
+	glutTimerFunc(20, cannonBall, 0); 
 }
 
 
@@ -1577,6 +1591,62 @@ void drawCannon(void)
 }
 
 
+
+void ballBoxDemo(void)
+{
+   	glDepthMask(GL_FALSE);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+
+	glBegin(GL_QUADS);
+		glColor4f(255.f/200.f, 255.f/175.f, 1.f, 0.25f);
+
+		// front
+		glVertex3f(-1, -1, -1);
+		glVertex3f(1, -1, -1);
+		glVertex3f(1, 4, -1);
+		glVertex3f(-1, 4, -1);
+
+		// back
+		glVertex3f(-1, -1, -2);
+		glVertex3f(1, -1, -2);
+		glVertex3f(1, 4, -2);
+		glVertex3f(-1, 4, -2);
+
+
+		// left
+		glColor4f(255.f/200.f, 255.f/175.f, 1.f, 0.6f);
+		glVertex3f(-1, -1, -1);
+		glVertex3f(-1, -1, -2);
+		glVertex3f(-1, 4, -2);
+		glVertex3f(-1, 4, -1);
+
+		// right
+		glVertex3f(1, -1, -1);
+		glVertex3f(1, -1, -2);
+		glVertex3f(1, 4, -2);
+		glVertex3f(1, 4, -1);
+
+		// top
+		glColor4f(255.f/200.f, 255.f/175.f, 1.f, 0.75f);
+		glVertex3f(-1, 4, -1);
+		glVertex3f(1, 4, -1);
+		glVertex3f(1, 4, -2);
+		glVertex3f(-1, 4, -2);
+
+		// middle
+		glColor4f(1.f, 1.f, 1.f, 0.75f);
+		glVertex3f(-1, 1.5, -1);
+		glVertex3f(1, 1.5, -1);
+		glVertex3f(1, 1.5, -2);
+		glVertex3f(-1, 1.5, -2);
+	glEnd();
+
+	glDisable(GL_BLEND);
+   glDepthMask(GL_TRUE); 
+}
+
+const float orange[4]  = {1, 0.5, 0, 1};
 // ----------------------------------------------------------------------------
 //  				  		Display OpenGL graphics				
 // ----------------------------------------------------------------------------
@@ -1599,9 +1669,12 @@ void display(void)
 	}
 	
 
+	// Default scene lighting
+	glLightfv(GL_LIGHT0, GL_POSITION, lposHouse);   // light for house
+
 
 	// disable specular lighting ---------------------
-	// glMaterialfv(GL_FRONT, GL_SPECULAR, black);     // ---
+	glMaterialfv(GL_FRONT, GL_SPECULAR, black);     // ---
 
 
 	// draw objects with only ambiant and diffuse lighting
@@ -1610,42 +1683,20 @@ void display(void)
 	skyBox();
 	drawFloor();
 
-	// reset back to white for any other objects that take light
-  	// glMaterialfv(GL_FRONT, GL_SPECULAR, white);         // ---
-	// enable specular lighting ----------------------
-
-	// Default scene lighting
-	glLightfv(GL_LIGHT0, GL_POSITION, lposHouse);   // light for house
-
-
-
-	glPushMatrix();
-		glTranslatef(-8, FLOOR_BED, 1);
-		glRotatef(45, 0, 1, 0);
-		glScalef(0.02, 0.02, 0.02);     // scale cannon to scene size ( 2.0 % of obj) 
-		drawCannon();                   // draw whole cannon
-	glPopMatrix();
-
-
-	glPushMatrix();
-		glTranslatef(0 , 0, -6.5);
-		ball();  // bouncing ball
-	glPopMatrix();
-
 	// move the box cube to it's spot in the scene
 	glPushMatrix();	
 		glTranslatef(0 , 0, -6);
 		boxCube();
 	glPopMatrix();
 
-	
+
+
 	glDepthMask(GL_FALSE);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
 	glBegin(GL_QUADS);
-		glColor4f(255.f/200.f, 255.f/175.f, 1.f, 0.5f);
-
+		glColor4f(255.f/200.f, 255.f/175.f, 1.f, 0.25f);
 		// front
 		glVertex3f(-4, FLOOR_BED, -5);
 		glVertex3f(4, FLOOR_BED, -5);
@@ -1658,25 +1709,25 @@ void display(void)
 		glVertex3f(4, 3, -7);
 		glVertex3f(-4, 3, -7);
 
-		// top
-		glVertex3f(-4, 3, -5);
-		glVertex3f(4, 3, -5);
-		glVertex3f(4, 3, -7);
-		glVertex3f(-4, 3, -7);
-
 		// left
-		glColor4f(255.f/200.f, 255.f/175.f, 1.f, 0.7f);
+		glColor4f(255.f/200.f, 255.f/175.f, 1.f, 0.6f);
 		glVertex3f(-4, FLOOR_BED, -5);
 		glVertex3f(-4, FLOOR_BED, -7);
 		glVertex3f(-4, 3, -7);
 		glVertex3f(-4, 3, -5);
 
 		// right
-		glColor4f(255.f/200.f, 255.f/175.f, 1.f, 0.7f);
 		glVertex3f(4, FLOOR_BED, -5);
 		glVertex3f(4, FLOOR_BED, -7);
 		glVertex3f(4, 3, -7);
 		glVertex3f(4, 3, -5);
+
+		// top
+		glColor4f(255.f/200.f, 255.f/175.f, 1.f, 0.75f);
+		glVertex3f(-4, 3, -5);
+		glVertex3f(4, 3, -5);
+		glVertex3f(4, 3, -7);
+		glVertex3f(-4, 3, -7);
 
 		// middle
 		glColor4f(1.f, 1.f, 1.f, 0.75f);
@@ -1691,6 +1742,45 @@ void display(void)
 
 	
 	collBox(0);  // animate the bouncing mini boxes - thread optimised
+
+
+
+	// reset back to white for any other objects that take light
+  	glMaterialfv(GL_FRONT, GL_SPECULAR, white);         // ---
+	// enable specular lighting ----------------------
+
+
+	glPushMatrix();
+		glTranslatef(-8, FLOOR_BED, 1);
+		glRotatef(45, 0, 1, 0);
+		glScalef(0.02, 0.02, 0.02);     // scale cannon to scene size ( 2.0 % of obj) 
+		drawCannon();                   // draw whole cannon
+	glPopMatrix();
+
+
+	glPushMatrix();
+		glTranslatef(-8 , 2.4, -4);
+		ball();  // bouncing ball
+	glPopMatrix();
+
+	
+	float spot_pos[]={ 2, 10, -4.3, 1.0 };
+   	float spotDir[] = { -1, -1, 0, 1.0f };  // light1 position (directly above bouncing ball)
+	
+
+	glLightfv(GL_LIGHT1, GL_POSITION, spot_pos);
+	glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, spotDir);
+
+
+	glPushMatrix();	
+		glTranslatef(-7 , 0, -3);
+		glRotatef(50, 0, 1, 0); 
+		ballBoxDemo();  // get to experiment with different values (e.g mass)
+	glPopMatrix();
+
+
+
+
 
 	
 	glutSwapBuffers();	

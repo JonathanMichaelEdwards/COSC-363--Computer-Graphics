@@ -23,7 +23,8 @@
 
 
 const float grey[4] = {0.2, 0.2, 0.2, 1.0};
-const float white[4]  = {1.0, 1.0, 1.0, 1.0};
+const float orange[4]  = {1, 0.5, 0, 1};
+const float white[4]  = {1, 1, 1, 1};
 
 /** ------------------------------------------------------------------------------
 //  								Initialize OpenGL
@@ -38,18 +39,28 @@ void initialize(char *pjtPath)
 
 	// Enable light sources
 	glEnable(GL_LIGHT0);
-	// glEnable(GL_LIGHT1);
+	glEnable(GL_LIGHT1);
 
 	//	Define light's ambient, diffuse, specular properties
 	glLightfv(GL_LIGHT0, GL_AMBIENT, grey);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, white);
-	// glLightfv(GL_LIGHT0, GL_SPECULAR, white);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, orange);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, orange);
+
+
+	// spotlight LIGHT_1
+	glLightfv(GL_LIGHT1, GL_AMBIENT, grey);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, orange);
+	glLightfv(GL_LIGHT1, GL_SPECULAR, white);
+
+	glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 40); 
+	glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 90); 
+
 
 	glEnable(GL_COLOR_MATERIAL);
 	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);  
   
-	// glMaterialfv(GL_FRONT, GL_SPECULAR, white);    
-  	// glMaterialf(GL_FRONT, GL_SHININESS, 50);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, white);    
+  	glMaterialf(GL_FRONT, GL_SHININESS, 50);
 
  	
 	glEnable(GL_DEPTH_TEST);
@@ -58,8 +69,8 @@ void initialize(char *pjtPath)
 
 
 	// Load and enable Textures
-	// loadTexture(); 
-	// loadMeshFile("../Models/Cannon.off");	
+	loadTexture(); 
+	loadMeshFile("../Models/Cannon.off");	
 
 	glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -81,7 +92,7 @@ void idle(int delay)
 	glutTimerFunc(delay, idle, delay);
 }
 
-
+#include <stdio.h>
 // ----------------------------------------------------------------------------
 //         		 Initialize glut window and register call backs
 // ----------------------------------------------------------------------------
@@ -98,8 +109,8 @@ int main(int argc, char *argv[])
 	glutKeyboardFunc(keyEvents);
 	glutSpecialFunc(special);
 	glutTimerFunc(TIMER_DELAY, idle, TIMER_DELAY);  // fps counter
-	// glutTimerFunc(10, ballBounce, 0);  // ball physics
-	glutTimerFunc(20, myTimer, 0);     // animate cannon ball
+	glutTimerFunc(10, ballBounce, 10);  // ball physics
+	glutTimerFunc(20, cannonBall, 0);     // animate cannon ball
 	// glutTimerFunc(1, collBox, 0);   // better performance the other way
 	
 	glutMainLoop();

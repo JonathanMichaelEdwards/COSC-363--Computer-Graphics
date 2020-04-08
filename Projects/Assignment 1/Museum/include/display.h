@@ -2,7 +2,7 @@
 #define DISPLAY_H
 
 // FPS details  
-#define FPS            80
+#define FPS            60
 #define FPS_SEC        1000
 #define TIMER_DELAY    FPS_SEC / FPS
 #define QUATER_SEC     250
@@ -25,7 +25,7 @@ void topBottomRight(void);
 void getView(bool _view);
 void zoom(double _zoom);
 void loadMeshFile(const char* fname);
-void myTimer(int value);
+void cannonBall(int value);
 
 void spacePressed(bool _state);
 void ballBounce(int value);
