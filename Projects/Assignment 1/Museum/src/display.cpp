@@ -90,9 +90,11 @@ const float doorPointGlobal[3] = { };   // diff of point
 
 
 
-
-#define t             0.0001   // good slow-motion camera setting for animation       "0.0001" or "0.00001"
-
+// #if wallHit == 1
+// 	#define t     0.001   // good slow-motion camera setting for animation       "0.0001" or "0.00001"
+// #else 
+// #define t     0.00001 
+// #endif
 
 
 
@@ -625,21 +627,23 @@ void rstBall(void)
 // reaction force - when obj 'z' has been hit
 void boxChangeSpeed(int j)
 {	
-	// for (int i = 0; i < 100; i++) {
-		// if (i == 0 && speedY[j][z_2] != 0) {
-			if (speedY[z][z_2] < 0)
-				speedY[z][z_2] *= -0.9;
-			else 
-				speedY[z][z_2] *= 0.9;
+	float impactForce = 1;
 
-			if (speedY[j][z_2] < 0)
-				speedY[j][z_2] *= 0.9;
-			else 
-				speedY[j][z_2] *= -0.9;
-		// }
-		ballPosY[z][z_2] += speedY[z][z_2] / (THREADS_BOX_COLL*THREADS_BOX_COLL*THREADS_BOX_BOX_COLL);
-		ballPosY[j][z_2] += speedY[j][z_2] / (THREADS_BOX_COLL*THREADS_BOX_COLL*THREADS_BOX_BOX_COLL);
-	// }
+	if (wallHit)
+		impactForce = 0.9;
+
+	if (speedY[z][z_2] < 0)
+		speedY[z][z_2] *= -impactForce;
+	else 
+		speedY[z][z_2] *= impactForce;
+
+	if (speedY[j][z_2] < 0)
+		speedY[j][z_2] *= impactForce;
+	else 
+		speedY[j][z_2] *= -impactForce;
+		
+	ballPosY[z][z_2] += speedY[z][z_2] / (THREADS_BOX_COLL*THREADS_BOX_COLL*THREADS_BOX_BOX_COLL);
+	ballPosY[j][z_2] += speedY[j][z_2] / (THREADS_BOX_COLL*THREADS_BOX_COLL*THREADS_BOX_BOX_COLL);
 }
 
 
@@ -658,21 +662,25 @@ void boxCollision(int j)
 		// } else {
 			boxChangeSpeed(j);
 			
-			objStill[z][z_2] = false;
-			objStill[j][z_2] = false;
+			// objStill[z][z_2] = false;
+			// objStill[j][z_2] = false;
 
-			chkCount[z][z_2] = true;
-			chkCount[j][z_2] = true;
+			// chkCount[z][z_2] = true;
+			// chkCount[j][z_2] = true;
 		// }
 	}
-	posRand_X[z][z_2] *= -0.5;
-	posRand_X[j][z_2] *= -0.5;
+	
+	// When the cannon ball hits the gravitational less exclosure - disruppt movement 
+	if (wallHit) {
+		posRand_X[z][z_2] *= -0.5;
+		posRand_X[j][z_2] *= -0.5;
 
-	posRand_Z[z][z_2] *= -0.5;
-	posRand_Z[j][z_2] *= -0.5;
+		posRand_Z[z][z_2] *= -0.5;
+		posRand_Z[j][z_2] *= -0.5;
 
-	ballPosX[z][z_2] += posRand_X[z][z_2];
-	ballPosZ[j][z_2] += posRand_Z[j][z_2];
+		ballPosX[z][z_2] += posRand_X[z][z_2];
+		ballPosZ[j][z_2] += posRand_Z[j][z_2];
+	}
 
 	// ballPosY[z][z_2] += speedY[z][z_2] / (THREADS_BOX_COLL*THREADS_BOX_COLL*THREADS_BOX_BOX_COLL);
 	// ballPosY[j][z_2] += speedY[j][z_2] / (THREADS_BOX_COLL*THREADS_BOX_COLL*THREADS_BOX_BOX_COLL);
@@ -724,8 +732,8 @@ void *_boxDetectBoxCollision(void *arg)
 					
 					boxCollision(j);
 
-					chkCount[z][z_2] = true;
-					chkCount[j][z_2] = true;
+					// chkCount[z][z_2] = true;
+					// chkCount[j][z_2] = true;
 				} else {
 					chkCount[z][z_2] = false;
 					chkCount[j][z_2] = false;
@@ -750,7 +758,6 @@ void *_boxDetectBoxCollision(void *arg)
 
 void boxDetectBoxCollision()
 {
-
 	// Linux
 	for (int i = 0; i < THREADS_BOX_BOX_COLL; i++) {
 		lockBoxColl = &_lockBoxColl;
@@ -766,6 +773,8 @@ void boxDetectBoxCollision()
 float zDir[20] = { 0.f };
 void boxDetectGroundCollision()
 {
+	float t = 0.0001;
+
 	// box piece's collision with floor
 	// if current pos y plus last speed is greater then floor bed, calculate new pos due to speed and direction
 	if (!chkCount[z][z_2]) {
@@ -779,7 +788,15 @@ void boxDetectGroundCollision()
 			// 	// else
 					
 			// } else {
-				speedY[z][z_2] -= (sin(VEL_THETA(VERTICAL_THETA)) * t * sin(VEL_THETA(VERTICAL_THETA)) - 0.5 * GRAVITY * (t*t));
+			// printf("%f\n", t);
+			if (wallHit) t = 0.001;
+			// 	#undef   t
+			// 	#define  t     0.001
+			// #endif
+				// printf("here %f\n", t);
+				// #undef   t
+				
+			speedY[z][z_2] -= (sin(VEL_THETA(VERTICAL_THETA)) * t * sin(VEL_THETA(VERTICAL_THETA)) - 0.5 * GRAVITY * (t*t));
 			// 	objStill[z][z_2] = false;
 			// }
 		} else { // hit the floor
@@ -787,7 +804,11 @@ void boxDetectGroundCollision()
 			// 	speedY[z][z_2] = 0;
 			// 	objStill[z][z_2] = true;
 			// } else {
-				speedY[z][z_2] *= (-1 + V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(BOX_FRAG_SIZE), DRAG_CUBE));  // resistance percentage 
+				if (wallHit)
+					speedY[z][z_2] *= (-1 + V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(BOX_FRAG_SIZE), DRAG_CUBE));  // resistance percentage 
+				else
+					speedY[z][z_2] *= -1;
+
 			// 	objStill[z][z_2] = false;
 			// }
 		}
@@ -814,13 +835,13 @@ void *floorCollisionBOX(void *arg)
 				boxDetectGroundCollision();
 
 
-				// reset speed to '0'
+			// reset speed to '0'
 				// for (int i = 0; i < BOX_SIZE; i++) {                     // rows
-				// 	for (int j = 0; j < 2; j++) {
-				// 		// if (0 == (int)(speedY[i][j]*1000000000000.f)) {
-				// 		// 	objStill[i][j] = true;
-				// 		// 	speedY[i][j] = 0;	
-				// 		// } 
+				// 	for (int j = 0; j < BOX_SIZE; j++) {
+			if (0 == (int)(speedY[z][z_2]*1000.f) && ((ballPosY[z][z_2] <= FLOOR_BED+0.05) || (chkCount[z][z_2]))) {
+				objStill[z][z_2] = true;
+				speedY[z][z_2] = 0;	
+			} 
 				// 	}
 				// }
 
@@ -838,16 +859,16 @@ void *floorCollisionBOX(void *arg)
 }
 
 
-void collBox(int value) 
+void collBox(void) 
 {  
 	static bool _threadStop = false;
 
 
-	if (_spacePressed && wallHit) {  
-
+	// if (_spacePressed && wallHit) {  
+	if (!_threadStop) {
 		// if thread is false trigger to stop
 		for (int i = 0; i < BOX_SIZE; i++) {
-			for (int j = 0; j < 2; j++) {
+			for (int j = 0; j < BOX_SIZE; j++) {
 				if (!objStill[i][j]) {
 					_threadStop = false;
 					break;
@@ -856,18 +877,21 @@ void collBox(int value)
 			}
 		}
 			
-		if (!_threadStop) {
-			// workers
-			for (int i = 0; i < THREADS_BOX_COLL; i++) {
-				lock = &_lock;
-				b[i] = i;
-				pthread_create(&threads[i], NULL, floorCollisionBOX, &b[i]);
-			}
-
-			for (int i = 0; i < THREADS_BOX_COLL; i++) 
-				pthread_join(threads[i], NULL);
+		
+		// worker threads
+		for (int i = 0; i < THREADS_BOX_COLL; i++) {
+			lock = &_lock;
+			b[i] = i;
+			pthread_create(&threads[i], NULL, floorCollisionBOX, &b[i]);
 		}
-	}
+
+		for (int i = 0; i < THREADS_BOX_COLL; i++) 
+			pthread_join(threads[i], NULL);
+		} 
+	// else {
+	// 	puts("done");
+	// }
+	// }
 	// glutTimerFunc(1, collBox, 0); 
 }
 
@@ -896,8 +920,8 @@ void _cube3D(int row, int col)
 		for (int i = 0; i < BOX_SIZE; i++) {
 			for (int j = 0; j < BOX_SIZE; j++) {
 				// iRand[i][j] = rand() % BOX_SIZE;	
-				posRand_X[i][j] = (float)(rand() % 10) / 5000.f;
-				posRand_Z[i][j] = (float)(rand() % 10) / 5000.f;
+				posRand_X[i][j] = (float)(rand() % 10) / 1000.f;
+				posRand_Z[i][j] = (float)(rand() % 6) / 1000.f;
 			}
 		}
 
@@ -914,22 +938,22 @@ void _cube3D(int row, int col)
 		}
 
 	if (_spacePressed && wallHit) {
-		if (0 == (int)(speedY[row][col]*10000.f)) {
-			if ((int)(posRand_X[row][col]*100000.f) == 0)
+		if (0 == (int)(speedY[row][col]*1000.f)) {
+			if ((int)(posRand_X[row][col]*10000.f) == 0)
 				posRand_X[row][col] = 0;
 			else if (posRand_X[row][col] > 0)
-				posRand_X[row][col] -= 0.00001;
+				posRand_X[row][col] -= 0.0001;
 			else
-				posRand_X[row][col] += 0.00001;
+				posRand_X[row][col] += 0.0001;
 				
 			ballPosX[row][col] += posRand_X[row][col];
 
-			if ((int)(posRand_Z[row][col]*100000.f) == 0)
+			if ((int)(posRand_Z[row][col]*10000.f) == 0)
 				posRand_Z[row][col] = 0;
 			else if (posRand_Z[row][col] > 0)
-				posRand_Z[row][col] -= 0.00001;
+				posRand_Z[row][col] -= 0.0001;
 			else
-				posRand_Z[row][col] += 0.00001;
+				posRand_Z[row][col] += 0.0001;
 				
 			ballPosZ[row][col] += posRand_Z[row][col];
 		} 
@@ -943,8 +967,7 @@ void _cube3D(int row, int col)
 
 	// for (float x = 0; x < 0.1; x+=0.1) { //(BOX_SIZE/10.f); x+=0.1) {
 		glPushMatrix();	
-			glColor3f(0, 1, 0);
-			glTranslatef(ballPosX[row][col], ballPosY[row][col]+0.05, ballPosZ[row][col]);
+			glTranslatef(ballPosX[row][col], ballPosY[row][col], ballPosZ[row][col]);
 
 			// rotate box with respect to its position
 			val = RAD_TO_DEG(atan(ballPosZ[row][col]/ballPosX[row][col]));
@@ -980,9 +1003,11 @@ void boxCube(void)
 		initPos = true;
 	}
 
-	for (int y = 0; y < BOX_SIZE; y+=1) {
-		for (int col = 0; col < BOX_SIZE; col+=1) {
-			_cube3D(y, col);
+	for (int row = 0; row < BOX_SIZE; row++) {
+		for (int col = 0; col < BOX_SIZE; col++) {
+			if (row % 2 == 0) glColor3f(0, 1, 0);
+			else glColor3f(0.6, 0, 0);
+			_cube3D(row, col);
 		}
 	}
 
@@ -1149,7 +1174,7 @@ void ballBounce(int value)
 		ballBounceY += ballVelBounceY;
 	// }
 
-	glutTimerFunc(10, ballBounce, 0); 
+	glutTimerFunc(20, ballBounce, 0); 
 }
 
 
@@ -1730,18 +1755,18 @@ void display(void)
 		glVertex3f(-4, 3, -7);
 
 		// middle
-		glColor4f(1.f, 1.f, 1.f, 0.75f);
-		glVertex3f(-4, 1, -5);
-		glVertex3f(4, 1, -5);
-		glVertex3f(4, 1, -7);
-		glVertex3f(-4, 1, -7);
+		// glColor4f(1.f, 1.f, 1.f, 0.75f);
+		// glVertex3f(-4, 1, -5);
+		// glVertex3f(4, 1, -5);
+		// glVertex3f(4, 1, -7);
+		// glVertex3f(-4, 1, -7);
 	glEnd();
 
 	glDisable(GL_BLEND);
    glDepthMask(GL_TRUE); 
 
 	
-	collBox(0);  // animate the bouncing mini boxes - thread optimised
+	collBox();  // animate the bouncing mini boxes - thread optimised
 
 
 
@@ -1765,7 +1790,7 @@ void display(void)
 
 	
 	float spot_pos[]={ 2, 10, -4.3, 1.0 };
-   	float spotDir[] = { -1, -1, 0, 1.0f };  // light1 position (directly above bouncing ball)
+   	float spotDir[] = { -1, -1, 0, 1.0 };  // light1 position (directly above bouncing ball)
 	
 
 	glLightfv(GL_LIGHT1, GL_POSITION, spot_pos);

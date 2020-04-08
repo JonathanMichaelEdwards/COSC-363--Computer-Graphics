@@ -1,7 +1,7 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
-// FPS details  
+// FPS details  b
 #define FPS            60
 #define FPS_SEC        1000
 #define TIMER_DELAY    FPS_SEC / FPS
