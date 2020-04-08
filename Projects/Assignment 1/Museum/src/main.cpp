@@ -59,11 +59,12 @@ void initialize(char *pjtPath)
 
 	// Load and enable Textures
 	// loadTexture(); 
-	loadMeshFile("../Models/Cannon.off");	
+	// loadMeshFile("../Models/Cannon.off");	
 
 	glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-	gluPerspective(60., 1., 1., 500.); 
+	gluPerspective(60., WIDTH/HEIGHT, 1., 500.); 
+	glMatrixMode(GL_MODELVIEW);
 		
 	getPath(pjtPath);
 }
@@ -97,7 +98,7 @@ int main(int argc, char *argv[])
 	glutKeyboardFunc(keyEvents);
 	glutSpecialFunc(special);
 	glutTimerFunc(TIMER_DELAY, idle, TIMER_DELAY);  // fps counter
-	glutTimerFunc(10, ballBounce, 0);  // ball physics
+	// glutTimerFunc(10, ballBounce, 0);  // ball physics
 	glutTimerFunc(20, myTimer, 0);     // animate cannon ball
 	// glutTimerFunc(1, collBox, 0);   // better performance the other way
 	

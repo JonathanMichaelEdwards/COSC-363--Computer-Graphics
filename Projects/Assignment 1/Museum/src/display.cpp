@@ -145,6 +145,8 @@ float posRand_Z[BOX_SIZE+1][BOX_SIZE+1]= { 0 };
 bool horizontalCol[BOX_SIZE][BOX_SIZE] = { false };
 bool   reset[BOX_SIZE]  = { false };
 bool detectColl[BOX_SIZE][BOX_SIZE] = { false };
+
+bool cannonBallHit = false;
 // double speedX = 0;
 
 enum {
@@ -605,7 +607,6 @@ void rstBall(void)
 		// ballPosY[i] = boxPosStart[i]; 
 		// speedY[i] = 0;
 		reset[i] = false;
-		objCollision[i] = false;
 		// count[i] = 0;
 		// chkCount[i] = 0;
 	}
@@ -1107,7 +1108,7 @@ void rstBall(double *ballVelBounceY, double *ballBounceY, double *ballBounceX, d
 }
 
 
-void ballBounce(int value) 
+void ballBounce() 
 {  
 	double mass = 1.;
 	double area = 4 * PI * (BALL_RADIUS*BALL_RADIUS);  // area of sphere
@@ -1131,7 +1132,7 @@ void ballBounce(int value)
 		ballBounceY += ballVelBounceY;
 	}
 
-	glutTimerFunc(10, ballBounce, 0); 
+	// glutTimerFunc(10, ballBounce, 0); 
 }
 
 
@@ -1387,11 +1388,12 @@ int nvrt, ntri;			//total number of vertices and triangles
 // float angle = -10.0;	//Rotation angle for viewing
 // float cam_hgt = 100;
 
-
+#define CANNON_BALL_RADIUS 5
 double initSpeedX = 30; 
 double initSpeedY = CANNON_BALL_VEL_THETA;
 double cannonBallSpeedX = 0;
 double cannonBallSpeedY = 0;
+double cannonBallPosZ = 0;
 
 
 
@@ -1485,7 +1487,7 @@ void cannonBall(void)
 {
 	glPushMatrix();
 		glColor3f(0, 0, 1);
-		glTranslatef(CANNON_BALL_VEL_THETA+cannonBallSpeedX, 64+cannonBallSpeedY, 0);
+		glTranslatef(CANNON_BALL_VEL_THETA-5+cannonBallSpeedX, 75+cannonBallSpeedY, cannonBallPosZ);
 		glutSolidSphere(5, 36, 18);
 	glPopMatrix();
 }
@@ -1500,16 +1502,53 @@ void resetCannon()
 
 
 // Cannon ball animation
+// -- spinning rotating ball
 void myTimer(int value) 
 {  
 	double _t = 0.1;
+	static double ballGlassHit = 0;
+	static bool ballBounce = false;
+	static bool wallHit = false;
 
+	double mass = 10.;
+	double area = 4 * PI * (CANNON_BALL_RADIUS*CANNON_BALL_RADIUS);  // area of sphere
+	static double _fri = 0;
+
+	static double ballVelBounceY = 2;//
+	static bool reset = false;
+			
 	// theta += (theta <= -20 ? dir*=-1 : 20 <= theta ? dir*=-1 : dir); 
 	if (_spacePressed) {
-		if (cannonBallSpeedY > -64) {
-			cannonBallSpeedX += initSpeedX * _t * cos(VEL_THETA(CANNON_BALL_VEL_THETA));                                  // Speed X stays constant
-			cannonBallSpeedY += (initSpeedY-=AIR_FRI) * _t * sin(VEL_THETA(CANNON_BALL_VEL_THETA)) - 0.5 * GRAVITY * (_t*_t);   // Speed Y changes due to gravity and air friction
-		} else resetCannon();
+		if (cannonBallSpeedY > -75+CANNON_BALL_RADIUS-FLOOR_BED && !ballBounce) {
+			if ((cannonBallSpeedX*0.02) >= 7.5) {
+				ballGlassHit += 2;  // collision with gravity less box - shatters front
+				wallHit = true;
+			}
+			if (wallHit) {
+				cannonBallPosZ += 4;
+			}
+
+			cannonBallSpeedX += initSpeedX * _t * cos(VEL_THETA(CANNON_BALL_VEL_THETA)) - ballGlassHit;                               // Speed X stays constant
+			cannonBallSpeedY += ((initSpeedY-=AIR_FRI) * _t * sin(VEL_THETA(CANNON_BALL_VEL_THETA)) - 0.5 * GRAVITY * (_t*_t)) + (ballGlassHit/10.);   // Speed Y changes due to gravity and air friction
+		} else { //resetCannon();
+			ballBounce = true;
+			// _t = 1;
+			
+			if (cannonBallSpeedY+ballVelBounceY >= -75+CANNON_BALL_RADIUS-FLOOR_BED) {
+				// reset = false;
+				ballVelBounceY -=  sin(VEL_THETA(VERTICAL_THETA)) * _t * sin(VEL_THETA(VERTICAL_THETA)) - 0.5 * GRAVITY * (_t*_t);   // Gravity acceleration movement (drag)
+				cannonBallSpeedX -= 1 - _fri;  // x-dir movement
+			} else {
+				if (_fri < 1)
+					_fri += 0.01;  // slow x-movement every time hit GND
+				cannonBallSpeedX -= 1 - _fri;
+				// cannonBallSpeedX *= 0.9;
+				// if (reset) rstBall(&ballVelBounceY, &ballBounceY, &ballBounceX, &_fri, &reset);  // if ball hits ground more then twice at a time - reset ball
+				// reset = true;
+				ballVelBounceY *= -0.7 + V_Terminal(mass, area, DRAG_SPHERE) ;  // resistance percentage - relating to mass and shape
+			}
+			cannonBallSpeedY += ballVelBounceY;
+		}
 	}
 
 	glutTimerFunc(20, myTimer, 0); 
@@ -1521,7 +1560,7 @@ void drawCannon(void)
 	// rotate pivot point then draw cannon
 	glPushMatrix();
 		glTranslatef(-20, 30, 0);    // Pivot point coordinates    3. Cancel first Translation to get original Translation made
-		glRotatef(30, 0, 0, 1);      // Rotate pivot points        2. Rotate object
+		glRotatef(CANNON_BALL_VEL_THETA, 0, 0, 1);      // Rotate pivot points        2. Rotate object
 		glTranslatef(20, -30, 0);    // inverse of pivot points    1. Translate object to position
 		_drawCannon();                // draw object                0. Draw object
 	glPopMatrix();
@@ -1550,6 +1589,7 @@ void display(void)
 	glMatrixMode(GL_MODELVIEW);						
 	glLoadIdentity();
 
+
 	// change camera
 	if (viewState) {   // top down view
 		glTranslatef(x_view_2, z_view_2, _zoom_);  // since transformed y has become z
@@ -1557,6 +1597,7 @@ void display(void)
 	} else {
 		gluLookAt(eye_x, 0, eye_z,  look_x, 0, look_z,   0, 1, 0);	
 	}
+	
 
 
 	// disable specular lighting ---------------------
@@ -1579,7 +1620,7 @@ void display(void)
 
 
 	glPushMatrix();
-		glTranslatef(-7, FLOOR_BED, 1);
+		glTranslatef(-8, FLOOR_BED, 1);
 		glRotatef(45, 0, 1, 0);
 		glScalef(0.02, 0.02, 0.02);     // scale cannon to scene size ( 2.0 % of obj) 
 		drawCannon();                   // draw whole cannon
