@@ -725,15 +725,17 @@ void *_boxDetectBoxCollision(void *arg)
 
 	// check to see if ball 'z' hits any other balls
 	for (int j = 0; j < BOX_SIZE; j++) {
-		if (j == z) break;
+		if (j == z) {
+			break;
+		}
 		else if ((ballPosX[z][z_2]-0.05) <= (ballPosX[j][z_2]+0.05) && (ballPosX[j][z_2]-0.05) <= (ballPosX[z][z_2]+0.05)) { 
 			if ((ballPosY[z][z_2]-0.05) <= (ballPosY[j][z_2]+0.05) && (ballPosY[j][z_2]-0.05) <= (ballPosY[z][z_2]+0.05)) {
 				if ((ballPosZ[z][z_2]-0.05) <= (ballPosZ[j][z_2]+0.05) && (ballPosZ[j][z_2]-0.05) <= (ballPosZ[z][z_2]+0.05)) {
 					
 					boxCollision(j);
 
-					// chkCount[z][z_2] = true;
-					// chkCount[j][z_2] = true;
+					chkCount[z][z_2] = true;
+					chkCount[j][z_2] = true;
 				} else {
 					chkCount[z][z_2] = false;
 					chkCount[j][z_2] = false;
@@ -778,7 +780,7 @@ void boxDetectGroundCollision()
 	// box piece's collision with floor
 	// if current pos y plus last speed is greater then floor bed, calculate new pos due to speed and direction
 	if (!chkCount[z][z_2]) {
-		if (ballPosY[z][z_2]+speedY[z][z_2] >= FLOOR_BED) {
+		if (ballPosY[z][z_2]+speedY[z][z_2] >= FLOOR_BED+0.05) {
 
 			// if (0 == (int)(speedY[z][z_2]*1000000000.f)) { // use boolen expression to register
 			// 	objStill[z][z_2] = true;
@@ -795,8 +797,8 @@ void boxDetectGroundCollision()
 			// #endif
 				// printf("here %f\n", t);
 				// #undef   t
-				
-			speedY[z][z_2] -= (sin(VEL_THETA(VERTICAL_THETA)) * t * sin(VEL_THETA(VERTICAL_THETA)) - 0.5 * GRAVITY * (t*t));
+			// if (ballPosY[z][z_2] > -0.5)
+				speedY[z][z_2] -= (sin(VEL_THETA(VERTICAL_THETA)) * t * sin(VEL_THETA(VERTICAL_THETA)) - 0.5 * GRAVITY * (t*t));
 			// 	objStill[z][z_2] = false;
 			// }
 		} else { // hit the floor
@@ -817,7 +819,7 @@ void boxDetectGroundCollision()
 	}
 }
 
-
+int count = 0;
 void *floorCollisionBOX(void *arg)
 {
 	// z = *(int*)arg;  // block number
@@ -829,23 +831,36 @@ void *floorCollisionBOX(void *arg)
 			
 			z = n;
 			z_2 = n_2;
-
+		
 			if (!objStill[n][n_2]) {
 				boxDetectBoxCollision();
 				boxDetectGroundCollision();
 
 
 			// reset speed to '0'
-				// for (int i = 0; i < BOX_SIZE; i++) {                     // rows
-				// 	for (int j = 0; j < BOX_SIZE; j++) {
-			if (0 == (int)(speedY[z][z_2]*1000.f) && ((ballPosY[z][z_2] <= FLOOR_BED+0.05) || (chkCount[z][z_2]))) {
-				objStill[z][z_2] = true;
-				speedY[z][z_2] = 0;	
-			} 
-				// 	}
-				// }
+			// 	for (int i = 0; i < BOX_SIZE; i++) {                     // rows
+			// 		for (int j = 0; j < BOX_SIZE; j++) {
+			// if (0 == (int)(speedY[i][j]*1000.f) && ((ballPosY[i][j] <= FLOOR_BED+0.05) || (chkCount[i][j]))) {
+			// 	objStill[i][j] = true;
+			// 	speedY[i][j] = 0;	
+			// } 
+			// 		}
+			// 	}
 
 
+			}
+		}
+		if (wallHit)
+			count++;
+		// printf("%d\n", count);
+
+		// reset speed to '0'
+		if (count > 28000) {
+			for (int i = 0; i < BOX_SIZE; i++) {                     // rows
+				for (int j = 0; j < BOX_SIZE; j++) {
+					objStill[i][j] = true;
+					speedY[i][j] = 0;	
+				}
 			}
 		}
 	}
@@ -920,8 +935,8 @@ void _cube3D(int row, int col)
 		for (int i = 0; i < BOX_SIZE; i++) {
 			for (int j = 0; j < BOX_SIZE; j++) {
 				// iRand[i][j] = rand() % BOX_SIZE;	
-				posRand_X[i][j] = (float)(rand() % 10) / 1000.f;
-				posRand_Z[i][j] = (float)(rand() % 6) / 1000.f;
+				posRand_X[i][j] = (float)(rand() % 5) / 1000.f;
+				posRand_Z[i][j] = (float)(rand() % 10) / 1000.f;
 			}
 		}
 
