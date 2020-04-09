@@ -64,7 +64,7 @@ const float doorPointGlobal[3] = { };   // diff of point
 
 #define MASS_BOX_PIECE                  0.01
 #define AREA_BOX_PIECE(size)            size * size * size       // sphere area 4 * PI * (0.1*0.1);
-#define V_Terminal(mass, area, drag)    sqrt((2*(mass)*GRAVITY) / (drag*AIR_DENSITY*area)) / 100.
+#define V_Terminal(mass, area, drag, scale)    sqrt((2*(mass)*GRAVITY) / (drag*AIR_DENSITY*area)) / scale
 
 
 
@@ -807,7 +807,7 @@ void boxDetectGroundCollision()
 			// 	objStill[z][z_2] = true;
 			// } else {
 				if (wallHit)
-					speedY[z][z_2] *= (-1 + V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(BOX_FRAG_SIZE), DRAG_CUBE));  // resistance percentage 
+					speedY[z][z_2] *= (-1 + V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(BOX_FRAG_SIZE), DRAG_CUBE, 100));  // resistance percentage 
 				else
 					speedY[z][z_2] *= -1;
 
@@ -819,7 +819,7 @@ void boxDetectGroundCollision()
 	}
 }
 
-int count = 0;
+int timer = 0;
 void *floorCollisionBOX(void *arg)
 {
 	// z = *(int*)arg;  // block number
@@ -851,11 +851,11 @@ void *floorCollisionBOX(void *arg)
 			}
 		}
 		if (wallHit)
-			count++;
+			timer++;
 		// printf("%d\n", count);
 
 		// reset speed to '0'
-		if (count > 28000) {
+		if (timer > 28000) {
 			for (int i = 0; i < BOX_SIZE; i++) {                     // rows
 				for (int j = 0; j < BOX_SIZE; j++) {
 					objStill[i][j] = true;
@@ -1184,7 +1184,7 @@ void ballBounce(int value)
 			_fri += 0.0001;  // slow x-movement every time hit GND
 			if (reset) rstBall(&ballVelBounceY, &ballBounceX, &_fri, &reset, index, &initState);  // if ball hits ground more then twice at a time - reset ball
 			reset = true;
-			ballVelBounceY *= -1 + V_Terminal(_massBallBounce, area, DRAG_SPHERE) ;  // resistance percentage - relating to mass and shape
+			ballVelBounceY *= -1 + V_Terminal(_massBallBounce, area, DRAG_SPHERE, 100) ;  // resistance percentage - relating to mass and shape
 		}
 		ballBounceY += ballVelBounceY;
 	// }
@@ -1540,7 +1540,7 @@ void mntBrack(GLfloat xT, GLfloat yT, GLfloat zT, GLfloat xS, GLfloat yS, GLfloa
 
 
 // Create and fire a cannon ball as a projectile.
-void cannonBall(void)
+void _cannonBall(void)
 {
 	glPushMatrix();
 		glColor3f(0, 0, 1);
@@ -1550,11 +1550,19 @@ void cannonBall(void)
 }
 
 
-void resetCannon() 
+
+void rstCannon(double *ballVelBounceY, double *_fri, bool *reset, bool *ballBounce) 
 {
-	cannonBallSpeedX = cannonBallSpeedY = 0; 
+	*ballVelBounceY = 1;
 	initSpeedY = CANNON_BALL_VEL_THETA;
+	cannonBallSpeedX = 0;
+	cannonBallSpeedY = 0; 
+	cannonBallPosZ = 0; 
+	*_fri = 0;
+
+	*reset = false;
 	_spacePressed = false;
+	*ballBounce = false;
 }
 
 
@@ -1562,46 +1570,47 @@ void resetCannon()
 // -- spinning rotating ball
 void cannonBall(int value) 
 {  
-	double _t = 0.1;
-	static double ballGlassHit = 0;
+	static double _t = 0.1;
 	static bool ballBounce = false;
 
-	double mass = 10.;
+	double mass = 50.;
 	double area = 4 * PI * (CANNON_BALL_RADIUS*CANNON_BALL_RADIUS);  // area of sphere
 	static double _fri = 0;
 
-	static double ballVelBounceY = 2;//
+	static double ballVelBounceY = 1;
 	static bool reset = false;
 			
 	// theta += (theta <= -20 ? dir*=-1 : 20 <= theta ? dir*=-1 : dir); 
 	if (_spacePressed) {
 		if (cannonBallSpeedY > -73+CANNON_BALL_RADIUS-FLOOR_BED && !ballBounce) {
-			if ((cannonBallSpeedX*0.02) >= 7.5) {
-				ballGlassHit += 2;  // collision with gravity less box - shatters front
+			if ((cannonBallSpeedX*0.02) >= 8) {  // glass wall collision
 				wallHit = true;
-			}
-			if (wallHit) {
-				cannonBallPosZ += 4;
+				ballBounce = true;
 			}
 
-			cannonBallSpeedX += initSpeedX * _t * cos(VEL_THETA(CANNON_BALL_VEL_THETA)) - ballGlassHit;                               // Speed X stays constant
-			cannonBallSpeedY += ((initSpeedY-=AIR_FRI) * _t * sin(VEL_THETA(CANNON_BALL_VEL_THETA)) - 0.5 * GRAVITY * (_t*_t)) + (ballGlassHit/10.);   // Speed Y changes due to gravity and air friction
+			cannonBallSpeedX += initSpeedX * _t * cos(VEL_THETA(CANNON_BALL_VEL_THETA));                              // Speed X stays constant
+			cannonBallSpeedY += ((initSpeedY-=AIR_FRI) * _t * sin(VEL_THETA(CANNON_BALL_VEL_THETA)) - 0.5 * GRAVITY * (_t*_t));
 		} else { //resetCannon();
-			ballBounce = true;
 			if (cannonBallSpeedY+ballVelBounceY >= -73+CANNON_BALL_RADIUS-FLOOR_BED) {
 				// reset = false;
-				ballVelBounceY -=  sin(VEL_THETA(VERTICAL_THETA)) * _t * sin(VEL_THETA(VERTICAL_THETA)) - 0.5 * GRAVITY * (_t*_t);   // Gravity acceleration movement (drag)
-				cannonBallSpeedX -= 1 - _fri;  // x-dir movement
-			} else {
-				if (_fri < 1)
+				ballVelBounceY -=  (sin(VEL_THETA(VERTICAL_THETA)) * _t * sin(VEL_THETA(VERTICAL_THETA)) - 0.5 * GRAVITY * (_t*_t));   // Gravity acceleration movement (drag)
+			} 
+			else {
+				if (_fri <= 0.8)
 					_fri += 0.01;  // slow x-movement every time hit GND
-				cannonBallSpeedX -= 1 - _fri;
+
 				// cannonBallSpeedX *= 0.9;
-				// if (reset) rstBall(&ballVelBounceY, &ballBounceY, &ballBounceX, &_fri, &reset);  // if ball hits ground more then twice at a time - reset ball
+				// if (reset) rstCannon(&ballVelBounceY, &_fri, &reset, &ballBounce) ;  // if ball hits ground more then twice at a time - reset ball
 				// reset = true;
-				ballVelBounceY *= -0.7 + V_Terminal(mass, area, DRAG_SPHERE) ;  // resistance percentage - relating to mass and shape
+				ballVelBounceY *= (2 - V_Terminal(mass, area, DRAG_SPHERE, 1)) ;  // resistance percentage - relating to mass and shape
 			}
 			cannonBallSpeedY += ballVelBounceY;
+			cannonBallSpeedX -= 0.8 - _fri;
+			cannonBallPosZ += 0.8 - _fri;
+
+			// If everything is stopped reset
+			if (timer > 28000) 
+				rstCannon(&ballVelBounceY, &_fri, &reset, &ballBounce) ;  // reset ball
 		}
 	}
 
@@ -1627,7 +1636,7 @@ void drawCannon(void)
 	mntBrack(-10, 5, -17, 80, 10, 6); 
 	mntBrack(-20, 25, -17, 40, 30, 6);
 
-	cannonBall();  // cannon ball - projectile motion fire
+	_cannonBall();  // cannon ball - projectile motion fire
 }
 
 
