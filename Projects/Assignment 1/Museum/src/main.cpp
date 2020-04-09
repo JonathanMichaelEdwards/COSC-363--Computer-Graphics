@@ -60,7 +60,7 @@ void initialize(char *pjtPath)
 	glLightfv(GL_LIGHT2, GL_DIFFUSE, white);
 	glLightfv(GL_LIGHT2, GL_SPECULAR, white);
 
-	glLightf(GL_LIGHT2, GL_SPOT_CUTOFF, 20); 
+	glLightf(GL_LIGHT2, GL_SPOT_CUTOFF, 30); 
 	glLightf(GL_LIGHT2, GL_SPOT_EXPONENT, 90); 
 
 

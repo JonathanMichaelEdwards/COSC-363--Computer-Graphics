@@ -1548,41 +1548,47 @@ void guardAnimation(int value)
 	
 	if (!walkStage) {
 		if (guardPosX > 7) {  // Guard walking from (left->right->left)
-			if (guardTheta > 270) {
+			if (guardTheta >= 270) {
 				walkDir = -0.02;
 				walkStage = true;
+				spotDirX_2 = -2;
 			} else {
-				if (guardTheta > 180) {
+				if (guardTheta >= 180) {
 					walkDir = -0.005;
-					spotDirX_2 = -2;
-					spotDirZ_2 += 0.01;
+					spotDirZ_2 += 0.02;  // the rate of light turn - relating to guard turn
+					spotDirX_2 -= 0.02;
 				} else {
 					walkDir = 0.005;
-					spotDirZ_2 -= 0.01;
+					spotDirZ_2 -= 0.02;
+					spotDirX_2 = 2;
 				}
 
 				guardPosZ -= 0.01;
-				guardTheta+=0.5;
+				guardTheta += 0.5;
 			}
-		} else {
+		} 
+		else {
 			spotDirX_2 = 2;
 			walkDir = 0.02;
 			guardTheta = 90;
 			walkStage = false;
 		}
-	} else {
+	} 
+	else {
 		if (guardPosX < -7) {  // Guard walking from (right->left->right)
 			if (guardTheta > 270) {
 				walkDir = 0.02;
 				walkStage = false;
+				spotDirX_2 = 2;
 			} else {
 				if (guardTheta > 180) {
 					walkDir = 0.005;
-					spotDirX_2 = 2;
-					spotDirZ_2 -= 0.01;
+					spotDirZ_2 -= 0.02;
+					spotDirX_2 += 0.02;
 				} else {
 					walkDir = -0.005;
-					spotDirZ_2 += 0.01;
+					spotDirZ_2 += 0.02;
+					spotDirX_2 = -2;
 				}
 
 				guardPosZ += 0.01;
@@ -1681,7 +1687,7 @@ const float orange[4]  = {1, 0.5, 0, 1};
 // ----------------------------------------------------------------------------
 void display(void)  
 {
-	const float lposHouse[4] = { 0.f, 3.f, -3.f, 1.f };  // light pos for house
+	const float lposHouse[4] = { 0.f, 2.f, -3.f, 1.f };  // light pos for house
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);    //GL_LINE = Wireframe;   GL_FILL = Solid
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
