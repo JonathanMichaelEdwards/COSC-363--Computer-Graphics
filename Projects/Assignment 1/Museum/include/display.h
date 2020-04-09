@@ -11,7 +11,8 @@
 #define THREADS_BOX_BOX_COLL  2  // Windows: 1
 
 
-// globals --change
+static bool wallHit = false;
+
 
 void moveBack(float angle);
 void moveForward(float angle);
@@ -31,6 +32,7 @@ void spacePressed(bool _state);
 void ballBounce(int value);
 void boxCube(int value);
 void collBox(int value);
+void guardAnimation(int value);
 
 char *getPath(char *path);
 void loadTexture(void);	

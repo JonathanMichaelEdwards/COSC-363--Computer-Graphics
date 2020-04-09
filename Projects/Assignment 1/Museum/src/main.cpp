@@ -40,12 +40,12 @@ void initialize(char *pjtPath)
 	// Enable light sources
 	glEnable(GL_LIGHT0);
 	glEnable(GL_LIGHT1);
+	glEnable(GL_LIGHT2);
 
 	//	Define light's ambient, diffuse, specular properties
 	glLightfv(GL_LIGHT0, GL_AMBIENT, grey);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, orange);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, orange);
-
 
 	// spotlight LIGHT_1
 	glLightfv(GL_LIGHT1, GL_AMBIENT, grey);
@@ -54,6 +54,14 @@ void initialize(char *pjtPath)
 
 	glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 40); 
 	glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 90); 
+
+	// spotlight LIGHT_2 - Guard tourch
+	glLightfv(GL_LIGHT2, GL_AMBIENT, grey);
+	glLightfv(GL_LIGHT2, GL_DIFFUSE, white);
+	glLightfv(GL_LIGHT2, GL_SPECULAR, white);
+
+	glLightf(GL_LIGHT2, GL_SPOT_CUTOFF, 20); 
+	glLightf(GL_LIGHT2, GL_SPOT_EXPONENT, 90); 
 
 
 	glEnable(GL_COLOR_MATERIAL);
@@ -112,7 +120,11 @@ int main(int argc, char *argv[])
 	glutTimerFunc(TIMER_DELAY, idle, TIMER_DELAY);  // fps counter
 	glutTimerFunc(20, ballBounce, 0);  // ball physics
 	glutTimerFunc(10, cannonBall, 0);     // animate cannon ball
-	// glutTimerFunc(1, collBox, 0);   // better performance the other way
+
+	if (wallHit) // animate the guard
+		glutTimerFunc(10, guardAnimation, 0); 
+	else
+		glutTimerFunc(30, guardAnimation, 0); 
 	
 	glutMainLoop();
 	

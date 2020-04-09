@@ -128,7 +128,6 @@ double _radiusBallBounce = radiusBallBounce[0];
 double massBallBounce[5] = { 0.1, 0.5, 10., 30., 60.};
 double _massBallBounce = massBallBounce[0];
 double ballBounceX = 0;
-bool wallHit = false;
 float glassAlpha = 0.25f;
 
 
@@ -1526,6 +1525,156 @@ void ballBoxDemo(void)
    glDepthMask(GL_TRUE); 
 }
 
+
+
+
+double walkTheta = 20.;
+int dir = 1;
+
+double guardPosX = 0;
+double guardPosZ = 0;
+double guardTheta = 0;
+float armAction = 0;
+float spotDirX_2 = 0;
+float spotDirZ_2 = 0;
+
+// Adding walk animation
+void guardAnimation(int value) 
+{  
+	static double walkDir = 0;
+	static bool walkStage = false;
+
+	walkTheta += (walkTheta <= -20 ? dir*=-1 : 20 <= walkTheta ? dir*=-1 : dir); 
+	
+	if (!walkStage) {
+		if (guardPosX > 7) {  // Guard walking from (left->right->left)
+			if (guardTheta > 270) {
+				walkDir = -0.02;
+				walkStage = true;
+			} else {
+				if (guardTheta > 180) {
+					walkDir = -0.005;
+					spotDirX_2 = -2;
+					spotDirZ_2 += 0.01;
+				} else {
+					walkDir = 0.005;
+					spotDirZ_2 -= 0.01;
+				}
+
+				guardPosZ -= 0.01;
+				guardTheta+=0.5;
+			}
+		} else {
+			spotDirX_2 = 2;
+			walkDir = 0.02;
+			guardTheta = 90;
+			walkStage = false;
+		}
+	} else {
+		if (guardPosX < -7) {  // Guard walking from (right->left->right)
+			if (guardTheta > 270) {
+				walkDir = 0.02;
+				walkStage = false;
+			} else {
+				if (guardTheta > 180) {
+					walkDir = 0.005;
+					spotDirX_2 = 2;
+					spotDirZ_2 -= 0.01;
+				} else {
+					walkDir = -0.005;
+					spotDirZ_2 += 0.01;
+				}
+
+				guardPosZ += 0.01;
+				guardTheta+=0.5;
+			}
+		} else {
+			spotDirX_2 = -2;
+			walkDir = -0.02;
+			guardTheta = 90;
+			walkStage = true;
+		}
+	}
+	guardPosX += walkDir;
+
+	if (wallHit) {
+		armAction = 3;
+		glutTimerFunc(10, guardAnimation, 0); 
+	} else {
+		armAction = 0;
+		glutTimerFunc(30, guardAnimation, 0); 
+	}
+
+
+	
+}
+
+
+//--Draws a character model constructed using GLUT objects ------------------
+void drawGuard(void)
+{
+	glColor3f(1., 0.78, 0.06);		//Head
+	glPushMatrix();
+	  glTranslatef(0, 7.7, 0);
+	  glutSolidCube(1.4);
+	glPopMatrix();
+
+	glColor3f(1., 0., 0.);			//Torso
+	glPushMatrix();
+		glTranslatef(0, 5.5, 0);
+		glScalef(3, 3, 1.4);
+		glutSolidCube(1);
+	glPopMatrix();
+
+	glColor3f(0., 0., 1.);			//Right leg
+	glPushMatrix();
+		glTranslatef(-0.8, 4, 0);       
+		glRotatef(-walkTheta, 1, 0, 0);       
+		glTranslatef(0.8, -4, 0);
+
+		glTranslatef(-0.8, 2.2, 0);
+		glScalef(1, 4.4, 1);
+		glutSolidCube(1);
+	glPopMatrix();
+
+	glColor3f(0., 0., 1.);			//Left leg
+	glPushMatrix();
+		// Rotation by walkTheta about the pivot point (0.8, 4, 0)
+		glTranslatef(0.8, 4, 0);       
+		glRotatef(walkTheta, 1, 0, 0);       
+		glTranslatef(-0.8, -4, 0);
+		
+		glTranslatef(0.8, 2.2, 0);
+		glScalef(1, 4.4, 1);
+		glutSolidCube(1);
+	glPopMatrix();
+
+	glColor3f(0., 0., 1.);			//Right arm
+	glPushMatrix();
+		glTranslatef(0.8, 4, 0);       
+		glRotatef(walkTheta, 1, 0, 0);       
+		glTranslatef(-0.8, -4, 0);
+
+		glTranslatef(-2, 5+armAction, 0);
+		glScalef(1, 4, 1);
+		glutSolidCube(1);
+	glPopMatrix();
+
+	glColor3f(0., 0., 1.);			//Left arm
+	glPushMatrix();
+		glTranslatef(2, 6.5, 0);       
+		glRotatef(-walkTheta, 1, 0, 0);       
+		glTranslatef(-2, -6.5, 0);
+
+		glTranslatef(2, 5+armAction, 0);
+		glScalef(1, 4, 1);
+		glutSolidCube(1);
+	glPopMatrix();
+}
+
+
+
+
 const float orange[4]  = {1, 0.5, 0, 1};
 // ----------------------------------------------------------------------------
 //  				  		Display OpenGL graphics				
@@ -1549,25 +1698,46 @@ void display(void)
 	}
 	
 
-	// Default scene lighting
+	// Default house lighting
 	glLightfv(GL_LIGHT0, GL_POSITION, lposHouse);   // light for house
 
 
 	// disable specular lighting ---------------------
-	glMaterialfv(GL_FRONT, GL_SPECULAR, black);     // ---
-
-
-	// draw objects with only ambiant and diffuse lighting
-	displayMuesum();
-		
-	skyBox();
-	drawFloor();
+	
 
 	// move the box cube to it's spot in the scene
 	glPushMatrix();	
 		glTranslatef(0 , 0, -6);
 		boxCube();
 	glPopMatrix();
+
+	float spot_pos_1[]={ guardPosX, 1, guardPosZ, 1.0 };
+   	float spotDir_2[] = { spotDirX_2, -1, spotDirZ_2, 1.0 };  // light1 position (directly above bouncing ball)
+
+
+	// draw objects with only ambiant and diffuse lighting
+	displayMuesum();
+
+	glMaterialfv(GL_FRONT, GL_SPECULAR, black);     // ---
+
+
+
+		
+	skyBox();
+	drawFloor();
+
+
+	// draw the guard in the scene
+	glPushMatrix();	
+		glTranslatef(guardPosX , FLOOR_BED, guardPosZ);
+		glRotatef(guardTheta, 0, 1, 0);
+
+		glScalef(0.2, 0.2, 0.2);
+		drawGuard();
+	glPopMatrix();
+
+
+
 
 
 
@@ -1647,9 +1817,10 @@ void display(void)
 
 	
 	float spot_pos[]={ 2, 10, -4.3, 1.0 };
-   	float spotDir[] = { -1, -1, 0, 1.0 };  // light1 position (directly above bouncing ball)
+   	float spotDir[] = { -1, -1, 0, 1.0 };  // light1 position (directly above bouncing ball - case)
 	
 
+	// spotlight over case - shineing on ground
 	glLightfv(GL_LIGHT1, GL_POSITION, spot_pos);
 	glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, spotDir);
 
@@ -1660,7 +1831,9 @@ void display(void)
 		ballBoxDemo();  // get to experiment with different values (e.g mass)
 	glPopMatrix();
 
-
+	// spotlight over case - shineing on ground
+	glLightfv(GL_LIGHT2, GL_POSITION, spot_pos_1);
+	glLightfv(GL_LIGHT2, GL_SPOT_DIRECTION, spotDir_2);
 
 
 
