@@ -105,16 +105,21 @@ const float doorPointGlobal[3] = { };   // diff of point
 
 
 
-#define BOX_SIZE       8
-// double boxPosStart[BOX_SIZE] = { 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7 };//, 3.23, 4.34};//, 1.44, 1.55, 1.66, 1.77, 1.88, 1.99 };
-// double ballPosY[BOX_SIZE] = { 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7 };
-// double conBallPosY[BOX_SIZE] = { 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7 };
+#define MAGIC_CUBES       8
+// double boxPosStart[MAGIC_CUBES] = { 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7 };//, 3.23, 4.34};//, 1.44, 1.55, 1.66, 1.77, 1.88, 1.99 };
+// double ballPosY[MAGIC_CUBES] = { 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7 };
+// double conBallPosY[MAGIC_CUBES] = { 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7 };
 
-double ballPosY[BOX_SIZE][BOX_SIZE] = { 0 };
-// double ballPosX[BOX_SIZE] = { 0 };  // pos width
-double ballPosX[BOX_SIZE][BOX_SIZE] = { 0 };  // pos width
-double ballPosZ[BOX_SIZE][BOX_SIZE] = { 0 };
-double speedY[BOX_SIZE][BOX_SIZE] = { 0 };
+double statBallPosX[MAGIC_CUBES] = { -3.5 , -2.5 , -1.5, -0.5, 0.5, 1.5, 2.5, 3.5 };
+double statBallPosY[MAGIC_CUBES] = { 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7 };
+
+double ballPosY[MAGIC_CUBES][MAGIC_CUBES] = { 0 };
+double ballPosX[MAGIC_CUBES][MAGIC_CUBES] = { 0 };  // pos width
+double ballPosZ[MAGIC_CUBES][MAGIC_CUBES] = { 0 };
+double speedY[MAGIC_CUBES][MAGIC_CUBES] = { 0 };
+
+bool initPos = false;
+
 
 // bouncing ball
 double ballBounceY = 1+BALL_RADIUS;
@@ -124,22 +129,23 @@ double massBallBounce[5] = { 0.1, 0.5, 10., 30., 60.};
 double _massBallBounce = massBallBounce[0];
 double ballBounceX = 0;
 bool wallHit = false;
+float glassAlpha = 0.25f;
 
 
 #define FRAG_BOX_START  2.0
 
 
 
-// double boxPosStart[BOX_SIZE] = { 1.0, 1.1, 1.2, 1.3};//, 3.23, 4.34};//, 1.44, 1.55, 1.66, 1.77, 1.88, 1.99 };
-// double ballPosY[BOX_SIZE] = { 1.0, 1.1, 1.2, 1.3};
+// double boxPosStart[MAGIC_CUBES] = { 1.0, 1.1, 1.2, 1.3};//, 3.23, 4.34};//, 1.44, 1.55, 1.66, 1.77, 1.88, 1.99 };
+// double ballPosY[MAGIC_CUBES] = { 1.0, 1.1, 1.2, 1.3};
 
-float posRand_X[BOX_SIZE+1][BOX_SIZE+1]= { 0 };
-float posRand_Z[BOX_SIZE+1][BOX_SIZE+1]= { 0 };
+float posRand_X[MAGIC_CUBES+1][MAGIC_CUBES+1]= { 0 };
+float posRand_Z[MAGIC_CUBES+1][MAGIC_CUBES+1]= { 0 };
 
 // double initSpeedX = 0; //20; 
 // double initSpeedY = 0; //16.1264;            // tan(theta) * Vx
 
-// double speedY[BOX_SIZE][2] = { { 0.001, 0.001 }, 
+// double speedY[MAGIC_CUBES][2] = { { 0.001, 0.001 }, 
 // 				{ 0.001, 0.001 }, 
 // 				{ 0.001, 0.001 }, 
 // 				{ 0.001, 0.001 }, 
@@ -149,9 +155,9 @@ float posRand_Z[BOX_SIZE+1][BOX_SIZE+1]= { 0 };
 // 				{ 0.001, 0.001 }, 
 // };
 
-bool horizontalCol[BOX_SIZE][BOX_SIZE] = { false };
-bool   reset[BOX_SIZE]  = { false };
-bool detectColl[BOX_SIZE][BOX_SIZE] = { false };
+bool horizontalCol[MAGIC_CUBES][MAGIC_CUBES] = { false };
+bool   reset[MAGIC_CUBES]  = { false };
+bool detectColl[MAGIC_CUBES][MAGIC_CUBES] = { false };
 
 bool cannonBallHit = false;
 // double speedX = 0;
@@ -163,7 +169,7 @@ enum {
 };
 
 // 1 m heigh
-// double ballPosY[BOX_SIZE] = { 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 2.7};//, 3.23, 4.34};//, 1.44, 1.55, 1.66, 1.77, 1.88, 1.99 }; // pos height
+// double ballPosY[MAGIC_CUBES] = { 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 2.7};//, 3.23, 4.34};//, 1.44, 1.55, 1.66, 1.77, 1.88, 1.99 }; // pos height
 
 // double u = ballPosY * sin(VEL_THETA(theta));  // initial speed
 
@@ -184,8 +190,8 @@ bool accUp = false;
 
 
 
-pthread_t threads[BOX_SIZE];
-pthread_t threadsBoxColl[BOX_SIZE];
+pthread_t threads[MAGIC_CUBES];
+pthread_t threadsBoxColl[MAGIC_CUBES];
 pthread_mutex_t *lock;
 pthread_mutex_t *lockBoxColl;
 pthread_mutex_t _lockBoxColl = PTHREAD_MUTEX_INITIALIZER;  // thread safe
@@ -195,20 +201,20 @@ pthread_mutex_t _lock = PTHREAD_MUTEX_INITIALIZER;  // thread safe
 int z = 0;
 int z_2 = 0;
 
-double da[BOX_SIZE] = { 0 };
-int h[BOX_SIZE] = { 0 };
-int b[BOX_SIZE] = { 0 };
-int c[BOX_SIZE] = { 0 };
+double da[MAGIC_CUBES] = { 0 };
+int h[MAGIC_CUBES] = { 0 };
+int b[MAGIC_CUBES] = { 0 };
+int c[MAGIC_CUBES] = { 0 };
 
 // int change = 0;
 bool _iState = false; 
 
-bool objCollision[BOX_SIZE] = { false };
-bool chkCount[BOX_SIZE][BOX_SIZE] = { false };
-bool objStill[BOX_SIZE][BOX_SIZE] = { false };
+bool objCollision[MAGIC_CUBES] = { false };
+bool chkCount[MAGIC_CUBES][MAGIC_CUBES] = { false };
+bool objStill[MAGIC_CUBES][MAGIC_CUBES] = { false };
 
 
-
+void boxCube(void);
 
 
 
@@ -609,7 +615,7 @@ void rstBall(void)
 	_spacePressed = false;
 	_iState = false;
 
-	for (int i = 0; i < BOX_SIZE; i++) {
+	for (int i = 0; i < MAGIC_CUBES; i++) {
 		// ballPosX[i] = 0;
 		// ballPosY[i] = boxPosStart[i]; 
 		// speedY[i] = 0;
@@ -618,7 +624,7 @@ void rstBall(void)
 		// chkCount[i] = 0;
 	}
 
-	// speedY[BOX_SIZE] = { 0 };
+	// speedY[MAGIC_CUBES] = { 0 };
 	// speedX = 0;
 	// change = 0;  // debouncing check
 }
@@ -718,16 +724,13 @@ void checkPosX(int j, int j_2, bool *target)
 
 void *_boxDetectBoxCollision(void *arg)
 {
-	pthread_mutex_lock(lockBoxColl);
+	pthread_mutex_lock(lockBoxColl);  // lock thread
 
 	static bool target = false;
 
-
 	// check to see if ball 'z' hits any other balls
-	for (int j = 0; j < BOX_SIZE; j++) {
-		if (j == z) {
-			break;
-		}
+	for (int j = 0; j < MAGIC_CUBES; j++) {
+		if (j == z) break;
 		else if ((ballPosX[z][z_2]-0.05) <= (ballPosX[j][z_2]+0.05) && (ballPosX[j][z_2]-0.05) <= (ballPosX[z][z_2]+0.05)) { 
 			if ((ballPosY[z][z_2]-0.05) <= (ballPosY[j][z_2]+0.05) && (ballPosY[j][z_2]-0.05) <= (ballPosY[z][z_2]+0.05)) {
 				if ((ballPosZ[z][z_2]-0.05) <= (ballPosZ[j][z_2]+0.05) && (ballPosZ[j][z_2]-0.05) <= (ballPosZ[z][z_2]+0.05)) {
@@ -751,19 +754,16 @@ void *_boxDetectBoxCollision(void *arg)
 	}
 
 
-	pthread_mutex_unlock(lockBoxColl);
+	pthread_mutex_unlock(lockBoxColl);  // unlock thread
 
 	return NULL;
 }
 
 
-
 void boxDetectBoxCollision()
 {
-	// Linux
 	for (int i = 0; i < THREADS_BOX_BOX_COLL; i++) {
 		lockBoxColl = &_lockBoxColl;
-		// boxColl[i] = i;
 		pthread_create(&threadsBoxColl[i], NULL, _boxDetectBoxCollision, NULL);
 	}
 
@@ -772,7 +772,6 @@ void boxDetectBoxCollision()
 }
 
 
-float zDir[20] = { 0.f };
 void boxDetectGroundCollision()
 {
 	float t = 0.0001;
@@ -781,38 +780,14 @@ void boxDetectGroundCollision()
 	// if current pos y plus last speed is greater then floor bed, calculate new pos due to speed and direction
 	if (!chkCount[z][z_2]) {
 		if (ballPosY[z][z_2]+speedY[z][z_2] >= FLOOR_BED+0.05) {
-
-			// if (0 == (int)(speedY[z][z_2]*1000000000.f)) { // use boolen expression to register
-			// 	objStill[z][z_2] = true;
-			// 	speedY[z][z_2] = 0;
-			// 	// if (ballPosY[z][z_2] > FLOOR_BED);
-			// 	// 	// speedY[z][z_2] -= 0.001;
-			// 	// else
-					
-			// } else {
-			// printf("%f\n", t);
 			if (wallHit) t = 0.001;
-			// 	#undef   t
-			// 	#define  t     0.001
-			// #endif
-				// printf("here %f\n", t);
-				// #undef   t
-			// if (ballPosY[z][z_2] > -0.5)
-				speedY[z][z_2] -= (sin(VEL_THETA(VERTICAL_THETA)) * t * sin(VEL_THETA(VERTICAL_THETA)) - 0.5 * GRAVITY * (t*t));
-			// 	objStill[z][z_2] = false;
-			// }
-		} else { // hit the floor
-			// if (0 == (int)(speedY[z][z_2]*1000000000.f)) { // use boolen expression to register
-			// 	speedY[z][z_2] = 0;
-			// 	objStill[z][z_2] = true;
-			// } else {
-				if (wallHit)
-					speedY[z][z_2] *= (-1 + V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(BOX_FRAG_SIZE), DRAG_CUBE, 100));  // resistance percentage 
-				else
-					speedY[z][z_2] *= -1;
 
-			// 	objStill[z][z_2] = false;
-			// }
+			speedY[z][z_2] -= (sin(VEL_THETA(VERTICAL_THETA)) * t * sin(VEL_THETA(VERTICAL_THETA)) - 0.5 * GRAVITY * (t*t));
+		} else { // hit the floor
+			if (wallHit)
+				speedY[z][z_2] *= (-1 + V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(BOX_FRAG_SIZE), DRAG_CUBE, 100));  // resistance percentage 
+			else
+				speedY[z][z_2] *= -1;  // osciallate at constant height
 		}
 
 		ballPosY[z][z_2] += speedY[z][z_2] / ((THREADS_BOX_COLL*THREADS_BOX_COLL));
@@ -822,53 +797,35 @@ void boxDetectGroundCollision()
 int timer = 0;
 void *floorCollisionBOX(void *arg)
 {
-	// z = *(int*)arg;  // block number
-	
-	pthread_mutex_lock(lock);
+	pthread_mutex_lock(lock); // lock thread
 
-	for (int n = 0; n < BOX_SIZE; n++) {               // rows
-		for (int n_2 = 0; n_2 < BOX_SIZE; n_2++) {     // cols
-			
+	// detect for collision
+	for (int n = 0; n < MAGIC_CUBES; n++) {               // rows
+		for (int n_2 = 0; n_2 < MAGIC_CUBES; n_2++) {     // cols
 			z = n;
 			z_2 = n_2;
 		
 			if (!objStill[n][n_2]) {
 				boxDetectBoxCollision();
 				boxDetectGroundCollision();
-
-
-			// reset speed to '0'
-			// 	for (int i = 0; i < BOX_SIZE; i++) {                     // rows
-			// 		for (int j = 0; j < BOX_SIZE; j++) {
-			// if (0 == (int)(speedY[i][j]*1000.f) && ((ballPosY[i][j] <= FLOOR_BED+0.05) || (chkCount[i][j]))) {
-			// 	objStill[i][j] = true;
-			// 	speedY[i][j] = 0;	
-			// } 
-			// 		}
-			// 	}
-
-
-			}
-		}
-		if (wallHit)
-			timer++;
-		// printf("%d\n", count);
-
-		// reset speed to '0'
-		if (timer > 28000) {
-			for (int i = 0; i < BOX_SIZE; i++) {                     // rows
-				for (int j = 0; j < BOX_SIZE; j++) {
-					objStill[i][j] = true;
-					speedY[i][j] = 0;	
-				}
 			}
 		}
 	}
 
-	pthread_mutex_unlock(lock);
+	// if (wallHit)
+	// 	timer++;
 
+	// Signal done scene
+	if (timer > 1800) {
+		for (int i = 0; i < MAGIC_CUBES; i++) {                     // rows
+			for (int j = 0; j < MAGIC_CUBES; j++) {
+				speedY[i][j] = 0;	
+				objStill[i][j] = true;
+			}
+		}
+	}
 
-	
+	pthread_mutex_unlock(lock);  // unlock thread
 
     return NULL;
 }
@@ -878,12 +835,10 @@ void collBox(void)
 {  
 	static bool _threadStop = false;
 
-
-	// if (_spacePressed && wallHit) {  
 	if (!_threadStop) {
 		// if thread is false trigger to stop
-		for (int i = 0; i < BOX_SIZE; i++) {
-			for (int j = 0; j < BOX_SIZE; j++) {
+		for (int i = 0; i < MAGIC_CUBES; i++) {
+			for (int j = 0; j < MAGIC_CUBES; j++) {
 				if (!objStill[i][j]) {
 					_threadStop = false;
 					break;
@@ -892,22 +847,15 @@ void collBox(void)
 			}
 		}
 			
-		
 		// worker threads
 		for (int i = 0; i < THREADS_BOX_COLL; i++) {
 			lock = &_lock;
-			b[i] = i;
-			pthread_create(&threads[i], NULL, floorCollisionBOX, &b[i]);
+			pthread_create(&threads[i], NULL, floorCollisionBOX, NULL);
 		}
 
 		for (int i = 0; i < THREADS_BOX_COLL; i++) 
 			pthread_join(threads[i], NULL);
-		} 
-	// else {
-	// 	puts("done");
-	// }
-	// }
-	// glutTimerFunc(1, collBox, 0); 
+	} 
 }
 
 
@@ -922,35 +870,20 @@ void _boxCube(void)
 
 void _cube3D(int row, int col)
 {
-	double val = 0;
-	// static int iRand[BOX_SIZE+1][BOX_SIZE+1] = { 0 };
-	// static float posRand_X[BOX_SIZE+1][BOX_SIZE+1]= { 0 };
-	// static float posRand_Z[BOX_SIZE+1][BOX_SIZE+1]= { 0 };
-	// static double _fri[BOX_SIZE+1][BOX_SIZE+1] = { 0 };
-	bool posRand[2] = { false };  // x, z
+	double _rot = 0;
 
-	// get random values when btn pressed - run once
+	// get random values when btn pressed - run once ( for the 'X' and 'Z' directions )
 	if (!_iState) {
 		// keep finding random values every clock tick unitl btn pressed
-		for (int i = 0; i < BOX_SIZE; i++) {
-			for (int j = 0; j < BOX_SIZE; j++) {
-				// iRand[i][j] = rand() % BOX_SIZE;	
+		for (int i = 0; i < MAGIC_CUBES; i++) {
+			for (int j = 0; j < MAGIC_CUBES; j++) {
 				posRand_X[i][j] = (float)(rand() % 5) / 1000.f;
 				posRand_Z[i][j] = (float)(rand() % 10) / 1000.f;
 			}
 		}
-
-		// posRand_X[0][0] = 0.002;
-		// posRand_X[0][1] = -0.002;
-
-		// posRand_X[1][0] = 0.001;
-		// posRand_X[1][1] = -0.001;
-
-
-			// run once when btn pressed
-
-			_iState = true;
-		}
+		// run once when btn pressed
+		_iState = true;
+	}
 
 	if (_spacePressed && wallHit) {
 		if (0 == (int)(speedY[row][col]*1000.f)) {
@@ -978,39 +911,29 @@ void _cube3D(int row, int col)
 		}	
 	}
 
+	glPushMatrix();	
+		glTranslatef(ballPosX[row][col], ballPosY[row][col], ballPosZ[row][col]);
 
-
-	// for (float x = 0; x < 0.1; x+=0.1) { //(BOX_SIZE/10.f); x+=0.1) {
-		glPushMatrix();	
-			glTranslatef(ballPosX[row][col], ballPosY[row][col], ballPosZ[row][col]);
-
+		if (_spacePressed && wallHit) {
 			// rotate box with respect to its position
-			val = RAD_TO_DEG(atan(ballPosZ[row][col]/ballPosX[row][col]));
-			if (_spacePressed && wallHit) glRotatef(val, 0, 1, 0); 
-			_boxCube();
-		glPopMatrix();
-	// }
+			_rot = RAD_TO_DEG(atan(ballPosZ[row][col]/ballPosX[row][col]));
+			glRotatef(_rot, 0, 1, 0);
+		}
+		_boxCube();
+	glPopMatrix();
 }
 
 
 void boxCube(void)
 {
-	static bool initPos = false;
-
 	if (!initPos) {
-		double _ballPosY[BOX_SIZE] = { 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7 };
-		double _ballPosX[BOX_SIZE] = { -3.5 , -2.5 , -1.5, -0.5, 0.5, 1.5, 2.5, 3.5 };
-		// double _ballPosX[2] = { 1 , 2 };
 		double _speedY = -0.001;
 
-		// double _ballPosY[BOX_SIZE] = { 2, 2.1 };
-		// double _ballPosX[BOX_SIZE] = { -0.5, 0.8};
-
-		// build the box out of multiple cubes
-		for (int i = 0; i < BOX_SIZE; i++) {            // row
-			for (int j = 0; j < BOX_SIZE; j++) {        // col
-				ballPosX[i][j] = _ballPosX[j];
-				ballPosY[i][j] = _ballPosY[i];
+		// build the magic cube scene - with initial positions
+		for (int i = 0; i < MAGIC_CUBES; i++) {            // row
+			for (int j = 0; j < MAGIC_CUBES; j++) {        // col
+				ballPosX[i][j] = statBallPosX [j];
+				ballPosY[i][j] = statBallPosY[i];
 				speedY[i][j] = _speedY;
 			}
 		}
@@ -1018,100 +941,14 @@ void boxCube(void)
 		initPos = true;
 	}
 
-	for (int row = 0; row < BOX_SIZE; row++) {
-		for (int col = 0; col < BOX_SIZE; col++) {
+	for (int row = 0; row < MAGIC_CUBES; row++) {
+		for (int col = 0; col < MAGIC_CUBES; col++) {
 			if (row % 2 == 0) glColor3f(0, 1, 0);
 			else glColor3f(0.6, 0, 0);
 			_cube3D(row, col);
 		}
 	}
-
-
-
-	// glPushMatrix();	
-	// 	glColor3f(1, 0, 0);
-
-	// 	// if (_spacePressed) glRotatef(-30, 0, 1, 0); 
-	// 	glTranslatef(-1.58+0.2, -0.8, -0.91+0.05);
-	// 	if (_spacePressed) glRotatef(-30, 0, 1, 0); 
-	// 	_boxCube();
-	// glPopMatrix();
-
-	// glPushMatrix();	
-	// 	glColor3f(0, 0, 1);
-	// 	glTranslatef(-1.57999+0.24, -0.8, -0.91220765);
-	// 	if (_spacePressed) glRotatef(-30, 0, 1, 0); 
-	// 	_boxCube();
-	// glPopMatrix();
-
-
-		// _cube3D(0, 0);
-		// _cube3D(1, 1);
-		// _iState = false;
-		// _cube3D(1, false);
-
-	// // get random values
-	// if (!(_iState))
-	// 	for (int i = 0; i < 20; i++)
-	// 		rot[i] = rand() % 180;
-	// if (_spacePressed) _iState = true;
-
-	// for (float x = 0; x <= 1; x+=0.1) {
-	// 		glPushMatrix();	
-	// 			glColor3f(0, 1, 0);
-
-	// 			if (_spacePressed) glRotatef(rot[(int)(x*10)], 0, 1, 0);
-	// 			glTranslatef(-ballPosX/8+x, ballPosY[0]+0.25+y, 0);
-	// 			_boxCube();
-	// 		glPopMatrix();
-	// }
-
-
-	// get random values
-	// if (!(_iState))
-	// 	for (int i = 0; i < 4; i++)
-	// 		rot[i] = rand() % 40;
-	// if (_spacePressed) _iState = true;
-
-	// // bottom left
-	// glPushMatrix();	
-	// 	glColor3f(1, 0, 0);
-
-	// 	if (_spacePressed) glRotatef(-rot[0], 0, 1, 0);
-	// 	glTranslatef(-ballPosX/8, ballPosY[0]+0.25, 0);
-	// 	_boxCube();
-	// glPopMatrix();
-
-	// // top left
-	// glPushMatrix();	
-	// 	glColor3f(0, 1, 0);
-
-	// 	if (_spacePressed) glRotatef(rot[1], 0, 1, 0);
-	// 	glTranslatef(-ballPosX/8, ballPosY[1]+0.25, 0);
-	// 	_boxCube();
-	// glPopMatrix();
-
-	// // bottom right
-	// glPushMatrix();	
-	// 	glColor3f(0, 1, 0);
-
-	// 	if (_spacePressed) glRotatef(-rot[2], 0, 1, 0);
-	// 	glTranslatef(ballPosX/8 + 0.5, ballPosY[0]+0.25, 0);
-	// 	_boxCube();
-	// glPopMatrix();
-
-	// // top right
-	// glPushMatrix();	
-	// 	glColor3f(1, 0, 0);
-	// 	if (_spacePressed) glRotatef(rot[3], 0, 1, 0);
-	// 	glTranslatef(ballPosX/8 + 0.5, ballPosY[1]+0.25, 0);
-	// 	_boxCube();
-	// glPopMatrix();
 }
-
-
-
-
 
 
 void ball(void)
@@ -1122,23 +959,6 @@ void ball(void)
 		glutSolidSphere(_radiusBallBounce, 36, 18);
 	glPopMatrix();
 }
-
-
-// perfect elastic collision
-// void bounceUpAndDown(int value) 
-// {  
-	// if (_spacePressed) {  
-	// 	if (ballPosY+speedY >= FLOOR_BED+BALL_RADIUS)
-	// 		speedY -= sin(VEL_THETA(theta)) * t * sin(VEL_THETA(theta)) - 0.5 * GRAVITY * (t*t);   // acceleration (drag)
-	// 	else 
-	// 		speedY *= -1;                                                            // change direction
-
-	// 	ballPosY += speedY;
-	// }
-
-// 	glutTimerFunc(30, bounceUpAndDown, 0); 
-// }
-
 
 
 void rstBall(double *ballVelBounceY,  double *ballBounceX, double *_fri, bool *reset, int index, bool *initState) 
@@ -1174,22 +994,19 @@ void ballBounce(int value)
 		index += 1 % 5;
 		initState = false;
 	}
+ 
+	if (ballBounceY+ballVelBounceY >= FLOOR_BED+_radiusBallBounce) {
+		reset = false;
+		ballVelBounceY -=  sin(VEL_THETA(VERTICAL_THETA)) * _t * sin(VEL_THETA(VERTICAL_THETA)) - 0.5 * GRAVITY * (_t*_t);   // Gravity acceleration movement (drag)
+	} else {
+		_fri += 0.0001;  // slow x-movement every time hit GND
+		if (reset) rstBall(&ballVelBounceY, &ballBounceX, &_fri, &reset, index, &initState);  // if ball hits ground more then twice at a time - reset ball
+		reset = true;
+		ballVelBounceY *= -1 + V_Terminal(_massBallBounce, area, DRAG_SPHERE, 100) ;  // resistance percentage - relating to mass and shape
+	}
+	ballBounceY += ballVelBounceY;
 
-	// if (_spacePressedBallBounce) {  
-		if (ballBounceY+ballVelBounceY >= FLOOR_BED+_radiusBallBounce) {
-			reset = false;
-			ballVelBounceY -=  sin(VEL_THETA(VERTICAL_THETA)) * _t * sin(VEL_THETA(VERTICAL_THETA)) - 0.5 * GRAVITY * (_t*_t);   // Gravity acceleration movement (drag)
-			// ballBounceX += 0.01 - _fri;  // x-dir movement
-		} else {
-			_fri += 0.0001;  // slow x-movement every time hit GND
-			if (reset) rstBall(&ballVelBounceY, &ballBounceX, &_fri, &reset, index, &initState);  // if ball hits ground more then twice at a time - reset ball
-			reset = true;
-			ballVelBounceY *= -1 + V_Terminal(_massBallBounce, area, DRAG_SPHERE, 100) ;  // resistance percentage - relating to mass and shape
-		}
-		ballBounceY += ballVelBounceY;
-	// }
-
-	glutTimerFunc(20, ballBounce, 0); 
+	glutTimerFunc(15, ballBounce, 0); 
 }
 
 
@@ -1504,9 +1321,11 @@ void normal(int tindx)
 	float y1 = y[t1[tindx]], y2 = y[t2[tindx]], y3 = y[t3[tindx]];
 	float z1 = _z[t1[tindx]], z2 = _z[t2[tindx]], z3 = _z[t3[tindx]];
 	float nx, ny, nz;
+
 	nx = y1*(z2-z3) + y2*(z3-z1) + y3*(z1-z2);
 	ny = z1*(x2-x3) + z2*(x3-x1) + z3*(x1-x2);
 	nz = x1*(y2-y3) + x2*(y3-y1) + x3*(y1-y2);
+
 	glNormal3f(nx, ny, nz);
 }
 
@@ -1550,19 +1369,37 @@ void _cannonBall(void)
 }
 
 
-
-void rstCannon(double *ballVelBounceY, double *_fri, bool *reset, bool *ballBounce) 
+// reset animated scene
+void rstCannon(double *ballVelBounceY, double *_fri) 
 {
 	*ballVelBounceY = 1;
 	initSpeedY = CANNON_BALL_VEL_THETA;
 	cannonBallSpeedX = 0;
 	cannonBallSpeedY = 0; 
 	cannonBallPosZ = 0; 
+	glassAlpha = 0.25f;
 	*_fri = 0;
+	timer = 0;
+	initPos = false;
 
-	*reset = false;
+	wallHit = false;
+	_iState = false;
 	_spacePressed = false;
-	*ballBounce = false;
+
+	for (int i = 0; i < MAGIC_CUBES; i++) {                     // rows
+		for (int j = 0; j < MAGIC_CUBES; j++) {
+			ballPosX[i][j] = 0;
+			ballPosY[i][j] = 0;
+			ballPosZ[i][j] = 0;
+			speedY[i][j] = 0;	
+			posRand_X[i][j] = 0;
+			posRand_Z[i][j] = 0;
+			objStill[i][j] = false;
+			chkCount[i][j] = false;
+		}
+	}
+	boxCube();
+
 }
 
 
@@ -1570,51 +1407,45 @@ void rstCannon(double *ballVelBounceY, double *_fri, bool *reset, bool *ballBoun
 // -- spinning rotating ball
 void cannonBall(int value) 
 {  
-	static double _t = 0.1;
-	static bool ballBounce = false;
+	double _t = 0.1;
 
 	double mass = 50.;
 	double area = 4 * PI * (CANNON_BALL_RADIUS*CANNON_BALL_RADIUS);  // area of sphere
 	static double _fri = 0;
 
 	static double ballVelBounceY = 1;
-	static bool reset = false;
-			
-	// theta += (theta <= -20 ? dir*=-1 : 20 <= theta ? dir*=-1 : dir); 
+
+	// animate scene when cannon ball is fired
 	if (_spacePressed) {
-		if (cannonBallSpeedY > -73+CANNON_BALL_RADIUS-FLOOR_BED && !ballBounce) {
-			if ((cannonBallSpeedX*0.02) >= 8) {  // glass wall collision
+		if (cannonBallSpeedY > -73+CANNON_BALL_RADIUS-FLOOR_BED && !wallHit) {
+			if ((cannonBallSpeedX*0.02) >= 8)  // wall collision check
 				wallHit = true;
-				ballBounce = true;
-			}
 
 			cannonBallSpeedX += initSpeedX * _t * cos(VEL_THETA(CANNON_BALL_VEL_THETA));                              // Speed X stays constant
 			cannonBallSpeedY += ((initSpeedY-=AIR_FRI) * _t * sin(VEL_THETA(CANNON_BALL_VEL_THETA)) - 0.5 * GRAVITY * (_t*_t));
-		} else { //resetCannon();
-			if (cannonBallSpeedY+ballVelBounceY >= -73+CANNON_BALL_RADIUS-FLOOR_BED) {
-				// reset = false;
+		} else { 
+			if (cannonBallSpeedY+ballVelBounceY >= -73+CANNON_BALL_RADIUS-FLOOR_BED) 
 				ballVelBounceY -=  (sin(VEL_THETA(VERTICAL_THETA)) * _t * sin(VEL_THETA(VERTICAL_THETA)) - 0.5 * GRAVITY * (_t*_t));   // Gravity acceleration movement (drag)
-			} 
 			else {
 				if (_fri <= 0.8)
 					_fri += 0.01;  // slow x-movement every time hit GND
 
-				// cannonBallSpeedX *= 0.9;
-				// if (reset) rstCannon(&ballVelBounceY, &_fri, &reset, &ballBounce) ;  // if ball hits ground more then twice at a time - reset ball
-				// reset = true;
-				ballVelBounceY *= (2 - V_Terminal(mass, area, DRAG_SPHERE, 1)) ;  // resistance percentage - relating to mass and shape
+				ballVelBounceY *= (1.8 - V_Terminal(mass, area, DRAG_SPHERE, 1)) ;  // resistance percentage - relating to mass and shape
 			}
+
 			cannonBallSpeedY += ballVelBounceY;
 			cannonBallSpeedX -= 0.8 - _fri;
 			cannonBallPosZ += 0.8 - _fri;
 
-			// If everything is stopped reset
-			if (timer > 28000) 
-				rstCannon(&ballVelBounceY, &_fri, &reset, &ballBounce) ;  // reset ball
+			// Let enough time go by to reset the scene
+			if (timer > 1800) {
+				rstCannon(&ballVelBounceY, &_fri) ;  // reset ball
+			} else 
+				timer++;
 		}
 	}
 
-	glutTimerFunc(20, cannonBall, 0); 
+	glutTimerFunc(10, cannonBall, 0); 
 }
 
 
@@ -1744,8 +1575,10 @@ void display(void)
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
+
 	glBegin(GL_QUADS);
-		glColor4f(255.f/200.f, 255.f/175.f, 1.f, 0.25f);
+		if (wallHit && glassAlpha > 0) glassAlpha -= 0.01f;
+		glColor4f(255.f/200.f, 255.f/175.f, 1.f, glassAlpha);
 		// front
 		glVertex3f(-4, FLOOR_BED, -5);
 		glVertex3f(4, FLOOR_BED, -5);

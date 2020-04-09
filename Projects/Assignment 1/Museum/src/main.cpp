@@ -69,8 +69,8 @@ void initialize(char *pjtPath)
 
 
 	// Load and enable Textures
-	// loadTexture(); 
-	// loadMeshFile("../Models/Cannon.off");	
+	loadTexture(); 
+	loadMeshFile("../Models/Cannon.off");	
 
 	glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -105,12 +105,13 @@ int main(int argc, char *argv[])
 	glutCreateWindow("Museum    FPS: ...");
 	initialize(argv[0]);
 
+
 	glutDisplayFunc(display);
 	glutKeyboardFunc(keyEvents);
 	glutSpecialFunc(special);
 	glutTimerFunc(TIMER_DELAY, idle, TIMER_DELAY);  // fps counter
 	glutTimerFunc(20, ballBounce, 0);  // ball physics
-	glutTimerFunc(20, cannonBall, 0);     // animate cannon ball
+	glutTimerFunc(10, cannonBall, 0);     // animate cannon ball
 	// glutTimerFunc(1, collBox, 0);   // better performance the other way
 	
 	glutMainLoop();
