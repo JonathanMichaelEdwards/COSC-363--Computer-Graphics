@@ -173,11 +173,10 @@ enum {
 // double u = ballPosY * sin(VEL_THETA(theta));  // initial speed
 
 bool _spacePressed = false;
+bool _doorAction = false;
 bool _spacePressedBallBounce = false;
-double previous = 0;
-
-bool accDown = true;
-bool accUp = false;
+float doorTheta = 90.f;
+bool doorCount = false;
 
 
 
@@ -344,7 +343,7 @@ void topBottomRight(void)
 /// --------------------------------------
 
 
-#define TEX 6
+#define TEX 7
 GLuint txId[TEX] = {0};   //Texture ids
 
 
@@ -372,12 +371,20 @@ void loadTexture()
 {
 	glGenTextures(TEX, txId); 	// Create xxx texture ids
 
+	// skybox textures
 	_loadTGA("front", 0);
 	_loadTGA("back", 1);
 	_loadTGA("left", 2);
 	_loadTGA("right", 3);
 	_loadTGA("down", 4);
 	_loadTGA("up", 5);
+
+	// wall scene
+	glBindTexture(GL_TEXTURE_2D, txId[6]);
+	loadTGA("../Models/wallScene.tga");
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);	//Set texture parameters
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	
+
 
 	glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
 }
@@ -499,8 +506,8 @@ void drawFloor(void)
 
 	glBegin(GL_QUADS);
 	glNormal3f(0, 1, 0);
-	for(float x = -FLOOR_X; x <= FLOOR_X; x += 0.5) {
-		for(float z = -FLOOR_Z; z <= FLOOR_Z; z += 0.5) {
+	for(float x = -FLOOR_X; x < FLOOR_X; x += 0.5) {
+		for(float z = -FLOOR_Z; z < FLOOR_Z; z += 0.5) {
 			glColor3f(1, 1, 1);
 			// else glColor3f(1, 1, 1);
 			glVertex3f(x, FLOOR_BED, z);
@@ -512,6 +519,88 @@ void drawFloor(void)
 	}
 	glEnd();
 }
+
+
+// ---- draw wall that the player is in
+//--------------------------  wall ------------------------------------------------------
+void backWall(void)
+{
+	glBindTexture(GL_TEXTURE_2D, txId[6]); // use floor ID 
+
+	glBegin(GL_QUADS);
+		glTexCoord2f(0,  0);       glVertex3f(-FLOOR_X, FLOOR_BED, FLOOR_Z);
+		glTexCoord2f(10,  0);       glVertex3f(FLOOR_X, FLOOR_BED, FLOOR_Z);
+		glTexCoord2f(10, 1);        glVertex3f(FLOOR_X, 1, FLOOR_Z);
+		glTexCoord2f(0, 1);        glVertex3f(-FLOOR_X, 1, FLOOR_Z); 
+	glEnd();
+}
+
+
+void frontWall(void)
+{
+	glBindTexture(GL_TEXTURE_2D, txId[6]); // use floor ID 
+
+	glBegin(GL_QUADS);
+		glTexCoord2f(0,  1);       glVertex3f(FLOOR_X, FLOOR_BED, -FLOOR_Z);  
+		glTexCoord2f(0,  0);       glVertex3f(FLOOR_X, 1, -FLOOR_Z);  
+		glTexCoord2f(10, 0);        glVertex3f(-FLOOR_X, 1, -FLOOR_Z);  
+		glTexCoord2f(10, 1);        glVertex3f(-FLOOR_X, FLOOR_BED, -FLOOR_Z); 
+	glEnd();
+}
+
+
+void rightWall(void)
+{
+	glBindTexture(GL_TEXTURE_2D, txId[6]); // use floor ID 
+
+	glBegin(GL_QUADS);
+		glTexCoord2f(0,  1);      glVertex3f(FLOOR_X, FLOOR_BED, FLOOR_Z);
+		glTexCoord2f(0,  0);      glVertex3f(FLOOR_X, 1, FLOOR_Z);
+		glTexCoord2f(10, 0);       glVertex3f(FLOOR_X, 1, -FLOOR_Z);
+		glTexCoord2f(10, 1);       glVertex3f(FLOOR_X, FLOOR_BED, -FLOOR_Z);
+	glEnd();
+}
+
+
+void leftWall(void)
+{
+	glBindTexture(GL_TEXTURE_2D, txId[6]); // use floor ID 
+
+	glBegin(GL_QUADS);
+		glTexCoord2f(0,  1);      glVertex3f(-FLOOR_X, FLOOR_BED, -FLOOR_Z);
+		glTexCoord2f(0,  0);      glVertex3f(-FLOOR_X, 1, -FLOOR_Z);
+		glTexCoord2f(10, 0);       glVertex3f(-FLOOR_X, 1, FLOOR_Z);
+		glTexCoord2f(10, 1);       glVertex3f(-FLOOR_X, FLOOR_BED, FLOOR_Z);
+	glEnd();
+}
+
+
+// draw and render player wall
+void sceneWall(void)
+{	
+    glPushMatrix();
+
+		glEnable(GL_TEXTURE_2D);
+		glDisable(GL_LIGHTING);
+
+		glColor3f(1, 1, 1);
+
+		// draw player wall limit
+		backWall();
+		frontWall();
+		rightWall();
+		leftWall();
+
+
+		glDisable(GL_TEXTURE_2D);
+		glEnable(GL_LIGHTING);
+
+    glPopMatrix();
+}
+
+// -----------------------------------
+
+
 
 
 //// -------------- ball and ground collision -------------------------------
@@ -527,6 +616,13 @@ void spacePressed(bool _state)
 		_spacePressed=false;
 		_spacePressedBallBounce=false;
 	}
+}
+
+
+void doorAction(bool _state)
+{
+	if (_state) _doorAction=true;
+	else _doorAction=false;
 }
 
 
@@ -609,26 +705,6 @@ void spacePressed(bool _state)
 
 
 
-void rstBall(void) 
-{
-	_spacePressed = false;
-	_iState = false;
-
-	for (int i = 0; i < MAGIC_CUBES; i++) {
-		// ballPosX[i] = 0;
-		// ballPosY[i] = boxPosStart[i]; 
-		// speedY[i] = 0;
-		reset[i] = false;
-		// count[i] = 0;
-		// chkCount[i] = 0;
-	}
-
-	// speedY[MAGIC_CUBES] = { 0 };
-	// speedX = 0;
-	// change = 0;  // debouncing check
-}
-
-
 // reaction force - when obj 'z' has been hit
 void boxChangeSpeed(int j)
 {	
@@ -655,24 +731,7 @@ void boxChangeSpeed(int j)
 void boxCollision(int j)
 {
 	if (!chkCount[z][z_2]) {
-		// if (0 == (int)(speedY[z][z_2]*10000000.f)) {
-		// 	speedY[z][z_2] = 0;
-			// speedY[j][z_2] = 0;
-			// objStill[z][z_2] = true;
-			// objStill[j][z_2] = false;
-
-			// chkCount[z][z_2] = false;
-			// 		chkCount[j][z_2] = false;
-
-		// } else {
-			boxChangeSpeed(j);
-			
-			// objStill[z][z_2] = false;
-			// objStill[j][z_2] = false;
-
-			// chkCount[z][z_2] = true;
-			// chkCount[j][z_2] = true;
-		// }
+		boxChangeSpeed(j);
 	}
 	
 	// When the cannon ball hits the gravitational less exclosure - disruppt movement 
@@ -686,38 +745,6 @@ void boxCollision(int j)
 		ballPosX[z][z_2] += posRand_X[z][z_2];
 		ballPosZ[j][z_2] += posRand_Z[j][z_2];
 	}
-
-	// ballPosY[z][z_2] += speedY[z][z_2] / (THREADS_BOX_COLL*THREADS_BOX_COLL*THREADS_BOX_BOX_COLL);
-	// ballPosY[j][z_2] += speedY[j][z_2] / (THREADS_BOX_COLL*THREADS_BOX_COLL*THREADS_BOX_BOX_COLL);
-}
-
-
-
-
-// if y-dir found, then change x-dir
-void checkPosX(int j, int j_2, bool *target)
-{
-	if ((ballPosY[z][z_2]-0.05) <= (ballPosY[j][j_2]+0.05) && (ballPosY[j][j_2]-0.05) <= (ballPosY[z][z_2]+0.05))
-		*target = true;  // x-dir move
-	else
-		*target = false;
-
-	// posRand_X[z][z_2] *= -0.9;
-	// posRand_X[j][j_2] *= -0.9;
-		
-	// if ((ballPosX[z][z_2]-0.05) <= (ballPosX[j][j_2]+0.05) && (ballPosY[z][z_2]-0.05) <= (ballPosY[j][j_2]+0.05) && (ballPosY[j][j_2]-0.05) <= (ballPosY[z][z_2]+0.05) && horizontalCol[z][z_2] == RANGE_OUT) { // if 'j' triggered ('z' came in from right side)
-	// 	// puts("1");
-	// 	horizontalCol[z][z_2] = RANGE_OUT;
-	// 	// horizontalCol[j][j_2] = true;
-	// } else {
-	// 	horizontalCol[z][z_2] = RIGHT;
-	// 	// puts("Out");
-	// }
-	
-	// if ((ballPosX[j][j_2]-0.05) <= (ballPosX[z][z_2]+0.05) && (ballPosY[z][z_2]-0.05) <= (ballPosY[j][j_2]+0.05) && (ballPosY[j][j_2]-0.05) <= (ballPosY[z][z_2]+0.05)) { // if 'j' triggered ('z' came in from left side)
-	// 	puts("2");
-	// 	horizontalCol[z][z_2] = LEFT;
-	// }
 }
 
 
@@ -1038,6 +1065,38 @@ void sideWall(void)
 	glutSolidCube(1);
 }
 
+
+
+// open and close the door by pressening the 'd'
+void animateDoor(int value)
+{
+	static bool doorState = false;
+
+
+	if (_doorAction) {
+		if (!doorCount) {
+			// open door
+			if (doorTheta < 180) {
+				doorTheta += 0.5;
+			} else {
+				doorCount = true;
+				_doorAction = false;
+			}
+		} else {
+			// close door
+			if (doorTheta > 90.f) {
+				doorTheta -= 0.5;
+			} else {
+				doorCount = false;
+				_doorAction = false;
+			}
+		}
+	}
+
+	glutTimerFunc(20, animateDoor, 0);
+}
+
+
 // front and back
 void sideWalls()
 {
@@ -1074,7 +1133,7 @@ void sideWalls()
 		glColor3f(0, 1, 0);
 
 		glTranslatef(2, 0, 2 +2);
-		glRotatef(130, 0, 1, 0);
+		glRotatef(doorTheta, 0, 1, 0);
 		glTranslatef(-2, 0, -2 -2);
  
 		glTranslatef(2, 0, 2);
@@ -1608,7 +1667,7 @@ void guardAnimation(int value)
 		glutTimerFunc(10, guardAnimation, 0); 
 	} else {
 		armAction = 0;
-		glutTimerFunc(30, guardAnimation, 0); 
+		glutTimerFunc(20, guardAnimation, 0); 
 	}
 }
 
@@ -1838,19 +1897,17 @@ void display(void)
    	float spotDir_2[] = { spotDirX_2, -1, spotDirZ_2, 1.0 };  // light1 position (directly above bouncing ball)
 
 
-	// draw objects with only ambiant and diffuse lighting
-	displayMuesum();
-
-
-
 	glMaterialfv(GL_FRONT, GL_SPECULAR, black);     // ---
 
 
 
 		
 	skyBox();
-
 	drawFloor();
+	sceneWall();
+
+	// draw objects with only ambiant and diffuse lighting
+	displayMuesum();
 
 
 	float gx = guardPosX-2;

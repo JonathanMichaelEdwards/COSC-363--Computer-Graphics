@@ -74,11 +74,9 @@ void initialize(char *pjtPath)
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_NORMALIZE);
 
-	// init_particle();
-
 	// Load and enable Textures
-	// loadTexture(); 
-	// loadMeshFile("../Models/Cannon.off");	
+	loadTexture(); 
+	loadMeshFile("../Models/Cannon.off");	
 
 	glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -118,13 +116,14 @@ int main(int argc, char *argv[])
 	glutKeyboardFunc(keyEvents);
 	glutSpecialFunc(special);
 	glutTimerFunc(TIMER_DELAY, idle, TIMER_DELAY);  // fps counter
-	glutTimerFunc(20, ballBounce, 0);  // ball physics
-	glutTimerFunc(10, cannonBall, 0);     // animate cannon ball
+	glutTimerFunc(20, ballBounce, 0);    // ball physics
+	glutTimerFunc(20, animateDoor, 0);    // animate cannon ball
+	glutTimerFunc(10, cannonBall, 0);    // animate cannon ball
 
 	if (wallHit) // animate the guard
 		glutTimerFunc(10, guardAnimation, 0); 
 	else
-		glutTimerFunc(30, guardAnimation, 0); 
+		glutTimerFunc(20, guardAnimation, 0); 
 	
 	glutMainLoop();
 	

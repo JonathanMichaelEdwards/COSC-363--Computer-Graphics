@@ -2,7 +2,7 @@
 #define DISPLAY_H
 
 // FPS details
-#define FPS            60
+#define FPS            70
 #define FPS_SEC        1000
 #define TIMER_DELAY    FPS_SEC / FPS
 #define QUATER_SEC     250
@@ -17,6 +17,7 @@ static bool wallHit = false;
 void moveBack(float angle);
 void moveForward(float angle);
 void lookRotation(float angle, bool _view);
+void animateDoor(int value);
 
 // top camera
 void topBottomForward(void);
@@ -29,6 +30,7 @@ void loadMeshFile(const char* fname);
 void cannonBall(int value);
 
 void spacePressed(bool _state);
+void doorAction(bool _state);
 void ballBounce(int value);
 void boxCube(int value);
 void collBox(int value);

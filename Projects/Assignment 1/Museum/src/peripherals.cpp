@@ -97,6 +97,7 @@ void keyEvents(unsigned char key, int x, int y)
 
 	
 	if (key == SPACE) spacePressed(true);
+	if (key == 'd') doorAction(true);
 
 
     glutTimerFunc(TIMER_DELAY, idle, TIMER_DELAY);  
