@@ -1547,7 +1547,7 @@ void guardAnimation(int value)
 	walkTheta += (walkTheta <= -20 ? dir*=-1 : 20 <= walkTheta ? dir*=-1 : dir); 
 	
 	if (!walkStage) {
-		if (guardPosX > 7) {  // Guard walking from (left->right->left)
+		if (guardPosX > 5.5 ) {  // Guard walking from (left->right->left)
 			if (guardTheta >= 270) {
 				walkDir = -0.02;
 				walkStage = true;
@@ -1575,7 +1575,7 @@ void guardAnimation(int value)
 		}
 	} 
 	else {
-		if (guardPosX < -7) {  // Guard walking from (right->left->right)
+		if (guardPosX < -6) {  // Guard walking from (right->left->right)
 			if (guardTheta > 270) {
 				walkDir = 0.02;
 				walkStage = false;
@@ -1610,29 +1610,27 @@ void guardAnimation(int value)
 		armAction = 0;
 		glutTimerFunc(30, guardAnimation, 0); 
 	}
-
-
-	
 }
 
 
 //--Draws a character model constructed using GLUT objects ------------------
-void drawGuard(void)
+void drawGuard(bool color)
 {
-	glColor3f(1., 0.78, 0.06);		//Head
+	if (color) glColor3f(1., 0.78, 0.06);		//Head
+	else glColor3f(0.2, 0.2, 0.2);  // shadow color
 	glPushMatrix();
 	  glTranslatef(0, 7.7, 0);
 	  glutSolidCube(1.4);
 	glPopMatrix();
 
-	glColor3f(1., 0., 0.);			//Torso
+	if (color) glColor3f(1., 0., 0.);			//Torso
 	glPushMatrix();
 		glTranslatef(0, 5.5, 0);
 		glScalef(3, 3, 1.4);
 		glutSolidCube(1);
 	glPopMatrix();
 
-	glColor3f(0., 0., 1.);			//Right leg
+	if (color) glColor3f(0., 0., 1.);			//Right leg
 	glPushMatrix();
 		glTranslatef(-0.8, 4, 0);       
 		glRotatef(-walkTheta, 1, 0, 0);       
@@ -1643,7 +1641,7 @@ void drawGuard(void)
 		glutSolidCube(1);
 	glPopMatrix();
 
-	glColor3f(0., 0., 1.);			//Left leg
+	if (color) glColor3f(0., 0., 1.);			//Left leg
 	glPushMatrix();
 		// Rotation by walkTheta about the pivot point (0.8, 4, 0)
 		glTranslatef(0.8, 4, 0);       
@@ -1655,7 +1653,7 @@ void drawGuard(void)
 		glutSolidCube(1);
 	glPopMatrix();
 
-	glColor3f(0., 0., 1.);			//Right arm
+	if (color) glColor3f(0., 0., 1.);			//Right arm
 	glPushMatrix();
 		glTranslatef(0.8, 4, 0);       
 		glRotatef(walkTheta, 1, 0, 0);       
@@ -1666,7 +1664,7 @@ void drawGuard(void)
 		glutSolidCube(1);
 	glPopMatrix();
 
-	glColor3f(0., 0., 1.);			//Left arm
+	if (color) glColor3f(0., 0., 1.);			//Left arm
 	glPushMatrix();
 		glTranslatef(2, 6.5, 0);       
 		glRotatef(-walkTheta, 1, 0, 0);       
@@ -1676,6 +1674,124 @@ void drawGuard(void)
 		glScalef(1, 4, 1);
 		glutSolidCube(1);
 	glPopMatrix();
+}
+
+
+#define MAX_PARTICLES   100
+
+
+//--------------Structure For Particle---------------------------------
+typedef struct						
+{
+	float pos_X;
+	float pos_Y;
+	float pos_Z;
+
+	float posRand_X;
+	float posRand_Y;
+	float posRand_Z;
+
+	float animateWait;
+
+	bool dir_Y;
+	bool kill;
+} Particle_Generator;					
+
+
+Particle_Generator part[MAX_PARTICLES];
+
+/* initialize particles */
+void rstIndexPart(int i)
+{
+	part[i].posRand_X = (((float)(rand() % 50)-25) / 7000.f);
+	part[i].posRand_Y = (float)(rand() % 50) / 5000.f;
+	part[i].posRand_Z = (((float)(rand() % 50)-25) / 10000.f);
+
+	part[i].pos_X = 0;
+	part[i].pos_Y = 0;
+	part[i].pos_Z = 0;
+
+	part[i].animateWait = 0;
+
+	part[i].dir_Y = false;
+	part[i].kill = false;
+}
+
+// initial particles
+void initPartical()
+{
+	for (int i = 0; i < MAX_PARTICLES; i++) {
+		part[i].posRand_X = (((float)(rand() % 50)-25) / 7000.f);
+		part[i].posRand_Y = (float)(rand() % 50) / 5000.f;
+		part[i].posRand_Z = (((float)(rand() % 50)-25) / 10000.f);
+
+		part[i].pos_X = 0;
+		part[i].pos_Y = 0;
+		part[i].pos_Z = 0;
+
+		part[i].animateWait = 0;
+
+		part[i].dir_Y = false;
+		part[i].kill = false;
+	}
+}
+
+
+GLUquadric *q =  gluNewQuadric();
+
+bool flow[MAX_PARTICLES] = { true, false };
+
+
+void rain(int i)
+{
+	float t = 0.0001;
+
+	if (part[i].pos_Y > 0.02) {
+		part[i].pos_X += part[i].posRand_X;
+		part[i].pos_Z += part[i].posRand_Z;
+		flow[i] = true;
+	}
+
+	if (part[i].pos_Y < 0.5 && !part[i].dir_Y) {
+		part[i].posRand_Y += sin(VEL_THETA(VERTICAL_THETA)) * t * sin(VEL_THETA(VERTICAL_THETA)) - 0.5 * GRAVITY * (t*t);   // Gravity acceleration movement (drag)
+	} else {
+		part[i].dir_Y = true; // reached max point now comeing down
+		if (part[i].pos_Y > -0.8){   // dont kill particle - kill before hits ground
+			part[i].pos_X += part[i].posRand_X;
+			part[i].posRand_Y -= sin(VEL_THETA(VERTICAL_THETA)) * t * sin(VEL_THETA(VERTICAL_THETA)) - 0.5 * GRAVITY * (t*t);   // Gravity acceleration movement (drag)
+		} else {
+			part[i].kill = true;
+		}
+	}
+
+	if (!part[i].kill) {
+		part[i].pos_Y += part[i].posRand_Y;
+	} else {
+		rstIndexPart(i);
+	}
+}
+
+
+// -- render particle system
+void particleFountain(void)
+{   
+	static bool begin = false;
+	
+	if (!begin) {
+		initPartical();
+		begin = true;
+	}
+
+	for (int i = 0; i < MAX_PARTICLES-1; i++) {
+		if (flow[i]) rain(i+1);
+
+		glColor3f(0, 1, 1);
+			glPushMatrix();
+				glTranslatef(part[i].pos_X, part[i].pos_Y, part[i].pos_Z);
+				gluSphere(q, 0.03, 20, 4);
+				// gluSphere(q, 0.1, 20, 4);
+			glPopMatrix();
+		} 
 }
 
 
@@ -1700,7 +1816,8 @@ void display(void)
 		glTranslatef(x_view_2, z_view_2, _zoom_);  // since transformed y has become z
 		gluLookAt(0, 30, 0,  0, 0, -1, 0, 1, 0);
 	} else {
-		gluLookAt(eye_x, 0, eye_z,  look_x, 0, look_z,   0, 1, 0);	
+		// gluLookAt(-5, 1, 0,  0, 0, -1, 0, 1, 0);
+		gluLookAt(eye_x, 0.5, eye_z,  look_x, 0.5, look_z,   0, 1, 0);	
 	}
 	
 
@@ -1717,12 +1834,14 @@ void display(void)
 		boxCube();
 	glPopMatrix();
 
-	float spot_pos_1[]={ guardPosX, 1, guardPosZ, 1.0 };
+	float spot_pos_1[]= { guardPosX, 1, guardPosZ, 1.0 };
    	float spotDir_2[] = { spotDirX_2, -1, spotDirZ_2, 1.0 };  // light1 position (directly above bouncing ball)
 
 
 	// draw objects with only ambiant and diffuse lighting
 	displayMuesum();
+
+
 
 	glMaterialfv(GL_FRONT, GL_SPECULAR, black);     // ---
 
@@ -1730,20 +1849,44 @@ void display(void)
 
 		
 	skyBox();
+
 	drawFloor();
 
 
+	float gx = guardPosX-2;
+	float gy = 2;
+	float gz = guardPosZ;
+
+	float shadowMat[16] = { gy,0,0,0, -gx,0,-gz,-1, 0,0,gy,0, 0,0,0,gy };
+
+
+	// spotlight tourch - guard
+	glLightfv(GL_LIGHT2, GL_POSITION, spot_pos_1);
+	glLightfv(GL_LIGHT2, GL_SPOT_DIRECTION, spotDir_2);
+
+
+	glDisable(GL_LIGHTING);
+	glPushMatrix();
+		//Draw Shadow Object
+		glTranslatef(0 , FLOOR_BED+0.01, 0);  // transform shadow to be on the ground
+		glMultMatrixf(shadowMat);
+		glTranslatef(guardPosX+2 , -1, guardPosZ);
+		glRotatef(guardTheta, 0, 1, 0);
+
+		glScalef(0.2, 0.2, 0.2);
+		drawGuard(false);
+	glPopMatrix();
+
+	glEnable(GL_LIGHTING);
 	// draw the guard in the scene
 	glPushMatrix();	
+		//Draw Actual Object
 		glTranslatef(guardPosX , FLOOR_BED, guardPosZ);
 		glRotatef(guardTheta, 0, 1, 0);
 
 		glScalef(0.2, 0.2, 0.2);
-		drawGuard();
+		drawGuard(true);
 	glPopMatrix();
-
-
-
 
 
 
@@ -1824,7 +1967,6 @@ void display(void)
 	
 	float spot_pos[]={ 2, 10, -4.3, 1.0 };
    	float spotDir[] = { -1, -1, 0, 1.0 };  // light1 position (directly above bouncing ball - case)
-	
 
 	// spotlight over case - shineing on ground
 	glLightfv(GL_LIGHT1, GL_POSITION, spot_pos);
@@ -1837,11 +1979,9 @@ void display(void)
 		ballBoxDemo();  // get to experiment with different values (e.g mass)
 	glPopMatrix();
 
-	// spotlight over case - shineing on ground
-	glLightfv(GL_LIGHT2, GL_POSITION, spot_pos_1);
-	glLightfv(GL_LIGHT2, GL_SPOT_DIRECTION, spotDir_2);
 
 
+	particleFountain();
 
 	
 	glutSwapBuffers();	

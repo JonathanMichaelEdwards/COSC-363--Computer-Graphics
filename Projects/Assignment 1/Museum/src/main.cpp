@@ -74,11 +74,11 @@ void initialize(char *pjtPath)
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_NORMALIZE);
 
-
+	// init_particle();
 
 	// Load and enable Textures
-	loadTexture(); 
-	loadMeshFile("../Models/Cannon.off");	
+	// loadTexture(); 
+	// loadMeshFile("../Models/Cannon.off");	
 
 	glMatrixMode(GL_PROJECTION);
     glLoadIdentity();

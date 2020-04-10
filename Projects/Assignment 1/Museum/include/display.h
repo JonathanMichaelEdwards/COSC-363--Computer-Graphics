@@ -33,6 +33,7 @@ void ballBounce(int value);
 void boxCube(int value);
 void collBox(int value);
 void guardAnimation(int value);
+void init_particle(void);
 
 char *getPath(char *path);
 void loadTexture(void);	
