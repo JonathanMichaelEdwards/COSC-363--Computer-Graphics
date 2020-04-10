@@ -106,9 +106,7 @@ const float doorPointGlobal[3] = { };   // diff of point
 
 
 #define MAGIC_CUBES       8
-// double boxPosStart[MAGIC_CUBES] = { 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7 };//, 3.23, 4.34};//, 1.44, 1.55, 1.66, 1.77, 1.88, 1.99 };
-// double ballPosY[MAGIC_CUBES] = { 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7 };
-// double conBallPosY[MAGIC_CUBES] = { 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7 };
+
 
 double statBallPosX[MAGIC_CUBES] = { -3.5 , -2.5 , -1.5, -0.5, 0.5, 1.5, 2.5, 3.5 };
 double statBallPosY[MAGIC_CUBES] = { 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7 };
@@ -134,25 +132,8 @@ float glassAlpha = 0.25f;
 #define FRAG_BOX_START  2.0
 
 
-
-// double boxPosStart[MAGIC_CUBES] = { 1.0, 1.1, 1.2, 1.3};//, 3.23, 4.34};//, 1.44, 1.55, 1.66, 1.77, 1.88, 1.99 };
-// double ballPosY[MAGIC_CUBES] = { 1.0, 1.1, 1.2, 1.3};
-
 float posRand_X[MAGIC_CUBES+1][MAGIC_CUBES+1]= { 0 };
 float posRand_Z[MAGIC_CUBES+1][MAGIC_CUBES+1]= { 0 };
-
-// double initSpeedX = 0; //20; 
-// double initSpeedY = 0; //16.1264;            // tan(theta) * Vx
-
-// double speedY[MAGIC_CUBES][2] = { { 0.001, 0.001 }, 
-// 				{ 0.001, 0.001 }, 
-// 				{ 0.001, 0.001 }, 
-// 				{ 0.001, 0.001 }, 
-// 				{ 0.001, 0.001 }, 
-// 				{ 0.001, 0.001 }, 
-// 				{ 0.001, 0.001 }, 
-// 				{ 0.001, 0.001 }, 
-// };
 
 bool horizontalCol[MAGIC_CUBES][MAGIC_CUBES] = { false };
 bool   reset[MAGIC_CUBES]  = { false };
@@ -167,10 +148,6 @@ enum {
 	LEFT = 2
 };
 
-// 1 m heigh
-// double ballPosY[MAGIC_CUBES] = { 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 2.7};//, 3.23, 4.34};//, 1.44, 1.55, 1.66, 1.77, 1.88, 1.99 }; // pos height
-
-// double u = ballPosY * sin(VEL_THETA(theta));  // initial speed
 
 bool _spacePressed = false;
 bool _doorAction = false;
@@ -343,7 +320,7 @@ void topBottomRight(void)
 /// --------------------------------------
 
 
-#define TEX 7
+#define TEX 10
 GLuint txId[TEX] = {0};   //Texture ids
 
 
@@ -379,9 +356,27 @@ void loadTexture()
 	_loadTGA("down", 4);
 	_loadTGA("up", 5);
 
-	// wall scene
+	// wall museum
 	glBindTexture(GL_TEXTURE_2D, txId[6]);
 	loadTGA("../Models/wallScene.tga");
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);	//Set texture parameters
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	
+
+	// roof museum
+	glBindTexture(GL_TEXTURE_2D, txId[7]);
+	loadTGA("../Models/roof.tga");
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);	//Set texture parameters
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	
+
+	// wall 2 scene
+	glBindTexture(GL_TEXTURE_2D, txId[8]);
+	loadTGA("../Models/wall_2.tga");
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);	//Set texture parameters
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	
+
+	// door
+	glBindTexture(GL_TEXTURE_2D, txId[9]);
+	loadTGA("../Models/door.tga");
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);	//Set texture parameters
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	
 
@@ -502,21 +497,17 @@ void skyBox(void)
 //----------draw a floor plane-------------------
 void drawFloor(void)
 {
-	bool flag = false;
-
 	glBegin(GL_QUADS);
-	glNormal3f(0, 1, 0);
-	for(float x = -FLOOR_X; x < FLOOR_X; x += 0.5) {
-		for(float z = -FLOOR_Z; z < FLOOR_Z; z += 0.5) {
-			glColor3f(1, 1, 1);
-			// else glColor3f(1, 1, 1);
-			glVertex3f(x, FLOOR_BED, z);
-			glVertex3f(x, FLOOR_BED, z+0.5);
-			glVertex3f(x+0.5, FLOOR_BED, z+0.5);
-			glVertex3f(x+0.5, FLOOR_BED, z);
-			flag = !flag;
+		glNormal3f(0, 1, 0);
+		glColor3f(1, 1, 1);
+		for(float x = -FLOOR_X; x < FLOOR_X; x += 0.5) {
+			for(float z = -FLOOR_Z; z < FLOOR_Z; z += 0.5) {
+				glVertex3f(x, FLOOR_BED, z);
+				glVertex3f(x, FLOOR_BED, z+0.5);
+				glVertex3f(x+0.5, FLOOR_BED, z+0.5);
+				glVertex3f(x+0.5, FLOOR_BED, z);
+			}
 		}
-	}
 	glEnd();
 }
 
@@ -624,83 +615,6 @@ void doorAction(bool _state)
 	if (_state) _doorAction=true;
 	else _doorAction=false;
 }
-
-
-
-// // draw 2D box
-// void _box(int sizeX, int sizeY)
-// {
-// 	float j = 0;
-								
-// 	glPushMatrix();
-// 		for (float x = 0; x < sizeX; x+=0.1) {
-// 			for (float i = 0; i < sizeY; i+=0.1) {
-// 				glBegin(GL_TRIANGLES);
-// 					glColor3f(0, 0, 1);
-// 					// bottom
-// 					if (_spacePressed)  // once pressed make sure every piece hits the ground or eachother
-// 						j = (rand() % 10) / 10.f;
-// 					glVertex3f(-ballPosX/8+0+x-j, j+ballPosY+   0+i, 0);  
-// 					glVertex3f(-ballPosX/8+0.1+x-j, j+ballPosY+ 0+i, 0);  
-// 					glVertex3f(-ballPosX/8+0+x-j,  j+ballPosY+  0.1+i, 0); 
-
-// 					// top
-// 					glColor3f(0, 1, 0);
-// 					glVertex3f(ballPosX/8+0.1+x+j, j+ballPosY+  0+i, 0);  
-// 					glVertex3f(ballPosX/8+0.1+x+j, j+ballPosY+  0.1+i, 0);  
-// 					glVertex3f(ballPosX/8+0+x+j,  j+ballPosY+   0.1+i, 0); 
-// 				glEnd();
-// 			}
-// 		}
-
-// 	glPopMatrix();
-// }
-
-
-// // draw 3d box
-// // note: 1x1 default
-// void box(void)
-// {
-// 	// front
-// 	glPushMatrix();
-// 		_box(1, 1);
-// 	glPopMatrix();
-
-// 	// back
-// 	glPushMatrix();
-// 		glTranslatef(0, 0, -1);
-// 		_box(1, 1);
-// 	glPopMatrix();
-
-// 	// left
-// 	glPushMatrix();
-// 		glRotatef(90, 0, 1, 0);
-// 		_box(1, 1);
-// 	glPopMatrix();
-
-// 	// right
-// 	glPushMatrix();
-// 		glRotatef(90, 0, 1, 0);
-// 		glTranslatef(0, 0, 1);
-// 		_box(1, 1);
-// 	glPopMatrix();
-
-// 	// bottom
-// 	glPushMatrix();
-// 		glTranslatef(0, ballPosY, -ballPosY-1);  // shape point bottom left
-// 		glRotatef(90, 1, 0, 0);
-// 		_box(1, 1);
-// 	glPopMatrix();
-
-// 	// top
-// 	glPushMatrix();
-// 		glTranslatef(0, ballPosY+1, -ballPosY-1);  // shape point bottom left
-// 		glRotatef(90, 1, 0, 0);
-// 		_box(1, 1);
-// 	glPopMatrix();
-// }
-
-
 
 
 
@@ -1038,6 +952,119 @@ void ballBounce(int value)
 
 
 
+
+
+
+// ---- draw wall that the player is in
+//--------------------------  wall ------------------------------------------------------
+void _back(int tx)
+{
+	glBindTexture(GL_TEXTURE_2D, txId[tx]); // use floor ID 
+
+	glBegin(GL_QUADS);
+		glTexCoord2f(0,  0);       glVertex3f(-0.5, -0.5, -0.5);
+		glTexCoord2f(1,  0);       glVertex3f(0.5, -0.5, -0.5);
+		glTexCoord2f(1, 1);        glVertex3f(0.5, 0.5, -0.5);
+		glTexCoord2f(0, 1);        glVertex3f(-0.5, 0.5, -0.5); 
+	glEnd();
+}
+
+
+void _front(int tx)
+{
+	glBindTexture(GL_TEXTURE_2D, txId[tx]); // use floor ID 
+
+	glBegin(GL_QUADS);
+		glTexCoord2f(0,  0);       glVertex3f(-0.5, -0.5, 0.5);
+		glTexCoord2f(1,  0);       glVertex3f(0.5, -0.5, 0.5);
+		glTexCoord2f(1, 1);        glVertex3f(0.5, 0.5, 0.5);
+		glTexCoord2f(0, 1);        glVertex3f(-0.5, 0.5, 0.5); 
+	glEnd();
+}
+
+
+// inner wall
+void _left(int tx)
+{
+	glBindTexture(GL_TEXTURE_2D, txId[tx]); // use floor ID 
+
+	glBegin(GL_QUADS);
+		glTexCoord2f(0,  0);       glVertex3f(-0.5, -0.5, -0.5);
+		glTexCoord2f(2,  0);       glVertex3f(-0.5, -0.5, 0.5);
+		glTexCoord2f(2, 1);        glVertex3f(-0.5, 0.5, 0.5);
+		glTexCoord2f(0, 1);        glVertex3f(-0.5, 0.5, -0.5); 
+	glEnd();
+}
+
+
+// outer wall
+void _right(int tx)
+{
+	glBindTexture(GL_TEXTURE_2D, txId[tx]); // use floor ID 
+
+	glBegin(GL_QUADS);
+		glTexCoord2f(0,  0);       glVertex3f(0.5, -0.5, -0.5);
+		glTexCoord2f(2,  0);       glVertex3f(0.5, -0.5, 0.5);
+		glTexCoord2f(2, 1);        glVertex3f(0.5, 0.5, 0.5);
+		glTexCoord2f(0, 1);        glVertex3f(0.5, 0.5, -0.5); 
+	glEnd();
+}
+
+
+void _top(int tx)
+{
+	glBindTexture(GL_TEXTURE_2D, txId[tx]); // use floor ID 
+
+	glBegin(GL_QUADS);
+		glTexCoord2f(0,  0);       glVertex3f(-0.5, 0.5, -0.5);
+		glTexCoord2f(2,  0);       glVertex3f(0.5, 0.5, -0.5);
+		glTexCoord2f(2, 1);        glVertex3f(0.5, 0.5, 0.5);
+		glTexCoord2f(0, 1);        glVertex3f(-0.5, 0.5, 0.5); 
+	glEnd();
+}
+
+
+void _bottom(int tx)
+{
+	glBindTexture(GL_TEXTURE_2D, txId[tx]); // use floor ID 
+
+	glBegin(GL_QUADS);
+		glTexCoord2f(0,  0);       glVertex3f(-0.5, -0.5, -0.5);
+		glTexCoord2f(10,  0);       glVertex3f(0.5, -0.5, -0.5);
+		glTexCoord2f(10, 10);        glVertex3f(0.5, -0.5, 0.5);
+		glTexCoord2f(0, 10);        glVertex3f(-0.5, -0.5, 0.5);
+	glEnd();
+}
+
+
+
+// draw and render museum cube texture
+void _cubeRender(int tx)
+{	
+    glPushMatrix();
+
+		glEnable(GL_TEXTURE_2D);
+		glDisable(GL_LIGHTING);
+
+		glColor3f(1, 1, 1);
+
+		// draw player muesum cube - texture
+		_back(tx);
+		_front(tx);
+		_left(tx);
+		_right(tx);
+		_top(tx);
+		_bottom(tx);
+
+		glDisable(GL_TEXTURE_2D);
+		glEnable(GL_LIGHTING);
+
+    glPopMatrix();
+}
+
+// -----------------------------------
+
+
 // Create a single wall
 void wall(void)
 {
@@ -1045,7 +1072,8 @@ void wall(void)
 		// move the wall to the ground level
 		glTranslatef(0, (WALL_SCALE_HEIGHT/2)-1, 0);        // y = -0.25  
 		glScalef(WALL_SCALE_WIDTH, WALL_SCALE_HEIGHT, WALL_SCALE_LENGTH);
-		glutSolidCube(1);
+		// glutSolidCube(1);
+		_cubeRender(6);
 	glPopMatrix();
 }
 
@@ -1054,7 +1082,8 @@ void openDoor(void)
 {
 	glTranslatef(0, (WALL_SCALE_HEIGHT/2)-1, 0);        // y = -0.25  
 	glScalef(WALL_SCALE_WIDTH, WALL_SCALE_HEIGHT, WALL_SCALE_LENGTH/2.0f);
-	glutSolidCube(1);
+	// glutSolidCube(1);
+	_cubeRender(9);
 }
 
 
@@ -1062,8 +1091,10 @@ void sideWall(void)
 {
 	glTranslatef(0, (WALL_SCALE_HEIGHT/2)-1, 0);        // y = -0.25  
 	glScalef(WALL_SCALE_WIDTH, WALL_SCALE_HEIGHT, WALL_SCALE_LENGTH+0.3);
-	glutSolidCube(1);
+	// glutSolidCube(1);
+	_cubeRender(8);
 }
+
 
 
 
@@ -1212,7 +1243,8 @@ void roofTile(void)
 {
 	glPushMatrix();
 		glScalef(ROOF_SCALE_WIDTH, ROOF_SCALE_HEIGHT, ROOF_SCALE_LENGTH);
-		glutSolidCube(1);
+		// glutSolidCube(1);
+		_cubeRender(7);
 	glPopMatrix();
 }
 
