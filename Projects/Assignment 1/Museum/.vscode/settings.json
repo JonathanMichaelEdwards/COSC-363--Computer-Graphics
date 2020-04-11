@@ -22,7 +22,7 @@
             }, {
                 "name": "Run  $(arrow-right)",
                 "singleInstance": true,
-                "command": "cd Linux && __GL_SYNC_TO_VBLANK=0 ./main",
+                "command": "cd Linux && make run",
             }
         ]
     }

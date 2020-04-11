@@ -521,8 +521,8 @@ void backWall(void)
 	glBegin(GL_QUADS);
 		glTexCoord2f(0,  0);       glVertex3f(-FLOOR_X, FLOOR_BED, FLOOR_Z);
 		glTexCoord2f(10,  0);       glVertex3f(FLOOR_X, FLOOR_BED, FLOOR_Z);
-		glTexCoord2f(10, 1);        glVertex3f(FLOOR_X, 1, FLOOR_Z);
-		glTexCoord2f(0, 1);        glVertex3f(-FLOOR_X, 1, FLOOR_Z); 
+		glTexCoord2f(10, 1);        glVertex3f(FLOOR_X,  0.25, FLOOR_Z);
+		glTexCoord2f(0, 1);        glVertex3f(-FLOOR_X,  0.25, FLOOR_Z); 
 	glEnd();
 }
 
@@ -533,8 +533,8 @@ void frontWall(void)
 
 	glBegin(GL_QUADS);
 		glTexCoord2f(0,  1);       glVertex3f(FLOOR_X, FLOOR_BED, -FLOOR_Z);  
-		glTexCoord2f(0,  0);       glVertex3f(FLOOR_X, 1, -FLOOR_Z);  
-		glTexCoord2f(10, 0);        glVertex3f(-FLOOR_X, 1, -FLOOR_Z);  
+		glTexCoord2f(0,  0);       glVertex3f(FLOOR_X, 0.25, -FLOOR_Z);  
+		glTexCoord2f(10, 0);        glVertex3f(-FLOOR_X, 0.25, -FLOOR_Z);  
 		glTexCoord2f(10, 1);        glVertex3f(-FLOOR_X, FLOOR_BED, -FLOOR_Z); 
 	glEnd();
 }
@@ -546,8 +546,8 @@ void rightWall(void)
 
 	glBegin(GL_QUADS);
 		glTexCoord2f(0,  1);      glVertex3f(FLOOR_X, FLOOR_BED, FLOOR_Z);
-		glTexCoord2f(0,  0);      glVertex3f(FLOOR_X, 1, FLOOR_Z);
-		glTexCoord2f(10, 0);       glVertex3f(FLOOR_X, 1, -FLOOR_Z);
+		glTexCoord2f(0,  0);      glVertex3f(FLOOR_X,  0.25, FLOOR_Z);
+		glTexCoord2f(10, 0);       glVertex3f(FLOOR_X,  0.25, -FLOOR_Z);
 		glTexCoord2f(10, 1);       glVertex3f(FLOOR_X, FLOOR_BED, -FLOOR_Z);
 	glEnd();
 }
@@ -559,8 +559,8 @@ void leftWall(void)
 
 	glBegin(GL_QUADS);
 		glTexCoord2f(0,  1);      glVertex3f(-FLOOR_X, FLOOR_BED, -FLOOR_Z);
-		glTexCoord2f(0,  0);      glVertex3f(-FLOOR_X, 1, -FLOOR_Z);
-		glTexCoord2f(10, 0);       glVertex3f(-FLOOR_X, 1, FLOOR_Z);
+		glTexCoord2f(0,  0);      glVertex3f(-FLOOR_X,  0.25, -FLOOR_Z);
+		glTexCoord2f(10, 0);       glVertex3f(-FLOOR_X,  0.25, FLOOR_Z);
 		glTexCoord2f(10, 1);       glVertex3f(-FLOOR_X, FLOOR_BED, FLOOR_Z);
 	glEnd();
 }
@@ -721,8 +721,11 @@ void boxDetectGroundCollision()
 	if (!chkCount[z][z_2]) {
 		if (ballPosY[z][z_2]+speedY[z][z_2] >= FLOOR_BED+0.05) {
 			if (wallHit) t = 0.001;
-
-			speedY[z][z_2] -= (sin(VEL_THETA(VERTICAL_THETA)) * t * sin(VEL_THETA(VERTICAL_THETA)) - 0.5 * GRAVITY * (t*t));
+			
+			if (speedY[z][z_2] > -0.1 && speedY[z][z_2] < 0.1 && !wallHit)  // cap the speed for the bouncing cubes
+				speedY[z][z_2] -= (sin(VEL_THETA(VERTICAL_THETA)) * t * sin(VEL_THETA(VERTICAL_THETA)) - 0.5 * GRAVITY * (t*t));
+			else if (wallHit) // dont cap speed
+				speedY[z][z_2] -= (sin(VEL_THETA(VERTICAL_THETA)) * t * sin(VEL_THETA(VERTICAL_THETA)) - 0.5 * GRAVITY * (t*t));
 		} else { // hit the floor
 			if (wallHit)
 				speedY[z][z_2] *= (-1 + V_Terminal(MASS_BOX_PIECE, AREA_BOX_PIECE(BOX_FRAG_SIZE), DRAG_CUBE, 100));  // resistance percentage 
@@ -817,8 +820,8 @@ void _cube3D(int row, int col)
 		// keep finding random values every clock tick unitl btn pressed
 		for (int i = 0; i < MAGIC_CUBES; i++) {
 			for (int j = 0; j < MAGIC_CUBES; j++) {
-				posRand_X[i][j] = (float)(rand() % 5) / 1000.f;
-				posRand_Z[i][j] = (float)(rand() % 10) / 1000.f;
+				posRand_X[i][j] = (float)((rand() % 50) - 25) / 10000.f;
+				posRand_Z[i][j] = (float)(rand() % 50) / 5000.f;
 			}
 		}
 		// run once when btn pressed
@@ -867,14 +870,14 @@ void _cube3D(int row, int col)
 void boxCube(void)
 {
 	if (!initPos) {
-		double _speedY = -0.001;
+		double _speedY[MAGIC_CUBES] = { 0.02, 0.01, 0, -0.01, 0, 0.01, 0.02, 0.01};
 
 		// build the magic cube scene - with initial positions
 		for (int i = 0; i < MAGIC_CUBES; i++) {            // row
 			for (int j = 0; j < MAGIC_CUBES; j++) {        // col
 				ballPosX[i][j] = statBallPosX [j];
 				ballPosY[i][j] = statBallPosY[i];
-				speedY[i][j] = _speedY;
+				speedY[i][j] = _speedY[j];
 			}
 		}
 		
@@ -989,10 +992,10 @@ void _left(int tx)
 	glBindTexture(GL_TEXTURE_2D, txId[tx]); // use floor ID 
 
 	glBegin(GL_QUADS);
-		glTexCoord2f(0,  0);       glVertex3f(-0.5, -0.5, -0.5);
-		glTexCoord2f(2,  0);       glVertex3f(-0.5, -0.5, 0.5);
-		glTexCoord2f(2, 1);        glVertex3f(-0.5, 0.5, 0.5);
-		glTexCoord2f(0, 1);        glVertex3f(-0.5, 0.5, -0.5); 
+		glTexCoord2f(0,  1);       glVertex3f(0.5, -0.5, -0.5);
+		glTexCoord2f(1,  1);       glVertex3f(0.5, -0.5, 0.5);
+		glTexCoord2f(1, 0);        glVertex3f(0.5, 0.5, 0.5);
+		glTexCoord2f(0, 0);        glVertex3f(0.5, 0.5, -0.5); 
 	glEnd();
 }
 
@@ -1003,10 +1006,10 @@ void _right(int tx)
 	glBindTexture(GL_TEXTURE_2D, txId[tx]); // use floor ID 
 
 	glBegin(GL_QUADS);
-		glTexCoord2f(0,  0);       glVertex3f(0.5, -0.5, -0.5);
-		glTexCoord2f(2,  0);       glVertex3f(0.5, -0.5, 0.5);
-		glTexCoord2f(2, 1);        glVertex3f(0.5, 0.5, 0.5);
-		glTexCoord2f(0, 1);        glVertex3f(0.5, 0.5, -0.5); 
+		glTexCoord2f(0,  1);       glVertex3f(-0.5, -0.5, -0.5);
+		glTexCoord2f(1,  1);       glVertex3f(-0.5, -0.5, 0.5);
+		glTexCoord2f(1, 0);        glVertex3f(-0.5, 0.5, 0.5);
+		glTexCoord2f(0, 0);        glVertex3f(-0.5, 0.5, -0.5); 
 	glEnd();
 }
 
@@ -1623,7 +1626,7 @@ double walkTheta = 20.;
 int dir = 1;
 
 double guardPosX = 0;
-double guardPosZ = 0;
+double guardPosZ = -1;
 double guardTheta = 0;
 float armAction = 0;
 float spotDirX_2 = 0;
@@ -1654,7 +1657,7 @@ void guardAnimation(int value)
 					spotDirX_2 = 2;
 				}
 
-				guardPosZ -= 0.01;
+				guardPosZ -= 0.02;
 				guardTheta += 0.5;
 			}
 		} 
@@ -1664,15 +1667,14 @@ void guardAnimation(int value)
 			guardTheta = 90;
 			walkStage = false;
 		}
-	} 
-	else {
+	} else {
 		if (guardPosX < -6) {  // Guard walking from (right->left->right)
-			if (guardTheta > 270) {
+			if (guardTheta >= 270) {
 				walkDir = 0.02;
 				walkStage = false;
 				spotDirX_2 = 2;
 			} else {
-				if (guardTheta > 180) {
+				if (guardTheta >= 180) {
 					walkDir = 0.005;
 					spotDirZ_2 -= 0.02;
 					spotDirX_2 += 0.02;
@@ -1682,7 +1684,7 @@ void guardAnimation(int value)
 					spotDirX_2 = -2;
 				}
 
-				guardPosZ += 0.01;
+				guardPosZ += 0.02;
 				guardTheta+=0.5;
 			}
 		} else {
@@ -1925,8 +1927,7 @@ void display(void)
 		boxCube();
 	glPopMatrix();
 
-	float spot_pos_1[]= { guardPosX, 1, guardPosZ, 1.0 };
-   	float spotDir_2[] = { spotDirX_2, -1, spotDirZ_2, 1.0 };  // light1 position (directly above bouncing ball)
+
 
 
 	glMaterialfv(GL_FRONT, GL_SPECULAR, black);     // ---
@@ -1947,11 +1948,6 @@ void display(void)
 	float gz = guardPosZ;
 
 	float shadowMat[16] = { gy,0,0,0, -gx,0,-gz,-1, 0,0,gy,0, 0,0,0,gy };
-
-
-	// spotlight tourch - guard
-	glLightfv(GL_LIGHT2, GL_POSITION, spot_pos_1);
-	glLightfv(GL_LIGHT2, GL_SPOT_DIRECTION, spotDir_2);
 
 
 	glDisable(GL_LIGHTING);
@@ -1976,6 +1972,14 @@ void display(void)
 		glScalef(0.2, 0.2, 0.2);
 		drawGuard(true);
 	glPopMatrix();
+
+
+	float spot_pos_1[]= { guardPosX, 1, guardPosZ, 1.0 };
+   	float spotDir_2[] = { spotDirX_2, -1, spotDirZ_2, 1.0 };
+
+	// spotlight tourch - guard
+	glLightfv(GL_LIGHT2, GL_POSITION, spot_pos_1);
+	glLightfv(GL_LIGHT2, GL_SPOT_DIRECTION, spotDir_2);
 
 
 
@@ -2048,13 +2052,9 @@ void display(void)
 	glPopMatrix();
 
 
-	glPushMatrix();
-		glTranslatef(-8 , 2.4, -4);
-		ball();  // bouncing ball
-	glPopMatrix();
 
 	
-	float spot_pos[]={ 2, 10, -4.3, 1.0 };
+	float spot_pos[]={ 1.5, 10, -3.6, 1.0 };
    	float spotDir[] = { -1, -1, 0, 1.0 };  // light1 position (directly above bouncing ball - case)
 
 	// spotlight over case - shineing on ground
@@ -2062,9 +2062,15 @@ void display(void)
 	glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, spotDir);
 
 
+	glPushMatrix();
+		glTranslatef(-9.2 , 2.4, -3.8);
+		ball();  // bouncing ball
+	glPopMatrix();
+
+	// ball - vase screen box
 	glPushMatrix();	
-		glTranslatef(-7 , 0, -3);
-		glRotatef(50, 0, 1, 0); 
+		glTranslatef(-8 , 0, -3);
+		glRotatef(60, 0, 1, 0); 
 		ballBoxDemo();  // get to experiment with different values (e.g mass)
 	glPopMatrix();
 

@@ -61,3 +61,7 @@ clean:
 	@echo $(PRINT_END)
 	@echo $(LINK_NAN_MESSAGE)
 	@echo $(PRINT_BEGIN)
+
+
+run: 
+	__GL_SYNC_TO_VBLANK=0 ./main

@@ -75,6 +75,7 @@ void initialise(void)
     glLightfv(GL_LIGHT0, GL_SPECULAR, white);
 	glEnable(GL_SMOOTH);
 
+	
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, mat);
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, white);
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 100.0);
@@ -134,26 +135,20 @@ void display(void)
 	//  Include code for drawing the surface of revolution here.
 	// ---- Start here ----
 	for(int j = 0; j < 36; j++) {   //36 slices in 10 deg steps
-	
-		for (int i = 0; i < N; i++) { 
-			wx[i] = vx[i] * cos((-10*M_PI)/180.) + vz[i] * sin((-10*M_PI)/180.);  // transformed points w
-			wy[i] = vy[i];
-			wz[i] = -vx[i] * sin((-10*M_PI)/180.) + vz[i] * cos((-10*M_PI)/180.);
-		}
-
 		glBegin(GL_TRIANGLE_STRIP);
-			
-			for (int i = 0; i < N; i++) {
-				glTexCoord2f((float)(j)/36.f,(float)i/N);          glVertex3f(vx[i], vy[i], vz[i]);
+
+			for (int i = 0; i < N; i++) { 
+				wx[i] = vx[i] * cos((-10*M_PI)/180.) + vz[i] * sin((-10*M_PI)/180.);  // transformed points w
+				wy[i] = vy[i];
+				wz[i] = -vx[i] * sin((-10*M_PI)/180.) + vz[i] * cos((-10*M_PI)/180.);
+
 				if(i > 0) normal(wx[i-1], wy[i-1], wz[i-1],
-					vx[i],
-					vy[i],
-					vz[i],
-					wx[i],
-					wy[i],
-					wz[i]);
-				glTexCoord2f((float)(j+1)/36.f, (float)i/N);          glVertex3f(wx[i], wy[i], wz[i]);
-			}
+					             vx[i],   vy[i],   vz[i],
+                                 wx[i],   wy[i],   wz[i]);
+
+					glTexCoord2f((float)(j)/36.f,(float)i/(N-1));          glVertex3f(vx[i], vy[i], vz[i]);
+					glTexCoord2f((float)(j+1)/36.f, (float)i/(N-1));       glVertex3f(wx[i], wy[i], wz[i]);
+				}
 		
 		glEnd();
 
