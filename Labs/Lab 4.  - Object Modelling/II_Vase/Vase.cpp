@@ -1,8 +1,7 @@
 //  ========================================================================
-//  COSC363: Computer Graphics (2020);  University of Canterbury.
+//  COSC363: by - Jonathan Edwards
 //
-//  FILE NAME: Vase.cpp
-//  See Lab04 (II) for details
+//  FILE NAME: fountain.cpp
 //  ========================================================================
  
 #include <iostream>
@@ -134,20 +133,22 @@ void display(void)
 
 	//  Include code for drawing the surface of revolution here.
 	// ---- Start here ----
-	for(int j = 0; j < 36; j++) {   //36 slices in 10 deg steps
+	for(int j = 0; j < 360; j++) {   // 360 slices in 1 deg steps
 		glBegin(GL_TRIANGLE_STRIP);
 
 			for (int i = 0; i < N; i++) { 
-				wx[i] = vx[i] * cos((-10*M_PI)/180.) + vz[i] * sin((-10*M_PI)/180.);  // transformed points w
+				wx[i] = vx[i] * cos((-1*M_PI)/180.) + vz[i] * sin((-1*M_PI)/180.);  // transformed points w
 				wy[i] = vy[i];
-				wz[i] = -vx[i] * sin((-10*M_PI)/180.) + vz[i] * cos((-10*M_PI)/180.);
+				wz[i] = -vx[i] * sin((-1*M_PI)/180.) + vz[i] * cos((-1*M_PI)/180.);
 
 				if(i > 0) normal(wx[i-1], wy[i-1], wz[i-1],
 					             vx[i],   vy[i],   vz[i],
                                  wx[i],   wy[i],   wz[i]);
 
-					glTexCoord2f((float)(j)/36.f,(float)i/(N-1));          glVertex3f(vx[i], vy[i], vz[i]);
-					glTexCoord2f((float)(j+1)/36.f, (float)i/(N-1));       glVertex3f(wx[i], wy[i], wz[i]);
+					glTexCoord2f((float)(j)/360.f,(float)i/(N-1));          
+                    glVertex3f(vx[i], vy[i], vz[i]);
+					glTexCoord2f((float)(j+1)/360.f, (float)i/(N-1));       
+                    glVertex3f(wx[i], wy[i], wz[i]);
 				}
 		
 		glEnd();

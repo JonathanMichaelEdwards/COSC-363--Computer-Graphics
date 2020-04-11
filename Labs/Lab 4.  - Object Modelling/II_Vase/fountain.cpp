@@ -12,15 +12,15 @@ using namespace std;
 
 GLuint txId;
 
-const int N = 50;  // Total number of vertices on the base curve
+const int N = 32;  // Total number of vertices on the base curve
 
-float vx_init[N] = { 0, 8, 8, 7.5, 6.7, 5, 5.5, 4, 4, 5, 5.6, 6.1, 6.8, 7.1, 7.5, 8, 8.4, 8.7, 9, 9.3,
-                      9.8, 10, 10.2, 10.4, 10.6, 10.9, 11, 11.1, 11.2, 11.3, 11.4, 11.3, 11.2, 11.1, 11, 10.5, 9.5, 8.2, 7, 6.2,
-                      6, 6.2, 6.8, 7.6, 8.5, 7, 6.1, 5.3, 4.7, 4.5 };
-float vy_init[N] = { 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
-                      19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
-                      39, 40, 41, 42, 43, 43, 42, 41, 40, 39 };
+float vx_init[N] = { 12, 11.5, 11, 10.5, 10, 9, 8, 7, 6, 5, 4, 3.5, 3, 2.5, 2, 1.5, 1, 0.25, 0.5, 0.5, 0.75, 
+                     1, 1.5, 2, 3, 5, 6, 7, 8.5, 10, 12, 14 };
+float vy_init[N] = {  0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 5.9, 6.3, 6.6, 6.9, 7.2, 
+                      7.4, 7.4, 8.2, 9.2, 10.5, 12, 13.5, 15, 17, 19, 21, 23, 24.5, 26, 27 };
 float vz_init[N] = { 0 };
+
+
 
 float angle = 25, cam_hgt = 50.0;  //Rotation angle, camera height
 
@@ -129,17 +129,17 @@ void display(void)
 	glColor3f (0.0, 0.0, 1.0);    //Used for wireframe display
 	glEnable(GL_LIGHTING);
 	// glEnable(GL_TEXTURE_2D);
-	// glBindTexture(GL_TEXTURE_2D, txId);
+	glBindTexture(GL_TEXTURE_2D, txId);
 
 	//  Include code for drawing the surface of revolution here.
 	// ---- Start here ----
-	for(int j = 0; j < 36; j++) {   //36 slices in 10 deg steps
+	for(int j = 0; j < 100; j++) {   // 100 slices in 3.6 deg steps
 		glBegin(GL_TRIANGLE_STRIP);
 
 			for (int i = 0; i < N; i++) { 
-				wx[i] = vx[i] * cos((-10*M_PI)/180.) + vz[i] * sin((-10*M_PI)/180.);  // transformed points w
+				wx[i] = vx[i] * cos((-3.6*M_PI)/180.) + vz[i] * sin((-3.6*M_PI)/180.);  // transformed points w
 				wy[i] = vy[i];
-				wz[i] = -vx[i] * sin((-10*M_PI)/180.) + vz[i] * cos((-10*M_PI)/180.);
+				wz[i] = -vx[i] * sin((-3.6*M_PI)/180.) + vz[i] * cos((-3.6*M_PI)/180.);
 
 				if(i > 0) normal(wx[i-1], wy[i-1], wz[i-1],
 					             vx[i],   vy[i],   vz[i],
