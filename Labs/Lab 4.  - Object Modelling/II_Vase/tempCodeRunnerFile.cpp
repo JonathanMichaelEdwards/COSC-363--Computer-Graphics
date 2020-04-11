@@ -1,3 +1,1 @@
-], wy[i-1], wz[i-1],
-				// 	             vx[i],   vy[i],   vz[i],
-                //                  wx[i],
+ // glClearColor (1.0, 1.0, 1.0, 0.0);

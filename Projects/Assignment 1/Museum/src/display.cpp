@@ -320,14 +320,14 @@ void topBottomRight(void)
 /// --------------------------------------
 
 
-#define TEX 10
-GLuint txId[TEX] = {0};   //Texture ids
+#define TEX 11
+GLuint txId[TEX] = { 0 };   //Texture ids
 
 
 // load textures - skybox
 void _loadTGA(const char *_fileLoc, int index)
 {
-	char loc[100] = {0};
+	char loc[100] = { 0} ;
 
 	glBindTexture(GL_TEXTURE_2D, txId[index]);
 
@@ -380,6 +380,12 @@ void loadTexture()
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);	//Set texture parameters
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	
 
+	// fountain texture
+	glBindTexture(GL_TEXTURE_2D, txId[10]);
+	loadTGA("../Models/fountain.tga");
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);	//Set texture parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);	
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
 	glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
 }
@@ -1408,7 +1414,7 @@ void loadMeshFile(const char* fname)
 }
 
 //--Function to compute the normal vector of a triangle with index tindx ----------
-void normal(int tindx)
+void normal_cannon(int tindx)
 {
 	float x1 = x[t1[tindx]], x2 = x[t2[tindx]], x3 = x[t3[tindx]];
 	float y1 = y[t1[tindx]], y2 = y[t2[tindx]], y3 = y[t3[tindx]];
@@ -1427,15 +1433,27 @@ void _drawCannon(void)
 {
 	glColor3f(0.4, 0.5, 0.4);
 
-    //Construct the object model here using triangles read from OFF file
+    // Construct the object model here using triangles read from OFF file
 	glBegin(GL_TRIANGLES);
 		for(int tindx = 0; tindx < ntri; tindx++) {
-		   normal(tindx);
+		   normal_cannon(tindx);
 		   glVertex3d(x[t1[tindx]], y[t1[tindx]], _z[t1[tindx]]);
 		   glVertex3d(x[t2[tindx]], y[t2[tindx]], _z[t2[tindx]]);
 		   glVertex3d(x[t3[tindx]], y[t3[tindx]], _z[t3[tindx]]);
 		}
 	glEnd();
+}
+
+void normal(float x1, float y1, float z1, 
+            float x2, float y2, float z2,
+		      float x3, float y3, float z3 )
+{
+	  float nx, ny, nz;
+	  nx = y1*(z2-z3)+ y2*(z3-z1)+ y3*(z1-z2);
+	  ny = z1*(x2-x3)+ z2*(x3-x1)+ z3*(x1-x2);
+	  nz = x1*(y2-y3)+ x2*(y3-y1)+ x3*(y1-y2);
+
+      glNormal3f(nx, ny, nz);
 }
 
 
@@ -1889,6 +1907,59 @@ void particleFountain(void)
 
 
 
+#define   N   20
+
+float vx_init[N] = { 8, 7.5, 5.5, 5, 4, 3, 2, 1, 0.75, 0.5, 1, 2, 3, 4, 5, 6, 7.5, 8, 9.5, 11 };          
+float vy_init[N] = { 0, 3, 4.5, 6.0, 6.7, 7.0, 7.5, 8.0, 8.4, 9.0, 10.0, 10.5, 11, 11.5, 12.2, 13.5, 15, 17, 20, 22 }; 
+float vz_init[N] = { 0 };
+
+
+void drawFountain(void)
+{
+	float vx[N], vy[N], vz[N];
+	float wx[N], wy[N], wz[N]; 
+
+	// init data
+	for (int i = 0; i < N; i++) {
+		vx[i] = vx_init[i];
+		vy[i] = vy_init[i];
+		vz[i] = vz_init[i];
+	}
+
+	glColor3f (0.0, 0.0, 1.0);    //Used for wireframe display
+	glEnable(GL_LIGHTING);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, 11);
+
+	for(int j = 0; j < 100; j++) {   // 100 slices in 3.6 deg steps
+		glBegin(GL_TRIANGLE_STRIP);
+
+			for (int i = 0; i < N; i++) { 
+				wx[i] = vx[i] * cos((-3.6*M_PI)/180.) + vz[i] * sin((-3.6*M_PI)/180.);  // transformed points w
+				wy[i] = vy[i];
+				wz[i] = -vx[i] * sin((-3.6*M_PI)/180.) + vz[i] * cos((-3.6*M_PI)/180.);
+
+				if(i > 0) normal(wx[i-1], wy[i-1], wz[i-1],
+					             vx[i],   vy[i],   vz[i],
+                                 wx[i],   wy[i],   wz[i]);
+					glTexCoord2f((float)(j)/260.f,(float)i/(N-1));          glVertex3f(vx[i], vy[i], vz[i]);
+					glTexCoord2f((float)(j+1)/260.f, (float)i/(N-1));       glVertex3f(wx[i], wy[i], wz[i]);
+				}
+		
+		glEnd();
+
+		//Copy W array to V for next iteration
+		for (int i = 0; i<N; i++){
+			vx[i] = wx[i];
+			vy[i] = wy[i];
+			vz[i] = wz[i];
+		}
+	}
+
+	glDisable(GL_TEXTURE_2D);
+}
+
+
 
 const float orange[4]  = {1, 0.5, 0, 1};
 // ----------------------------------------------------------------------------
@@ -2075,8 +2146,17 @@ void display(void)
 	glPopMatrix();
 
 
+	// draw and move the fountain in the scene
+	glPushMatrix();	
+		glTranslatef(8 , FLOOR_BED, -3);
+		glScalef(0.05, 0.05, 0.05);
+		drawFountain();
+	glPopMatrix();
 
-	particleFountain();
+	glPushMatrix();	
+		glTranslatef(8 , 0, -3);
+		particleFountain();
+	glPopMatrix();
 
 	
 	glutSwapBuffers();	

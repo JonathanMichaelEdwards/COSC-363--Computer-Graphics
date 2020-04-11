@@ -8,17 +8,26 @@
 #include <cmath> 
 #include <GL/freeglut.h>
 #include "loadBMP.h"
+#include "loadTGA.h"
 using namespace std;
 
 GLuint txId;
 
-const int N = 32;  // Total number of vertices on the base curve
+// const int N = 32;  // Total number of vertices on the base curve
 
-float vx_init[N] = { 12, 11.5, 11, 10.5, 10, 9, 8, 7, 6, 5, 4, 3.5, 3, 2.5, 2, 1.5, 1, 0.25, 0.5, 0.5, 0.75, 
-                     1, 1.5, 2, 3, 5, 6, 7, 8.5, 10, 12, 14 };
-float vy_init[N] = {  0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 5.9, 6.3, 6.6, 6.9, 7.2, 
-                      7.4, 7.4, 8.2, 9.2, 10.5, 12, 13.5, 15, 17, 19, 21, 23, 24.5, 26, 27 };
+// float vx_init[N] = { 12, 11.5, 11, 10.5, 10, 9, 8, 7, 6, 5, 4, 3.5, 3, 2.5, 2, 1.5, 1, 0.25, 0.5, 0.5, 0.75, 
+//                      1, 1.5, 2, 3, 5, 6, 7, 8.5, 10, 12, 14 };
+// float vy_init[N] = {  0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 5.9, 6.3, 6.6, 6.9, 7.2, 
+//                       7.4, 7.4, 8.2, 9.2, 10.5, 12, 13.5, 15, 17, 19, 21, 23, 24.5, 26, 27 };
+// float vz_init[N] = { 0 };
+
+
+const int N = 20;
+
+float vx_init[N] = { 8, 7.5, 5.5, 5, 4, 3, 2, 1, 0.75, 0.5, 1, 2, 3, 4, 5, 6, 7.5, 8, 9.5, 11 };          
+float vy_init[N] = { 0, 3, 4.5, 6.0, 6.7, 7.0, 7.5, 8.0, 8.4, 9.0, 10.0, 10.5, 11, 11.5, 12.2, 13.5, 15, 17, 20, 22 }; //9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22 }; 
 float vz_init[N] = { 0 };
+
 
 
 
@@ -31,7 +40,7 @@ void loadTexture()
 	glGenTextures(1, &txId); 				// Create a Texture object
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, txId);		//Use this texture
-    loadBMP("VaseTexture.bmp");
+    loadTGA("fountain.tga");
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);	//Set texture parameters
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);	
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
@@ -63,7 +72,7 @@ void initialise(void)
     float white[4]  = {1.0, 1.0, 1.0, 1.0};
 	float mat[4] = { 1.0, 0.75, 0.5, 1.0 };
 
-	// loadTexture();
+	loadTexture();
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_NORMALIZE);
@@ -128,7 +137,7 @@ void display(void)
 
 	glColor3f (0.0, 0.0, 1.0);    //Used for wireframe display
 	glEnable(GL_LIGHTING);
-	// glEnable(GL_TEXTURE_2D);
+	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, txId);
 
 	//  Include code for drawing the surface of revolution here.
@@ -145,9 +154,9 @@ void display(void)
 					             vx[i],   vy[i],   vz[i],
                                  wx[i],   wy[i],   wz[i]);
 
-					// glTexCoord2f((float)(j)/36.f,(float)i/(N-1));          
+					glTexCoord2f((float)(j)/260.f,(float)i/(N-1));          
                     glVertex3f(vx[i], vy[i], vz[i]);
-					// glTexCoord2f((float)(j+1)/36.f, (float)i/(N-1));       
+					glTexCoord2f((float)(j+1)/260.f, (float)i/(N-1));       
                     glVertex3f(wx[i], wy[i], wz[i]);
 				}
 		
@@ -183,9 +192,9 @@ int main(int argc, char** argv)
 {
    glutInit(&argc, argv);
    glutInitDisplayMode (GLUT_SINGLE| GLUT_DEPTH);
-   glutInitWindowSize (500, 500); 
+   glutInitWindowSize (800, 800); 
    glutInitWindowPosition (100, 100);
-   glutCreateWindow ("Vase");
+   glutCreateWindow ("Fountain");
    initialise ();
    glutDisplayFunc(display);
    glutSpecialFunc(special);

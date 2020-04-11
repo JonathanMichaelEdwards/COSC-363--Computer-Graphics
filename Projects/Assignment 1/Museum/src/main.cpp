@@ -25,6 +25,7 @@
 const float grey[4] = {0.2, 0.2, 0.2, 1.0};
 const float orange[4]  = {1, 0.5, 0, 1};
 const float white[4]  = {1, 1, 1, 1};
+float mat[4] = { 1.0, 0.75, 0.5, 1.0 };
 
 /** ------------------------------------------------------------------------------
 //  								Initialize OpenGL
@@ -67,12 +68,14 @@ void initialize(char *pjtPath)
 	glEnable(GL_COLOR_MATERIAL);
 	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);  
   
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, mat);
 	glMaterialfv(GL_FRONT, GL_SPECULAR, white);    
   	glMaterialf(GL_FRONT, GL_SHININESS, 50);
 
  	
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_NORMALIZE);
+	glEnable(GL_SMOOTH);
 
 	// Load and enable Textures
 	loadTexture(); 
