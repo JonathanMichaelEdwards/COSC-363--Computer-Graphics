@@ -188,6 +188,8 @@ bool objCollision[MAGIC_CUBES] = { false };
 bool chkCount[MAGIC_CUBES][MAGIC_CUBES] = { false };
 bool objStill[MAGIC_CUBES][MAGIC_CUBES] = { false };
 
+int OS = 0;
+
 
 void boxCube(void);
 
@@ -201,9 +203,11 @@ void boxCube(void);
 // 
 //  @param return  - directory of the absolute path from the main file
 //  -------------------------------------------------------------------------- */
-char *getPath(char *path) 
+char *getPath(char *path, int _OS) 
 { 
 	static char *dirPath = dirname(path);  // Retrieve path excluting file
+	OS = _OS;
+
 	return dirPath;
 }
 
@@ -355,6 +359,7 @@ void loadTexture()
 	_loadTGA("right", 3);
 	_loadTGA("down", 4);
 	_loadTGA("up", 5);
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
 	// wall museum
 	glBindTexture(GL_TEXTURE_2D, txId[6]);
@@ -381,13 +386,13 @@ void loadTexture()
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	
 
 	// fountain texture
+	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, txId[10]);
 	loadTGA("../Models/fountain.tga");
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);	//Set texture parameters
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);	
+	
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-
-	glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
 }
 
 
@@ -670,7 +675,7 @@ void boxCollision(int j)
 
 void *_boxDetectBoxCollision(void *arg)
 {
-	pthread_mutex_lock(lockBoxColl);  // lock thread
+	if (OS == 1) pthread_mutex_lock(lockBoxColl);  // lock thread
 
 	static bool target = false;
 
@@ -700,7 +705,7 @@ void *_boxDetectBoxCollision(void *arg)
 	}
 
 
-	pthread_mutex_unlock(lockBoxColl);  // unlock thread
+	if (OS == 1) pthread_mutex_unlock(lockBoxColl);  // unlock thread
 
 	return NULL;
 }
@@ -708,13 +713,19 @@ void *_boxDetectBoxCollision(void *arg)
 
 void boxDetectBoxCollision()
 {
-	for (int i = 0; i < THREADS_BOX_BOX_COLL; i++) {
-		lockBoxColl = &_lockBoxColl;
-		pthread_create(&threadsBoxColl[i], NULL, _boxDetectBoxCollision, NULL);
-	}
+	if (OS == 1) {
+		// Linux
+		for (int i = 0; i < THREADS_BOX_BOX_COLL; i++) {
+			lockBoxColl = &_lockBoxColl;
+			pthread_create(&threadsBoxColl[i], NULL, _boxDetectBoxCollision, NULL);
+		}
 
-	for (int i = 0; i < THREADS_BOX_BOX_COLL; i++) 
-		pthread_join(threadsBoxColl[i], NULL);
+		for (int i = 0; i < THREADS_BOX_BOX_COLL; i++) 
+			pthread_join(threadsBoxColl[i], NULL);
+	} else if (OS == 2) {
+		// Windows 
+		_boxDetectBoxCollision(NULL);
+	}
 }
 
 
@@ -746,7 +757,7 @@ void boxDetectGroundCollision()
 int timer = 0;
 void *floorCollisionBOX(void *arg)
 {
-	pthread_mutex_lock(lock); // lock thread
+	if (OS == 1) pthread_mutex_lock(lock); // lock thread
 
 	// detect for collision
 	for (int n = 0; n < MAGIC_CUBES; n++) {               // rows
@@ -774,7 +785,7 @@ void *floorCollisionBOX(void *arg)
 		}
 	}
 
-	pthread_mutex_unlock(lock);  // unlock thread
+	if (OS == 1) pthread_mutex_unlock(lock);  // unlock thread
 
     return NULL;
 }
@@ -795,15 +806,21 @@ void collBox(void)
 				_threadStop = true;  // all boxes are true - complete (stop and reset)
 			}
 		}
-			
-		// worker threads
-		for (int i = 0; i < THREADS_BOX_COLL; i++) {
-			lock = &_lock;
-			pthread_create(&threads[i], NULL, floorCollisionBOX, NULL);
-		}
 
-		for (int i = 0; i < THREADS_BOX_COLL; i++) 
-			pthread_join(threads[i], NULL);
+		if (OS == 1) {	
+			// Linux
+			// worker threads
+			for (int i = 0; i < THREADS_BOX_COLL; i++) {
+				lock = &_lock;
+				pthread_create(&threads[i], NULL, floorCollisionBOX, NULL);
+			}
+
+			for (int i = 0; i < THREADS_BOX_COLL; i++) 
+				pthread_join(threads[i], NULL);
+		} else if (OS == 2) {
+			// Windows
+			floorCollisionBOX(NULL);
+		}
 	} 
 }
 
@@ -1053,7 +1070,7 @@ void _cubeRender(int tx)
     glPushMatrix();
 
 		glEnable(GL_TEXTURE_2D);
-		glDisable(GL_LIGHTING);
+		// glDisable(GL_LIGHTING);
 
 		glColor3f(1, 1, 1);
 
@@ -1066,7 +1083,7 @@ void _cubeRender(int tx)
 		_bottom(tx);
 
 		glDisable(GL_TEXTURE_2D);
-		glEnable(GL_LIGHTING);
+		// glEnable(GL_LIGHTING);
 
     glPopMatrix();
 }
@@ -1926,8 +1943,7 @@ void drawFountain(void)
 		vz[i] = vz_init[i];
 	}
 
-	glColor3f (0.0, 0.0, 1.0);    //Used for wireframe display
-	glEnable(GL_LIGHTING);
+	
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, 11);
 

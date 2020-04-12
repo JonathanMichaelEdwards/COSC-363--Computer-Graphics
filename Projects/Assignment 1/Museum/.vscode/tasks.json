@@ -26,7 +26,7 @@
                 "clear": true
             },
             "windows": {
-                "command": "cd Windows && main.exe"
+                "command": "cd Windows && make run"
             },
             "linux": {
                 "command": "cd Linux && make run"

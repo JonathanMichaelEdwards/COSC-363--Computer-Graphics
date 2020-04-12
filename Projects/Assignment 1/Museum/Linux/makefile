@@ -64,4 +64,4 @@ clean:
 
 
 run: 
-	__GL_SYNC_TO_VBLANK=0 ./main
+	__GL_SYNC_TO_VBLANK=0 ./main 1

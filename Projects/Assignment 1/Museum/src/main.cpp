@@ -32,11 +32,18 @@ float mat[4] = { 1.0, 0.75, 0.5, 1.0 };
 // 
 //  @param pjtPath - absolute path directory
 //  --------------------------------------------------------------------------- */
-void initialize(char *pjtPath)
+void initialize(char *pjtPath, const char *OS)
 {
     glClearColor(0.23f, 0.38f, 0.47f, 1.0f);  // Background colour
 	
-	glEnable(GL_LIGHTING);	// Enable lighting
+	// Load and enable Textures
+	loadTexture();
+	loadMeshFile("../Models/Cannon.off");	
+
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_NORMALIZE);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_SMOOTH);
 
 	// Enable light sources
 	glEnable(GL_LIGHT0);
@@ -64,30 +71,21 @@ void initialize(char *pjtPath)
 	glLightf(GL_LIGHT2, GL_SPOT_CUTOFF, 30); 
 	glLightf(GL_LIGHT2, GL_SPOT_EXPONENT, 90); 
 
-
 	glEnable(GL_COLOR_MATERIAL);
 	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);  
   
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, mat);
 	glMaterialfv(GL_FRONT, GL_SPECULAR, white);    
   	glMaterialf(GL_FRONT, GL_SHININESS, 50);
-
- 	
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_NORMALIZE);
-	glEnable(GL_SMOOTH);
-
-	// Load and enable Textures
-	loadTexture(); 
-	loadMeshFile("../Models/Cannon.off");	
+	
 
 	glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-	gluPerspective(60., WIDTH/HEIGHT, 1., 500.); 
-	glMatrixMode(GL_MODELVIEW);
+	gluPerspective(60., 1., 1., 500.); 
+	// glMatrixMode(GL_MODELVIEW);
 		
-	getPath(pjtPath);
-}
+	getPath(pjtPath, atoi(OS));
+} 
 
 
 /** ------------------------------------------------------------------------------
@@ -112,15 +110,14 @@ int main(int argc, char *argv[])
 	glutInitWindowSize(WIDTH, HEIGHT); 
 	glutInitWindowPosition(WINDOW_POS, WINDOW_POS);
 	glutCreateWindow("Museum    FPS: ...");
-	initialize(argv[0]);
-
+	initialize(argv[0], argv[1]);
 
 	glutDisplayFunc(display);
 	glutKeyboardFunc(keyEvents);
 	glutSpecialFunc(special);
 	glutTimerFunc(TIMER_DELAY, idle, TIMER_DELAY);  // fps counter
 	glutTimerFunc(20, ballBounce, 0);    // ball physics
-	glutTimerFunc(20, animateDoor, 0);    // animate cannon ball
+	glutTimerFunc(20, animateDoor, 0);   // animate door ball
 	glutTimerFunc(10, cannonBall, 0);    // animate cannon ball
 
 	if (wallHit) // animate the guard

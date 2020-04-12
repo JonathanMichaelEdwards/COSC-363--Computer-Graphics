@@ -60,3 +60,6 @@ clean:
 	@echo $(PRINT_END)
 	@echo $(LINK_NAN_MESSAGE)
 	@echo $(PRINT_BEGIN)
+
+run: 
+	main.exe 2
