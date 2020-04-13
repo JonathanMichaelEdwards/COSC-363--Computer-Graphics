@@ -722,7 +722,7 @@ void boxDetectBoxCollision()
 
 		for (int i = 0; i < THREADS_BOX_BOX_COLL; i++) 
 			pthread_join(threadsBoxColl[i], NULL);
-	} else if (OS == 2) {
+	} else {
 		// Windows 
 		_boxDetectBoxCollision(NULL);
 	}
@@ -817,7 +817,7 @@ void collBox(void)
 
 			for (int i = 0; i < THREADS_BOX_COLL; i++) 
 				pthread_join(threads[i], NULL);
-		} else if (OS == 2) {
+		} else {
 			// Windows
 			floorCollisionBOX(NULL);
 		}

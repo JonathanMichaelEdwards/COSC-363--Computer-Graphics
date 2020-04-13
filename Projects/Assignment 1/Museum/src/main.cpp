@@ -6,6 +6,8 @@
 
 
 // Standard libaries
+#include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 
 // OpenGL libaries
@@ -32,7 +34,7 @@ float mat[4] = { 1.0, 0.75, 0.5, 1.0 };
 // 
 //  @param pjtPath - absolute path directory
 //  --------------------------------------------------------------------------- */
-void initialize(char *pjtPath, const char *OS)
+void initialize(char *pjtPath, char *OS)
 {
     glClearColor(0.23f, 0.38f, 0.47f, 1.0f);  // Background colour
 	
@@ -110,6 +112,8 @@ int main(int argc, char *argv[])
 	glutInitWindowSize(WIDTH, HEIGHT); 
 	glutInitWindowPosition(WINDOW_POS, WINDOW_POS);
 	glutCreateWindow("Museum    FPS: ...");
+
+    if (argv[1] == NULL) argv[1] = "0";
 	initialize(argv[0], argv[1]);
 
 	glutDisplayFunc(display);

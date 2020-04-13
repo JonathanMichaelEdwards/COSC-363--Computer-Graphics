@@ -62,4 +62,4 @@ clean:
 	@echo $(PRINT_BEGIN)
 
 run: 
-	main.exe 2
+	main.exe 0

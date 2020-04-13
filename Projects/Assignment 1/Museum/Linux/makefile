@@ -63,5 +63,9 @@ clean:
 	@echo $(PRINT_BEGIN)
 
 
-run: 
+run0: 
+	__GL_SYNC_TO_VBLANK=0 ./main 0
+
+run1: 
 	__GL_SYNC_TO_VBLANK=0 ./main 1
+
