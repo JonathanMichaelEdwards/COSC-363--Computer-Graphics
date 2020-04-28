@@ -605,9 +605,6 @@ void sceneWall(void)
 
 
 //// -------------- ball and ground collision -------------------------------
-
-
-
 void spacePressed(bool _state)
 {
 	if (_state) {
@@ -632,7 +629,8 @@ void doorAction(bool _state)
 // reaction force - when obj 'z' has been hit
 void boxChangeSpeed(int j)
 {	
-	float impactForce = 1;
+	double scaleThread = 1.0;
+	float impactForce = 1.;
 
 	if (wallHit)
 		impactForce = 0.9;
@@ -646,9 +644,12 @@ void boxChangeSpeed(int j)
 		speedY[j][z_2] *= impactForce;
 	else 
 		speedY[j][z_2] *= -impactForce;
-		
-	ballPosY[z][z_2] += speedY[z][z_2] / (THREADS_BOX_COLL*THREADS_BOX_COLL*THREADS_BOX_BOX_COLL);
-	ballPosY[j][z_2] += speedY[j][z_2] / (THREADS_BOX_COLL*THREADS_BOX_COLL*THREADS_BOX_BOX_COLL);
+
+	if (OS == 1)
+		scaleThread = (THREADS_BOX_COLL*THREADS_BOX_COLL);
+
+	ballPosY[z][z_2] += speedY[z][z_2] / scaleThread;
+	ballPosY[j][z_2] += speedY[j][z_2] / scaleThread;
 }
 
 
@@ -728,9 +729,11 @@ void boxDetectBoxCollision()
 
 void boxDetectGroundCollision()
 {
+	double scaleThread = 1.0;
+
 	float t = 0.0005;
 	if (wallHit)
-		t = 0.005;
+		t = 0.001;
 
 	// box piece's collision with floor
 	// if current pos y plus last speed is greater then floor bed, calculate new pos due to speed and direction
@@ -747,7 +750,10 @@ void boxDetectGroundCollision()
 				speedY[z][z_2] *= -1;  // osciallate at constant height
 		}
 
-		ballPosY[z][z_2] += speedY[z][z_2] / ((THREADS_BOX_COLL*THREADS_BOX_COLL));
+		if (OS == 1)
+			scaleThread = (THREADS_BOX_COLL*THREADS_BOX_COLL);
+
+		ballPosY[z][z_2] += speedY[z][z_2] / scaleThread;
 	}
 }
 
@@ -773,7 +779,7 @@ void *floorCollisionBOX(void *arg)
 	// 	timer++;
 
 	// Signal done scene
-	if (timer > 1800) {
+	if (timer > 2300) {
 		for (int i = 0; i < MAGIC_CUBES; i++) {                     // rows
 			for (int j = 0; j < MAGIC_CUBES; j++) {
 				speedY[i][j] = 0;	
@@ -840,8 +846,8 @@ void _cube3D(int row, int col)
 		// keep finding random values every clock tick unitl btn pressed
 		for (int i = 0; i < MAGIC_CUBES; i++) {
 			for (int j = 0; j < MAGIC_CUBES; j++) {
-				posRand_X[i][j] = (float)((rand() % 100) - 50) / 10000.f;
-				posRand_Z[i][j] = (float)(rand() % 40) / 5000.f;
+				posRand_X[i][j] = (float)((rand() % 200) - 100) / 10000.f;
+				posRand_Z[i][j] = (float)(rand() % 50) / 5000.f;
 			}
 		}
 		// run once when btn pressed
