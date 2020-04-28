@@ -84,7 +84,7 @@ void keyEvents(unsigned char key, int x, int y)
 	else if (key == ESC) exit(EXIT_SUCCESS);
 
 	// signal to change view
-	if (key == 'v') {
+	if (key == 'v' || key == 'V') {
 		viewState++;
 		lookRotation(angle, viewState);  // 3d person view
 		if (viewState == 2) {
@@ -92,12 +92,15 @@ void keyEvents(unsigned char key, int x, int y)
 			getView(viewState);  // top down view
 		}
 	} 
-	else if (key == '+') zoom(1);
-	else if (key == '-') zoom(-1);
 
+	// when top down view - allow zoom
+	if (viewState == 1) {
+		if (key == '+') zoom(1);
+		else if (key == '-') zoom(-1);
+	}
 	
 	if (key == SPACE) spacePressed(true);
-	if (key == 'd') doorAction(true);
+	if (key == 'd' || key == 'D') doorAction(true);
 
 
     glutTimerFunc(TIMER_DELAY, idle, TIMER_DELAY);  

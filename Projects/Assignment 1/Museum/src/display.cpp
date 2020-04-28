@@ -48,18 +48,17 @@
 
 const int doorHeight = WALL_SCALE_HEIGHT;
 const float doorPointLocal[3] = {0.15, 0, 0};                     // pivot point
-const float doorPointGlobal[3] = { };   // diff of point
+// const float doorPointGlobal[3] = { };   // diff of point
 
 
 #define PI		3.14159265358979323846
 #define GRAVITY 9.81
 #define DRAG_CUBE   1.05  // face  , edge = 0.8
-
 #define DRAG_SPHERE 0.45 
 #define AIR_DENSITY 1.225
 
 #define BOX_FRAG_SIZE                   0.1
-#define BALL_RADIUS 0.1
+#define BALL_RADIUS                    0.1
 
 
 #define MASS_BOX_PIECE                  0.01
@@ -677,8 +676,6 @@ void *_boxDetectBoxCollision(void *arg)
 {
 	if (OS == 1) pthread_mutex_lock(lockBoxColl);  // lock thread
 
-	static bool target = false;
-
 	// check to see if ball 'z' hits any other balls
 	for (int j = 0; j < MAGIC_CUBES; j++) {
 		if (j == z) break;
@@ -731,14 +728,14 @@ void boxDetectBoxCollision()
 
 void boxDetectGroundCollision()
 {
-	float t = 0.0001;
+	float t = 0.0005;
+	if (wallHit)
+		t = 0.005;
 
 	// box piece's collision with floor
 	// if current pos y plus last speed is greater then floor bed, calculate new pos due to speed and direction
 	if (!chkCount[z][z_2]) {
 		if (ballPosY[z][z_2]+speedY[z][z_2] >= FLOOR_BED+0.05) {
-			if (wallHit) t = 0.001;
-			
 			if (speedY[z][z_2] > -0.1 && speedY[z][z_2] < 0.1 && !wallHit)  // cap the speed for the bouncing cubes
 				speedY[z][z_2] -= (sin(VEL_THETA(VERTICAL_THETA)) * t * sin(VEL_THETA(VERTICAL_THETA)) - 0.5 * GRAVITY * (t*t));
 			else if (wallHit) // dont cap speed
@@ -843,8 +840,8 @@ void _cube3D(int row, int col)
 		// keep finding random values every clock tick unitl btn pressed
 		for (int i = 0; i < MAGIC_CUBES; i++) {
 			for (int j = 0; j < MAGIC_CUBES; j++) {
-				posRand_X[i][j] = (float)((rand() % 50) - 25) / 10000.f;
-				posRand_Z[i][j] = (float)(rand() % 50) / 5000.f;
+				posRand_X[i][j] = (float)((rand() % 100) - 50) / 10000.f;
+				posRand_Z[i][j] = (float)(rand() % 40) / 5000.f;
 			}
 		}
 		// run once when btn pressed
@@ -1127,9 +1124,6 @@ void sideWall(void)
 // open and close the door by pressening the 'd'
 void animateDoor(int value)
 {
-	static bool doorState = false;
-
-
 	if (_doorAction) {
 		if (!doorCount) {
 			// open door
@@ -2061,8 +2055,8 @@ void display(void)
 	glPopMatrix();
 
 
-	float spot_pos_1[]= { guardPosX, 1, guardPosZ, 1.0 };
-   	float spotDir_2[] = { spotDirX_2, -1, spotDirZ_2, 1.0 };
+	float spot_pos_1[]= { (float)guardPosX, 1., (float)guardPosZ, 1. };
+   	float spotDir_2[] = { (float)spotDirX_2, -1., (float)spotDirZ_2, 1. };
 
 	// spotlight tourch - guard
 	glLightfv(GL_LIGHT2, GL_POSITION, spot_pos_1);
@@ -2109,13 +2103,6 @@ void display(void)
 		glVertex3f(4, 3, -5);
 		glVertex3f(4, 3, -7);
 		glVertex3f(-4, 3, -7);
-
-		// middle
-		// glColor4f(1.f, 1.f, 1.f, 0.75f);
-		// glVertex3f(-4, 1, -5);
-		// glVertex3f(4, 1, -5);
-		// glVertex3f(4, 1, -7);
-		// glVertex3f(-4, 1, -7);
 	glEnd();
 
 	glDisable(GL_BLEND);
