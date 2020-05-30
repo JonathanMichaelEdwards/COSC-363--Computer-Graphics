@@ -42,7 +42,7 @@ void rayChequeredFloor(SceneObject *obj, Ray ray)
 {
     glm::vec3 color(0);
 
-	if (ray.index == FLOOR)   {  
+	if (ray.index == FLOOR) {  
 		int ix = (ray.hit.x+FLOOR_OFFSET) / FLOOR_QUAD_SIZE;   
 		int iz = (ray.hit.z+FLOOR_OFFSET) / FLOOR_QUAD_SIZE;    
 		
@@ -62,57 +62,99 @@ void table(std::vector<SceneObject*> &obj)
 {
 	Plane *top = new Plane 
 	(
-		glm::vec3(-8., -5, -40),    // Point A                            
-		glm::vec3(8., -5, -40),     // Point B         
-		glm::vec3(8., -5, -60),     // Point C                            
-		glm::vec3(-8., -5, -60)     // Point D 
+		glm::vec3(-10.5, -5, -50),    // Point A                            
+		glm::vec3(10.5, -5, -50),     // Point B         
+		glm::vec3(10.5, -5, -70),     // Point C                            
+		glm::vec3(-10.5, -5, -70)     // Point D 
 	);  
 
 	Cylinder *stand =  new Cylinder
 	(
-		glm::vec3(0, -20.0, -60.0),  // Position
-		2.0,                         // Radius
-		15                           // Height
+		glm::vec3(0, -14, -70.0),  // Position
+		2.0,                       // Radius
+		8                          // Height
 	);
 	
-	top->setColor(glm::vec3(0, 1, 0));
+	// top->setColor(glm::vec3(0, 1, 0));
 	top->setSpecularity(false); 
 	obj.push_back(top); 
 
 	stand->setColor(glm::vec3(0, 0, 1));  // Set colour to blue
-	stand->setSpecularity(false);  	     // Remove specular light
+	stand->setSpecularity(false);  	      // Remove specular light
 	obj.push_back(stand);
 }
 
 
 // -----------------------------------------------------------------------------
-//                             Creats the world globe
+//                            Creates the world globe base
 // -----------------------------------------------------------------------------
 void worldGlobe(std::vector<SceneObject*> &obj)
 {
-	Plane *top = new Plane 
+	Sphere *globe = new Sphere
 	(
-		glm::vec3(-8., -5, -40),    // Point A                            
-		glm::vec3(8., -5, -40),     // Point B         
-		glm::vec3(8., -5, -60),     // Point C                            
-		glm::vec3(-8., -5, -60)     // Point D 
-	);  
+		WORLD_GLOBE_POS,      // Position
+		3.0                   // Radius
+	); 
 
-	Cylinder *stand =  new Cylinder
+	Cone *cone = new Cone
 	(
-		glm::vec3(0, -20.0, -60.0),  // Position
-		2.0,                         // Radius
-		15                           // Height
+		CONE_STAND_GLOBE,     // Position
+		2,                    // Radius
+		5.f                   // Height
 	);
-	
-	top->setColor(glm::vec3(0, 1, 0));
-	top->setSpecularity(false); 
-	obj.push_back(top); 
 
-	stand->setColor(glm::vec3(0, 0, 1));  // Set colour to blue
-	stand->setSpecularity(false);  	     // Remove specular light
-	obj.push_back(stand);
+	cone->setColor(glm::vec3(0, 0, 1));
+	obj.push_back(cone);
+	obj.push_back(globe);		           
 }
+
+
+// -----------------------------------------------------------------------------
+//                       Maps Earth.bmp to the world globe base
+//
+// 	References:
+//         https://people.cs.clemson.edu/~dhouse/courses/405/notes/texture-maps.pdf (pg 109)
+//         https://www.mvps.org/directx/articles/spheremap.htm
+// -----------------------------------------------------------------------------
+void rayWorldGlobe(SceneObject *obj, Ray ray, TextureBMP texture)
+{
+	glm::vec3 color(0);
+
+	if (ray.index == WORLD_GLOBE) { 
+		glm::vec3 center = WORLD_GLOBE_POS;           // Centre of the sphere obj - to be mapped
+		glm::vec3 d = glm::normalize(ray.hit-center);
+
+		// Find coord pos - s and t
+		float texS = (0.5-atan2(d.z, d.x)+M_PI) / (2*M_PI);  // X coord of the normal
+		float texT = acos(-d.y) / M_PI;                      // Y coordinate of the normal
+
+		color = texture.getColorAt(texS, texT);
+		obj->setColor(color);
+	}
+}
+
+
+//----------------------Draw tetrahedron---------------------------------------------
+void drawTetrahedron(std::vector<SceneObject*> &obj)
+{
+	float x=0, y=-1, z=-24;
+	
+	// Points
+	glm::vec3 A = glm::vec3(-1+x, -1+y, -1+z);
+	glm::vec3 B = glm::vec3(1+x, -1+y, -1+z);
+	glm::vec3 C = glm::vec3(0+x, 1+y, 0+z);
+	glm::vec3 D = glm::vec3(0+x, -1+y, 1+z);
+	
+	Plane *face1 = new Plane(A,B,C);
+	Plane *face2 = new Plane(C,D,B);
+	Plane *face3 = new Plane(B,D,A);
+	Plane *face4 = new Plane(C,A,D);
+
+	obj.push_back(face1);
+	obj.push_back(face2);
+	obj.push_back(face3);
+	obj.push_back(face4);
+}	
 
 
 // -----------------------------------------------------------------------------
@@ -124,6 +166,10 @@ void sceneShapes(std::vector<SceneObject*> &sceneObjects, TextureBMP *texture)
     table(sceneObjects);
 
 	worldGlobe(sceneObjects);
+	drawTetrahedron(sceneObjects);
+
+
+
 
 	// Cylinder *sphere1 =  new Cylinder(glm::vec3(-5.0, 0.0, -90.0), 15.0, 1);  // Use the sphere object
 	// sphere1->setColor(glm::vec3(0, 0, 1));   //Set colour to blue
@@ -156,5 +202,5 @@ void sceneShapes(std::vector<SceneObject*> &sceneObjects, TextureBMP *texture)
     // Plane *plane9 = new Plane(Vector(-20,20,-30),Vector(20,20,-30),Vector(20,20,-150),Vector(-20,20,-150), Color(1,1,1));
     // sceneObjects.push_back(plane9);
 
-	*texture = TextureBMP("../Models/Butterfly.bmp");
+	*texture = TextureBMP("../Models/Earth.bmp");
 }

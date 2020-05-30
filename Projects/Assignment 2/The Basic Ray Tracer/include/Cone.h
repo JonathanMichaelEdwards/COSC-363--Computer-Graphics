@@ -2,15 +2,15 @@
 //  COSC 363: Computer Graphics (2020);  University of Canterbury
 //  Project:  The Basic Ray Tracer 
 //
-//  FILE NAME:    Sphere.h
+//  FILE NAME:    Cone.h
 //  
 //  Author:       Jonathan Edwards
 //  Co-Author:    Department of Computer Science and Software Engineering
 //  ==========================================================================
 
 
-#ifndef SPHERE_H
-#define SPHERE_H
+#ifndef CONE_H
+#define CONE_H
 
 
 #include <glm/glm.hpp>
@@ -19,23 +19,24 @@
 
 
 // -----------------------------------------------------------------------------
-//                 Defines a simple Sphere located at 'center'
+//                 Defines a simple Cone located at 'center'
 //                          with the specified radius
 // -----------------------------------------------------------------------------
-class Sphere : public SceneObject 
+class Cone : public SceneObject
 {
-	private:
-		glm::vec3 center = glm::vec3(0);
-		float radius = 1;
+    private:
+        glm::vec3 center = glm::vec3(0);
+        float radius = 1;
+        float height = 1;
 
-	public:
-		Sphere() {};  // Default constructor creates a unit sphere
-		Sphere(glm::vec3 c, float r) : center(c), radius(r) {}  // center & radius used in "Sphere.cpp"
+    public:	
+        Cone() {};  // Default constructor creates a unit Cone
+        Cone(glm::vec3 c, float r, float h) : center(c), radius(r), height(h) {};
 
-		float intersect(glm::vec3 p0, glm::vec3 dir);
+        float intersect(glm::vec3 pos, glm::vec3 dir);
 
-		glm::vec3 normal(glm::vec3 p);
-
+        glm::vec3 normal(glm::vec3 p);
 };
 
-#endif //!SPHERE_H
+
+#endif //!CONE_H

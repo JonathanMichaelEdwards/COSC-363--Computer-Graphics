@@ -45,7 +45,6 @@ vector<SceneObject*> sceneObjects;
 TextureBMP texture;
 
 
-
 //---The most important function in a ray tracer! ---------------------------------- 
 //   Computes the colour value obtained by tracing a ray and finding its 
 //     closest point of intersection with objects in the scene.
@@ -56,6 +55,7 @@ glm::vec3 trace(Ray ray, int step)
 	glm::vec3 lightPos(10, 40, -3);					//Light's position
 	glm::vec3 color(0);
 	SceneObject *obj;
+	static int patternCount = 0;
 
     ray.closestPt(sceneObjects);					//Compare the ray with all objects in the scene
     if(ray.index == -1) return backgroundCol;		//no intersection
@@ -63,25 +63,16 @@ glm::vec3 trace(Ray ray, int step)
 
 	// Chequered pattern
 	rayChequeredFloor(obj, ray);
+	rayWorldGlobe(obj, ray, texture);
 
-	// #if 0
-	// 	// Stripe pattern   
-	// 	obj->setColor(color);
-	// #else
-	// 	if (ray.index == 0)  { 
-	// 		float x1 = -15;    float z1 = -60;
-	// 		float x2 = 5;      float z2 = -90;
+	if (ray.index == 2)  {    
+		if ((int)(ray.hit.x+ray.hit.y+ray.hit.z) % 2 == 0)  // By adding the hit.z - this adds a third degree of slope 
+			obj->setColor(glm::vec3(0, patternCount/100.f, 0)); 
+		else 
+			obj->setColor(glm::vec3(1, 1, 0)); 
 
-	// 		//Add code for texture mapping here    
-	// 		float texcoords = (ray.hit.x-x1) / (x2-x1);    
-	// 		float texcoordt = (ray.hit.z-z1) / (z2-z1);
-
-	// 		if (texcoords > 0 && texcoords < 1 && texcoordt > 0 && texcoordt < 1) {      
-	// 			color = texture.getColorAt(texcoords, texcoordt);      
-	// 			obj->setColor(color); 
-	// 		}
-	// 	}
-	// #endif
+		if (++patternCount > 100) patternCount = 0;
+	}
 
 	
 
