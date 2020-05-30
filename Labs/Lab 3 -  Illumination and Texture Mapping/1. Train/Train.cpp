@@ -7,6 +7,7 @@
 
 #include <math.h>
 #include <GL/freeglut.h>
+#include <test.h>
 
 GLUquadric *q;    //Required for creating cylindrical objects
 
@@ -301,3 +302,14 @@ int main(int argc, char** argv)
    glutMainLoop();
    return 0;
 }
+
+// 1. - create object files - compile
+//  g++ (source) -c -o (source.o) -I.
+
+// -o = output file
+// -c = dont link file yet (create object)
+// -I. = directory of header files
+// -l = libarie
+
+// 2. - link all objects and libaries together 
+// g++ (all objects) -o main.exe -lOpenGL32 -lGLEW32 -lGLU32 -lfreeGLUT 
