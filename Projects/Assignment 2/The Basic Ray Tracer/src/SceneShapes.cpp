@@ -166,7 +166,7 @@ void rayWorldGlobe(SceneObject *obj, Ray ray, TextureBMP texture)
 // -----------------------------------------------------------------------------
 void drawTetrahedron(std::vector<SceneObject*> &obj)
 {
-	float x=7, y=-2, z=-60;
+	float x=2, y=-2, z=-60;
 	int size = 3;
 
 	// Points
@@ -200,7 +200,7 @@ void reflectiveBlueSphere(std::vector<SceneObject*> &obj)
 {
 	Sphere *sphere = new Sphere
 	(
-		glm::vec3(9.5, 0.0, -90.0),   // Position
+		glm::vec3(10.5, 0.0, -90.0),   // Position
 		8.0                            // Radius
 	); 
 
@@ -269,8 +269,8 @@ void transparantSphere(std::vector<SceneObject*> &obj)
 {
 	Sphere *sphere = new Sphere
 	(
-		glm::vec3(2.5, 1.0, -45.0),   // Position
-		3.5                            // Radius
+		glm::vec3(0.5, 2.0, -45.0),   // Position
+		2.0                           // Radius
 	); 
 
 	sphere->setColor(glm::vec3(0, 1, 0));   // Set colour to green

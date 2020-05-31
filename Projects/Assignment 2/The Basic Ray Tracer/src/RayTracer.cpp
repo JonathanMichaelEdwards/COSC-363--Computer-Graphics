@@ -28,6 +28,9 @@
 #include <GL/freeglut.h>
 using namespace std;
 
+
+#define          SAMPLES       4.f
+
 const float WIDTH = 20.0;          // Width, height of the image plane in world units 
 const float HEIGHT = 20.0;         
 
@@ -41,13 +44,24 @@ const float XMAX =  WIDTH * 0.5;
 const float YMIN = -HEIGHT * 0.5;
 const float YMAX =  HEIGHT * 0.5;
 
+
+// Green Transparant sphere
 #define       ETA             1.003f  // Snells law coef
 #define       TRANSPARANT     0.4f
 
 
+// Light sources
+#define       LIGHT_SOURCE_1         glm::vec3(20, 40, -3)
+#define       LIGHT_SOURCE_2         glm::vec3(-20, 30, -20)
+
+// Light Source 1
+#define       BRIGHT_LEVEL           0.3f       // 30 %
+#define       AMBIENT                glm::vec3(0.2)
+
 
 vector<SceneObject*> sceneObjects;
 TextureBMP texture[3];
+
 
 
 //---The most important function in a ray tracer! ---------------------------------- 
@@ -57,7 +71,6 @@ TextureBMP texture[3];
 glm::vec3 trace(Ray ray, int step)
 {
 	glm::vec3 backgroundCol(0);						//Background colour = (0,0,0)
-	glm::vec3 lightPos(10, 40, -3);					//Light's position
 	glm::vec3 color(0);
 	SceneObject *obj;
 
@@ -65,21 +78,46 @@ glm::vec3 trace(Ray ray, int step)
     if(ray.index == -1) return backgroundCol;		//no intersection
 	obj = sceneObjects[ray.index];					//object on which the closest point of intersection is found
 
+
+	// -- Scene objects ray updates  ----------------------------------------------------------------
 	// Chequered pattern
 	rayChequeredFloor(obj, ray);
 
 	rayWorldGlobe(obj, ray, texture[0]);
 	raytable(obj, ray, texture[1]);
 	rayTreasureMap(obj, ray, texture[2]);
+	// ----------------------------------------------------------------------------------------------
+
 	
+	// -- Light Sources -------------------------------------------------------------
+	// Source 2 - shadow right - Default main light - ambiant + diffuse + specular
+	glm::vec3 lightVec2 = LIGHT_SOURCE_2 - ray.hit;  // light vec pos
+	Ray rayShadow2(ray.hit, lightVec2);
+	rayShadow2.closestPt(sceneObjects);				
 
-	color = obj->lighting(lightPos, -ray.dir, ray.hit);
+	color += obj->lighting(LIGHT_SOURCE_2, -ray.dir, ray.hit);
+	if((rayShadow2.index > -1) && (rayShadow2.dist < glm::length(lightVec2))) color = 0.2f * obj->getColor();   // 0.2 = ambient scale factor
 
-	glm::vec3 lightVec = lightPos - ray.hit;
-	Ray shadowRay(ray.hit, lightVec);
 
-	shadowRay.closestPt(sceneObjects);					//Compare the ray with all objects in the scene
-	if((shadowRay.index > -1) && (shadowRay.dist < glm::length(lightVec))) color = 0.2f * obj->getColor();   // 0.2 = ambient scale factor
+	// Source 1 - shadow collide faint - ambiant + diffuse
+	// Pg 5 of lec 7
+	glm::vec3 currColor = sceneObjects[ray.index]->getColor();      // current index color
+	glm::vec3 normVec1 = sceneObjects[ray.index]->normal(ray.hit);  // normalized vector
+	glm::vec3 lightVec1 = LIGHT_SOURCE_1 - ray.hit;                 // light vec 
+
+	float magLight = glm::length(lightVec1);                     // magnitude - dist
+	lightVec1 = glm::normalize(lightVec1);                       // normalize light 
+	float lDotn = glm::dot(lightVec1, normVec1);
+
+	Ray rayShadow1(ray.hit, lightVec1);
+	rayShadow1.closestPt(sceneObjects);
+	
+	// Id formula on pg 5
+	if ((lDotn <= 0) || (rayShadow1.index > -1 && (rayShadow1.dist < magLight)))
+		color += AMBIENT*(lDotn*currColor) + glm::vec3((BRIGHT_LEVEL/10.f))*(lDotn*currColor);  // Shadow overlap - make darker
+	else
+		color += AMBIENT*currColor + BRIGHT_LEVEL*(lDotn*currColor);                                  // default
+	// ----------------------------------------------------------------------------------------------
 
 
 	// -- Reflection of the Blue Sphere -------------------------------------------------------------
@@ -127,6 +165,40 @@ glm::vec3 trace(Ray ray, int step)
 }
 
 
+
+// -----------------------------------------------------------------------------
+//                            Anti-Aliasing Algorithm - Supersampling
+//
+//  - Generate several rays through each square pixel (eg. divide the pixel into
+//    four equal segments) and compute the average of the colour values. 
+//
+//   - returns the average color value of 4 pixels from one pixel one - pg 34 lec 8
+// -----------------------------------------------------------------------------
+glm::vec3 antiAlising(Ray ray, glm::vec3 eye, float size, float xp, float yp)
+{
+	float quarter = size * (1/SAMPLES);
+	float quarterHalf = size * (1 -(1.f/SAMPLES));
+	
+	glm::vec3 colorTot(0);
+	
+	// Divide ray into quaters - 1 beam in middle 
+	ray = Ray(eye, glm::vec3(xp+quarter, yp+quarter, -EDIST));					
+	colorTot += trace(ray, 1);
+	
+	// Divide quaters  - 2 beams 
+	ray = Ray(eye, glm::vec3(xp+quarter, yp+quarterHalf, -EDIST));		
+	colorTot += trace(ray, 1);
+	ray = Ray(eye, glm::vec3(xp+quarterHalf, yp+quarter, -EDIST));		
+	colorTot += trace(ray, 1);
+	
+	// divide half quater - 4 beams
+	ray = Ray(eye, glm::vec3(xp+quarterHalf, yp+quarterHalf, -EDIST));			
+	colorTot += trace(ray, 1);
+
+	return colorTot /= SAMPLES;
+}	
+
+
 //---The main display module -----------------------------------------------------------
 // In a ray tracing application, it just displays the ray traced image by drawing
 // each cell as a quad.
@@ -155,8 +227,10 @@ void display()
 		    glm::vec3 dir(xp+0.5*cellX, yp+0.5*cellY, -EDIST);	//direction of the primary ray
 
 		    Ray ray = Ray(eye, dir);
-
-		    glm::vec3 col = trace (ray, 1); //Trace the primary ray and get the colour value
+			
+			//Trace the primary ray and get the colour value - Anti-Alising algorithm used below
+		    // glm::vec3 col = trace (ray, 1);
+			glm::vec3 col = antiAlising(ray, eye, cellX, xp, yp);
 
 			glColor3f(col.r, col.g, col.b);
 			glVertex2f(xp, yp);				//Draw each cell with its color value
