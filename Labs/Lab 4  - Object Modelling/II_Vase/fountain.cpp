@@ -140,6 +140,14 @@ void display(void)
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, txId);
 
+	glBegin(GL_QUADS);  //Each cell is a tiny quad.
+			// glColor3f(1, 0, 0);
+			glVertex3f(0, 0, -50);			
+			glVertex3f(10, 0, -50);
+			glVertex3f(10, 10, -50);
+			glVertex3f(0, 10, -50);
+    glEnd();
+
 	//  Include code for drawing the surface of revolution here.
 	// ---- Start here ----
 	for(int j = 0; j < 100; j++) {   // 100 slices in 3.6 deg steps

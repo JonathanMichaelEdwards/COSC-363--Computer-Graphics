@@ -41,8 +41,13 @@ const float XMAX =  WIDTH * 0.5;
 const float YMIN = -HEIGHT * 0.5;
 const float YMAX =  HEIGHT * 0.5;
 
+#define       ETA             1.003f  // Snells law coef
+#define       TRANSPARANT     0.4f
+
+
+
 vector<SceneObject*> sceneObjects;
-TextureBMP texture;
+TextureBMP texture[3];
 
 
 //---The most important function in a ray tracer! ---------------------------------- 
@@ -55,7 +60,6 @@ glm::vec3 trace(Ray ray, int step)
 	glm::vec3 lightPos(10, 40, -3);					//Light's position
 	glm::vec3 color(0);
 	SceneObject *obj;
-	static int patternCount = 0;
 
     ray.closestPt(sceneObjects);					//Compare the ray with all objects in the scene
     if(ray.index == -1) return backgroundCol;		//no intersection
@@ -63,17 +67,10 @@ glm::vec3 trace(Ray ray, int step)
 
 	// Chequered pattern
 	rayChequeredFloor(obj, ray);
-	rayWorldGlobe(obj, ray, texture);
 
-	if (ray.index == 2)  {    
-		if ((int)(ray.hit.x+ray.hit.y+ray.hit.z) % 2 == 0)  // By adding the hit.z - this adds a third degree of slope 
-			obj->setColor(glm::vec3(0, patternCount/100.f, 0)); 
-		else 
-			obj->setColor(glm::vec3(1, 1, 0)); 
-
-		if (++patternCount > 100) patternCount = 0;
-	}
-
+	rayWorldGlobe(obj, ray, texture[0]);
+	raytable(obj, ray, texture[1]);
+	rayTreasureMap(obj, ray, texture[2]);
 	
 
 	color = obj->lighting(lightPos, -ray.dir, ray.hit);
@@ -84,14 +81,46 @@ glm::vec3 trace(Ray ray, int step)
 	shadowRay.closestPt(sceneObjects);					//Compare the ray with all objects in the scene
 	if((shadowRay.index > -1) && (shadowRay.dist < glm::length(lightVec))) color = 0.2f * obj->getColor();   // 0.2 = ambient scale factor
 
-	if (obj->isReflective() && step < MAX_STEPS)  {   
+
+	// -- Reflection of the Blue Sphere -------------------------------------------------------------
+	if (obj->isReflective() && step < MAX_STEPS && ray.index == BLUE_SPHERE)  {   
 		float rho = obj->getReflectionCoeff();   
 		glm::vec3 normalVec = obj->normal(ray.hit);   
 		glm::vec3 reflectedDir = glm::reflect(ray.dir, normalVec);   
+
 		Ray reflectedRay(ray.hit, reflectedDir);   
 		glm::vec3 reflectedColor = trace(reflectedRay, step + 1);   
 		color = color + (rho*reflectedColor);  
 	}   
+	// ----------------------------------------------------------------------------------------------
+
+
+	// -- Transparency and Refraction -------------------------------------------------------------
+	// -- pg 12 and 13 from lec 8
+	if (step < MAX_STEPS && ray.index == TRANSPARANT_SPHERE) {
+		// pg 19-22
+		// 1. Find the first refraction vector
+		// 2. Find the second refraction vector by the refracting the negative of the first normal
+		// 3. Trace the color
+		// Note: Refracted ray - use snells law
+
+		// first vector
+		glm::vec3 normalVec = obj->normal(ray.hit);   
+		glm::vec3 dirFrac = glm::refract(ray.dir, normalVec, (1.0f/ETA));
+		Ray rayFrac1(ray.hit, dirFrac);
+		rayFrac1.closestPt(sceneObjects);
+
+		// second vector
+		normalVec = sceneObjects[rayFrac1.index]->normal(rayFrac1.hit); 
+		dirFrac = glm::refract(dirFrac, -normalVec, ETA);
+		Ray rayFrac2(rayFrac1.hit, dirFrac);
+		rayFrac2.closestPt(sceneObjects);
+
+		// trace
+		glm::vec3 refracColor = trace(rayFrac2, step+1);
+		color = TRANSPARANT * (color+refracColor);  
+	}   
+	// ----------------------------------------------------------------------------------------------
 
 
 	return color;
@@ -156,7 +185,7 @@ void initialize()
     glClearColor(0, 0, 0, 1);
 
 	// All scene obj's are created
-	sceneShapes(sceneObjects, &texture);
+	sceneShapes(sceneObjects, texture);
 }
 
 

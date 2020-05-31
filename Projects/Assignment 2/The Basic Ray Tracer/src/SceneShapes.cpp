@@ -14,6 +14,7 @@
 
 
 #include "SceneShapes.h"
+#include <GL/freeglut.h>
 
 
 
@@ -70,18 +71,44 @@ void table(std::vector<SceneObject*> &obj)
 
 	Cylinder *stand =  new Cylinder
 	(
-		glm::vec3(0, -14, -70.0),  // Position
+		glm::vec3(0, -13, -65.0),  // Position
 		2.0,                       // Radius
 		8                          // Height
 	);
 	
-	// top->setColor(glm::vec3(0, 1, 0));
-	top->setSpecularity(false); 
+	// top->setSpecularity(false); 
 	obj.push_back(top); 
 
-	stand->setColor(glm::vec3(0, 0, 1));  // Set colour to blue
-	stand->setSpecularity(false);  	      // Remove specular light
+	// stand->setSpecularity(false);  	      // Remove specular light
 	obj.push_back(stand);
+}
+
+
+void raytable(SceneObject *obj, Ray ray, TextureBMP texture)
+{
+	static int patternCount = 0;
+
+	// Top texture
+	if (ray.index == TABLE_TOP)  {    
+		float x1 = -10.5;    float z1 = -50;
+		float x2 = 10.5;     float z2 = -70;
+
+		// Find coord pos - s and t
+		float texS = (ray.hit.x-x1) / (x2-x1);
+		float texT = (ray.hit.z-z1) / (z2-z1);
+
+		obj->setColor(texture.getColorAt(texS, texT));
+	}
+
+	// Leg Procedual pattern
+	if (ray.index == TABLE_LEG)  {    
+		if ((int)(ray.hit.x+ray.hit.y+ray.hit.z) % 2 == 0)  // By adding the hit.z - this adds a third degree of slope 
+			obj->setColor(glm::vec3(0, patternCount/100.f, 0)); 
+		else 
+			obj->setColor(glm::vec3(1, 1, 0)); 
+
+		if (++patternCount > 100) patternCount = 0;
+	}
 }
 
 
@@ -134,21 +161,30 @@ void rayWorldGlobe(SceneObject *obj, Ray ray, TextureBMP texture)
 }
 
 
-//----------------------Draw tetrahedron---------------------------------------------
+// -----------------------------------------------------------------------------
+//                           Draw a Tetrahedron
+// -----------------------------------------------------------------------------
 void drawTetrahedron(std::vector<SceneObject*> &obj)
 {
-	float x=0, y=-1, z=-24;
-	
+	float x=7, y=-2, z=-60;
+	int size = 3;
+
 	// Points
-	glm::vec3 A = glm::vec3(-1+x, -1+y, -1+z);
-	glm::vec3 B = glm::vec3(1+x, -1+y, -1+z);
-	glm::vec3 C = glm::vec3(0+x, 1+y, 0+z);
-	glm::vec3 D = glm::vec3(0+x, -1+y, 1+z);
+	glm::vec3 A = glm::vec3(-size+x, -size+y, -size+z);
+	glm::vec3 B = glm::vec3(size+x, -size+y, -size+z);
+	glm::vec3 C = glm::vec3(0+x, size+y, 0+z);
+	glm::vec3 D = glm::vec3(0+x, -size+y, size+z);
 	
+	// 4 different faces
 	Plane *face1 = new Plane(A,B,C);
 	Plane *face2 = new Plane(C,D,B);
 	Plane *face3 = new Plane(B,D,A);
 	Plane *face4 = new Plane(C,A,D);
+
+	face1->setColor(glm::vec3(1, 0, 0));
+	face2->setColor(glm::vec3(1, 0, 0));
+	face3->setColor(glm::vec3(1, 0, 0));
+	face4->setColor(glm::vec3(1, 0, 0));
 
 	obj.push_back(face1);
 	obj.push_back(face2);
@@ -158,49 +194,107 @@ void drawTetrahedron(std::vector<SceneObject*> &obj)
 
 
 // -----------------------------------------------------------------------------
+//             Creates the base for a blue sphere to be reflective
+// -----------------------------------------------------------------------------
+void reflectiveBlueSphere(std::vector<SceneObject*> &obj)
+{
+	Sphere *sphere = new Sphere
+	(
+		glm::vec3(9.5, 0.0, -90.0),   // Position
+		8.0                            // Radius
+	); 
+
+	sphere->setColor(glm::vec3(0, 0, 1));   // Set colour to blue
+	sphere->setReflectivity(true, 0.8);     // Set it to be reflective
+	obj.push_back(sphere);      
+}
+
+
+// -----------------------------------------------------------------------------
+//                           Draw a Torus -- Attempt
+//   Reference:
+//             https://marcin-chwedczuk.github.io/ray-tracing-torus
+// -----------------------------------------------------------------------------
+void drawTorus(std::vector<SceneObject*> &obj) 
+{
+// 	Torus *torus = new Torus(glm::vec3(0.0, 0.0, -50.0), 3.0);
+// 	torus->setColor( glm::vec3(0, 0, 1));
+// 	obj.push_back(torus);
+}
+
+
+// -----------------------------------------------------------------------------
+//                     Creates the Background base plane
+// -----------------------------------------------------------------------------
+void drawBoard(std::vector<SceneObject*> &obj)
+{
+	Plane *back = new Plane 
+	(
+		glm::vec3(-30, -10, -150),   // Point A                            
+		glm::vec3(30, -10, -150),    // Point B         
+		glm::vec3(30, 20, -150),     // Point C                            
+		glm::vec3(-30, 20, -150)     // Point D 
+	);  
+
+	back->setSpecularity(false);  	// remove specular light
+	obj.push_back(back);
+}
+
+
+// -----------------------------------------------------------------------------
+//                      Maps Treasure_Map.BMP to the background plane
+//
+// 	References:
+//         http://www.aljanh.net/map-pirate-wallpapers/1436032319.html
+// -----------------------------------------------------------------------------
+void rayTreasureMap(SceneObject *obj, Ray ray, TextureBMP texture)
+{
+	if (ray.index == TREASURE_MAP)  {    
+		float x1 = -30;    float y1 = -10;
+		float x2 = 30;     float y2 = 20;
+
+		// Find coord pos - s and t
+		float texS = (ray.hit.x-x1) / (x2-x1);
+		float texT = (ray.hit.y-y1) / (y2-y1);
+
+		obj->setColor(texture.getColorAt(texS, texT));
+	}
+}
+
+
+// -----------------------------------------------------------------------------
+//             Creates the base for a blue sphere to be reflective
+// -----------------------------------------------------------------------------
+void transparantSphere(std::vector<SceneObject*> &obj)
+{
+	Sphere *sphere = new Sphere
+	(
+		glm::vec3(2.5, 1.0, -45.0),   // Position
+		3.5                            // Radius
+	); 
+
+	sphere->setColor(glm::vec3(0, 1, 0));   // Set colour to green
+	sphere->setSpecularity(false);  	    // remove specular light
+	obj.push_back(sphere);      
+}
+
+
+// -----------------------------------------------------------------------------
 //                           Shapes drawn in the scene
 // -----------------------------------------------------------------------------
 void sceneShapes(std::vector<SceneObject*> &sceneObjects, TextureBMP *texture) 
 {
-    chequeredFloor(sceneObjects);
-    table(sceneObjects);
+    chequeredFloor(sceneObjects);        // 1 index's
+    table(sceneObjects);                 // 2 index's
 
-	worldGlobe(sceneObjects);
-	drawTetrahedron(sceneObjects);
+	worldGlobe(sceneObjects);            // 2 index's
+	drawTetrahedron(sceneObjects);       // 4 index's
+	reflectiveBlueSphere(sceneObjects);  // 1 index's
+	// drawTorus(sceneObjects);       
+	drawBoard(sceneObjects);             // 1 index's
+	transparantSphere(sceneObjects);     // 1 index's
 
-
-
-
-	// Cylinder *sphere1 =  new Cylinder(glm::vec3(-5.0, 0.0, -90.0), 15.0, 1);  // Use the sphere object
-	// sphere1->setColor(glm::vec3(0, 0, 1));   //Set colour to blue
-	// // sphere1->setSpecularity(false);  	-- remove specular light
-	// // sphere1->setShininess(5);        	-- change shininess (small val = stronger)
-	// sphere1->setReflectivity(true, 0.8); 
-	// sceneObjects.push_back(sphere1);		 //Add sphere to scene objects
-
-	// // Sphere 2 - green
-	// Sphere *sphere2 = new Sphere(glm::vec3(5.0, -10.0, -60.0), 5.0);  // Use the sphere object
-	// sphere2->setColor(glm::vec3(0, 1, 0));   //Set colour to green
-	// sceneObjects.push_back(sphere2);		 //Add sphere to scene objects
-
-	// // Sphere 3 - red
-	// Sphere *sphere3 = new Sphere(glm::vec3(5.0, 5.0, -70.0), 4.0);  // Use the sphere object
-	// sphere3->setColor(glm::vec3(1, 0, 0));   //Set colour to red
-	// sceneObjects.push_back(sphere3);		 //Add sphere to scene objects
-
-	// // Sphere 4 - turquoise
-	// Sphere *sphere4 = new Sphere(glm::vec3(10.0, 10.0, -60.0), 3.0);  // Use the sphere object
-	// sphere4->setColor(glm::vec3(64.f/255.f, 244.f/255.f, 208.f/255.f));   //Set colour to turquoise
-	// sceneObjects.push_back(sphere4);		 //Add sphere to scene objects
-
-    // Plane *plane_B_6 = new Plane(Vector(-20,-20,-150),Vector(20,-20,-150),Vector(20,20,-150),Vector(-20,20,-150), Color::GRAY);
-    // sceneObjects.push_back(plane_B_6);//background
-    // Plane *plane_L_7 = new Plane(Vector(-20,-20,-30),Vector(-20,-20,-150), Vector(-20, 20,-150),Vector(-20, 20,-30), Color(1,1,1));
-    // sceneObjects.push_back(plane_L_7);
-    // Plane *plane_R_8 = new Plane(Vector(20,20,-30),Vector(20,20,-150), Vector(20, -20,-150),Vector(20, -20,-30), Color(1,1,1));
-    // sceneObjects.push_back(plane_R_8);
-    // Plane *plane9 = new Plane(Vector(-20,20,-30),Vector(20,20,-30),Vector(20,20,-150),Vector(-20,20,-150), Color(1,1,1));
-    // sceneObjects.push_back(plane9);
-
-	*texture = TextureBMP("../Models/Earth.bmp");
+	texture[0] = TextureBMP("../Models/Earth.bmp");          // http://www.world-maps.org/
+	texture[1] = TextureBMP("../Models/Table.bmp");          // https://freestocktextures.com/texture/floor-wood-oak,765.html
+	texture[2] = TextureBMP("../Models/Treasure_Map.bmp");	 // http://www.aljanh.net/map-pirate-wallpapers/1436032319.html
 }
