@@ -102,7 +102,8 @@ void raytable(SceneObject *obj, Ray ray, TextureBMP texture)
 
 	// Leg Procedual pattern
 	if (ray.index == TABLE_LEG)  {    
-		if ((int)(ray.hit.x+ray.hit.y+ray.hit.z) % 2 == 0)  // By adding the hit.z - this adds a third degree of slope 
+		// By adding the hit.z - adds a second degree slope 
+		if ((int)(ray.hit.x+ray.hit.y+ray.hit.z) % 2 == 0)
 			obj->setColor(glm::vec3(0, patternCount/100.f, 0)); 
 		else 
 			obj->setColor(glm::vec3(1, 1, 0)); 

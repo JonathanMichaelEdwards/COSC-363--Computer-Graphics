@@ -228,7 +228,7 @@ void display()
 
 		    Ray ray = Ray(eye, dir);
 			
-			//Trace the primary ray and get the colour value - Anti-Alising algorithm used below
+			// Trace the primary ray and get the colour value - Anti-Alising algorithm used below
 		    // glm::vec3 col = trace (ray, 1);
 			glm::vec3 col = antiAlising(ray, eye, cellX, xp, yp);
 
