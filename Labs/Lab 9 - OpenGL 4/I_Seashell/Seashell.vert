@@ -20,10 +20,11 @@ void main()
 	vec4 normalEye = norMatrix * vec4(normal, 0);
 	vec4 lgtVec = normalize(lightPos - posnEye); 
 	vec4 viewVec = normalize(vec4(-posnEye.xyz, 0)); 
-	vec4 halfVec = normalize(lgtVec + viewVec); 
+	vec4 halfVec = normalize(lgtVec + viewVec);
 
 	vec4 ambient = grey * material;
 	float diffTerm = max(dot(lgtVec, normalEye), 0);
+
 	vec4 diffuse = material * diffTerm;
 	float specTerm = max(dot(halfVec, normalEye), 0);
 	vec4 specular = white *  pow(specTerm, shininess);

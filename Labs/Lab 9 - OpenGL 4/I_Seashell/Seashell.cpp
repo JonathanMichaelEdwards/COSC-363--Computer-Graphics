@@ -86,7 +86,7 @@ void loadData()
 void initialize()
 {
 	glm::vec4 light = glm::vec4(-20.0, 5.0, 0, 1.0);      //Light's position in world coordinates
-	GLuint program = createShaderProg("Seashell.vert", "Seashell.frag");
+	GLuint program = createShaderProg("Seashell_2.vert", "Seashell_2.frag");
 
 	mvMatrixLoc = glGetUniformLocation(program, "mvMatrix");  //Get locations of uniform variables declared in shader
 	mvpMatrixLoc = glGetUniformLocation(program, "mvpMatrix");

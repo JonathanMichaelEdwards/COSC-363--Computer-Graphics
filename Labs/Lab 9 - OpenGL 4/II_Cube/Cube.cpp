@@ -17,7 +17,7 @@
 using namespace std;
 
 
-GLuint vaoID, texID;
+GLuint vaoID, texID[2];
 GLuint theProgram;
 GLuint mvMatrixLoc, mvpMatrixLoc, norMatrixLoc;
 float angle = 0.0;
@@ -27,12 +27,22 @@ const float CDR = 3.14159265/180.0;   //Conversion from degrees to radians (requ
 
 void loadTextures()
 {
-    glGenTextures(1, &texID);   //Generate 1 texture ID
+    glGenTextures(2, texID);   //Generate 2 texture ID
 
    // Load brick texture
     glActiveTexture(GL_TEXTURE0);  //Texture unit 0
-    glBindTexture(GL_TEXTURE_2D, texID);
+    glBindTexture(GL_TEXTURE_2D, texID[0]);
 	loadTGA("Brick.tga");
+
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+
+	// Load moss texture
+    glActiveTexture(GL_TEXTURE1);  //Texture unit 1
+    glBindTexture(GL_TEXTURE_2D, texID[1]);
+	loadTGA("Moss.tga");
+
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 }
@@ -46,8 +56,10 @@ void initialise()
 	norMatrixLoc = glGetUniformLocation(program, "norMatrix");
 	GLuint lgtLoc = glGetUniformLocation(program, "lightPos");
 
-	GLuint texLoc = glGetUniformLocation(program, "tSampler1");  //tSampler1 is a uniform variable of type Sampler2D in the fragment shader
-	glUniform1i(texLoc, 0);    //Assign a value 0 to the variable tSampler1 to specify that it should use the texture from unit 0.
+	GLuint texLoc_1 = glGetUniformLocation(program, "tSampler1");  //tSampler1 is a uniform variable of type Sampler2D in the fragment shader
+	glUniform1i(texLoc_1, 0);    //Assign a value 0 to the variable tSampler1 to specify that it should use the texture from unit 0.
+	GLuint texLoc_2 = glGetUniformLocation(program, "tSampler2");  
+	glUniform1i(texLoc_2, 1); 
 
 	glm::vec4 light = glm::vec4(10.0, 10.0, 10.0, 1.0);
 	proj = glm::perspective(20.0f*CDR, 1.0f, 10.0f, 1000.0f);  //perspective projection matrix
